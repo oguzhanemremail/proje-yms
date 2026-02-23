@@ -2902,23 +2902,26 @@ function sendInvite(){
   if(btn){btn.disabled=true;btn.textContent='Gönderiliyor...';}
   // Supabase magic link (OTP) ile davet gönder
   sb.auth.admin;// admin API yok, signInWithOtp kullan
-  sb.auth.admin.inviteUserByEmail(email,{
-    redirectTo:'https://oguzhanemremail.github.io/proje-yms?invited=1'
+  sb.auth.signInWithOtp({
+    email:email,
+    options:{emailRedirectTo:'https://oguzhanemremail.github.io/proje-yms?invited=1'}
   }).then(function(res){
     if(btn){btn.disabled=false;btn.textContent='📩 Davet Gönder';}
     if(res.error){showInvMsg('Hata: '+res.error.message,'err');return;}
-    // pym_pending'e kaydet
+    // pym_pending'e kaydet (henüz user_id yok, email ile)
     sb.from('pym_pending').upsert({email:email,status:'invited',user_id:'inv_'+Date.now()},{onConflict:'email'}).then(function(){
       showInvMsg('✅ Davet bağlantısı '+email+' adresine gönderildi!','ok');
       sv('inv-email','');
+      // Admin paneli açıksa listeyi güncelle
       var invList=g('admin-invites-list');if(invList)loadInvites();
     });
   });
 }
 function resendInvite(email){
   if(!confirm(email+' adresine davet yeniden gönderilsin mi?'))return;
-  sb.auth.admin.inviteUserByEmail(email,{
-    redirectTo:'https://oguzhanemremail.github.io/proje-yms?invited=1'
+  sb.auth.signInWithOtp({
+    email:email,
+    options:{emailRedirectTo:'https://oguzhanemremail.github.io/proje-yms?invited=1'}
   }).then(function(res){
     if(res.error){toast('Hata: '+res.error.message,'err');return;}
     toast('📩 Davet yeniden gönderildi → '+email);

@@ -315,6 +315,42 @@ html,body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--tx);mi
 @media(max-width:700px){.fr{grid-template-columns:1fr;}.tdgrid{grid-template-columns:1fr;}.dgrid{grid-template-columns:1fr;}.krow{grid-template-columns:repeat(3,1fr);}
 #agenda-grid{grid-template-columns:1fr!important;}}
 @media(max-width:420px){.krow{grid-template-columns:repeat(2,1fr);}}
+
+/* ─── NOTLAR ──────────────────────────────────────────────── */
+.nb-sidebar{width:220px;min-width:220px;background:#fff;border-right:1px solid var(--bdr);display:flex;flex-direction:column;overflow:hidden;}
+.nb-sidebar-hd{padding:12px 13px 8px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;justify-content:space-between;}
+.nb-sidebar-hd span{font-size:12px;font-weight:700;color:var(--navy);letter-spacing:.3px;}
+.nb-add-btn{background:var(--blue);color:#fff;border:none;border-radius:6px;width:26px;height:26px;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.nb-list{flex:1;overflow-y:auto;padding:6px;}
+.nb-item{border-radius:8px;padding:9px 10px;cursor:pointer;margin-bottom:3px;border:1.5px solid transparent;transition:all .15s;position:relative;}
+.nb-item:hover{background:var(--sub);}
+.nb-item.active{background:var(--blt);border-color:var(--blue);}
+.nb-item-title{font-size:12px;font-weight:600;color:var(--navy);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:22px;}
+.nb-item-meta{font-size:10px;color:var(--tx2);margin-top:2px;}
+.nb-item-del{position:absolute;right:7px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--grey);cursor:pointer;font-size:13px;opacity:0;transition:opacity .15s;padding:2px;}
+.nb-item:hover .nb-item-del{opacity:1;}
+.nb-content{flex:1;display:flex;flex-direction:column;overflow:hidden;background:var(--bg);}
+.nb-content-hd{padding:12px 16px 10px;border-bottom:1px solid var(--bdr);background:#fff;display:flex;align-items:center;gap:8px;}
+.nb-title-inp{border:none;outline:none;font-size:15px;font-weight:700;color:var(--navy);background:transparent;flex:1;font-family:inherit;}
+.nb-title-inp::placeholder{color:var(--grey);}
+.nb-lines{flex:1;overflow-y:auto;padding:12px 16px;}
+.nb-line{display:flex;align-items:flex-start;gap:8px;padding:6px 0;border-bottom:1px solid var(--bdr);group;}
+.nb-line:last-child{border-bottom:none;}
+.nb-line-num{font-size:10px;color:var(--grey);min-width:18px;text-align:right;padding-top:7px;font-family:'JetBrains Mono',monospace;flex-shrink:0;}
+.nb-line-txt{flex:1;border:none;outline:none;background:transparent;font-size:13px;color:var(--tx);font-family:inherit;padding:5px 0;resize:none;line-height:1.5;min-height:30px;}
+.nb-line-txt::placeholder{color:#b0bec5;}
+.nb-line-actions{display:flex;gap:3px;opacity:0;transition:opacity .15s;flex-shrink:0;padding-top:3px;}
+.nb-line:hover .nb-line-actions{opacity:1;}
+.nb-line-btn{background:none;border:none;cursor:pointer;font-size:13px;padding:4px 5px;border-radius:5px;color:var(--grey);transition:all .15s;}
+.nb-line-btn:hover{background:var(--blt);color:var(--blue);}
+.nb-line-btn.del:hover{background:var(--rlt);color:var(--red);}
+.nb-add-line{display:flex;align-items:center;gap:8px;padding:10px 16px;color:var(--grey);cursor:pointer;font-size:12px;border-top:1px solid var(--bdr);background:#fff;transition:background .15s;}
+.nb-add-line:hover{background:var(--sub);color:var(--blue);}
+.nb-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:var(--grey);gap:10px;}
+.nb-empty-icon{font-size:40px;opacity:.4;}
+/* Bağlantı modal */
+.nb-link-wrap{background:var(--blt);border:1px solid var(--bmd);border-radius:8px;padding:10px 12px;margin-top:4px;font-size:12px;}
+@media(max-width:600px){.nb-sidebar{width:180px;min-width:180px;}}
 </style>
 </head>
 <body>
@@ -339,6 +375,7 @@ html,body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--tx);mi
     <div class="ntab" data-page="todo">✅ Görev</div>
     <div class="ntab" data-page="cal">🗓️ Takvim</div>
     <div class="ntab" data-page="agenda">📌 Gündem</div>
+    <div class="ntab" data-page="notes">🗒️ Notlar</div>
   </div>
   <div style="display:flex;align-items:center;gap:8px;margin-left:auto;flex-shrink:0;">
     <div class="fbst wait" id="fbst"><span class="fbst-dot"></span><span id="fbst-lbl">Bağlanıyor...</span></div>
@@ -532,6 +569,54 @@ html,body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--tx);mi
       </div>
     </div>
     <div class="mft"><button class="btn btn-g" data-close="mEditTodo">İptal</button><button class="btn btn-p" onclick="saveEditTodo()">💾 Kaydet</button></div>
+  </div>
+</div>
+
+<!-- MODAL: Not Satırı Bağlantı -->
+<div class="mo" id="mNoteLink">
+  <div class="mdlg" style="width:440px">
+    <div class="mhd"><div class="mttl">🔗 Satırı Bağla</div><button class="mx" data-close="mNoteLink">✕</button></div>
+    <div class="mbdy">
+      <div class="fg"><label class="fl">Bağlanacak Yer</label>
+        <select class="fs" id="nbl-type" onchange="nbLinkTypeChange()">
+          <option value="todo">✅ Görev Listesi</option>
+          <option value="action">📋 Aksiyon (Proje)</option>
+        </select>
+      </div>
+      <!-- Görev listesi seçenekleri -->
+      <div id="nbl-todo-part">
+        <div class="fg"><label class="fl">Liste</label><select class="fs" id="nbl-tp"></select></div>
+        <div class="fg"><label class="fl">Öncelik</label>
+          <select class="fs" id="nbl-qk">
+            <option value="q1">🔴 ACİL & ÖNEMLİ</option>
+            <option value="q2">🟡 ACİL, ÖNEMLİ DEĞİL</option>
+            <option value="q3">🟢 ÖNEMLİ, ACİL DEĞİL</option>
+            <option value="q4">⚪ NE ACİL NE ÖNEMLİ</option>
+          </select>
+        </div>
+        <div class="fg"><label class="fl">Bitiş Tarihi</label><input type="date" class="fi" id="nbl-end"></div>
+      </div>
+      <!-- Aksiyon seçenekleri -->
+      <div id="nbl-act-part" style="display:none">
+        <div class="fg"><label class="fl">Proje</label><select class="fs" id="nbl-proj"></select></div>
+        <div class="fr">
+          <div class="fg"><label class="fl">Başlangıç *</label><input type="date" class="fi" id="nbl-st"></div>
+          <div class="fg"><label class="fl">Bitiş *</label><input type="date" class="fi" id="nbl-en"></div>
+        </div>
+        <div class="fr">
+          <div class="fg"><label class="fl">Sorumlu</label><input type="text" class="fi" id="nbl-own" placeholder="İsim..."></div>
+          <div class="fg"><label class="fl">Öncelik</label>
+            <select class="fs" id="nbl-pri">
+              <option value="q1">🔴 ACİL & ÖNEMLİ</option>
+              <option value="q2">🟡 ACİL, ÖNEMLİ DEĞİL</option>
+              <option value="q3">🟢 ÖNEMLİ, ACİL DEĞİL</option>
+              <option value="q4">⚪ NE ACİL NE ÖNEMLİ</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="mft"><button class="btn btn-g" data-close="mNoteLink">İptal</button><button class="btn btn-p" onclick="saveNoteLink()">🔗 Bağla ve Ekle</button></div>
   </div>
 </div>
 
@@ -737,6 +822,10 @@ html,body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--tx);mi
 </div>
 
 <!-- TAKVİM -->
+<div id="page-notes" class="page">
+  <div id="notes-layout" style="display:flex;height:calc(100vh - 52px);overflow:hidden"></div>
+</div>
+
 <div id="page-cal" class="page">
   <div class="ph">
     <div><div class="ptitle">🗓️ Takvim</div><div class="psub" id="cal-sub">Pzt–Cum gösteriliyor</div></div>
@@ -974,7 +1063,9 @@ html,body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--tx);mi
 
 <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 // ─── STATE ────────────────────────────────────────────────────
-var nPId=10,nAId=2000,nEId=20,nTPId=3;
+var nPId=10,nAId=2000,nEId=20,nTPId=3,nNId=100;
+var notePads={};// {id:{id,title,lines:[{id,text}],created,updated}}
+var curNoteId=null;
 var selColor='#2196F3',selColor2='#2196F3';
 var wizAT=null,curWk=null;
 var actFilter=null,colPar=new Set(),gColPar=new Set(),selIds=new Set();
@@ -1334,6 +1425,7 @@ function showPage(id){
   if(id==='todo'){renderTodoBar();renderTodo();}
   if(id==='cal'){if(!curWk)curWk=wkStart(new Date());renderCal();}
   if(id==='agenda')renderAgenda();
+  if(id==='notes')renderNotes();
   if(id==='dash')renderDash();
 }
 
@@ -1707,6 +1799,245 @@ function syncActToTodo(a){
   tp[qKey].items.push({id:Date.now(),text:a.title,done:a.status==='Tamamlandı',dl:a.end?d2s(a.end):'',own:a.owner||'',end:a.end||'',actId:a.id});
   if(g('page-todo').classList.contains('active'))renderTodo();
   if(g('page-agenda').classList.contains('active'))renderAgenda();
+}
+
+// ─── NOTLAR SAYFASI ───────────────────────────────────────────
+function nid(){return 'n'+nNId++;}
+function nlid(){return 'nl'+Date.now()+Math.random().toString(36).slice(2,6);}
+
+function renderNotes(){
+  var layout=g('notes-layout');if(!layout)return;
+  var pads=Object.values(notePads).sort(function(a,b){return (b.updated||0)-(a.updated||0);});
+  // Sidebar
+  var sideHtml='<div class="nb-sidebar">';
+  sideHtml+='<div class="nb-sidebar-hd"><span>🗒️ NOT DEFTERLERİ</span><button class="nb-add-btn" onclick="addNotePad()" title="Yeni defter">+</button></div>';
+  sideHtml+='<div class="nb-list">';
+  if(!pads.length){
+    sideHtml+='<div style="padding:20px 10px;text-align:center;color:var(--grey);font-size:11px">Henüz defter yok.<br>+ ile ekleyin.</div>';
+  } else {
+    pads.forEach(function(pad){
+      var isActive=pad.id===curNoteId;
+      var lineCount=pad.lines?pad.lines.length:0;
+      var updStr=pad.updated?new Date(pad.updated).toLocaleDateString('tr-TR',{day:'2-digit',month:'2-digit'}):'';
+      sideHtml+='<div class="nb-item'+(isActive?' active':'')+'" data-selpad="'+pad.id+'">';
+      sideHtml+='<div class="nb-item-title">'+(pad.title||'İsimsiz Defter')+'</div>';
+      sideHtml+='<div class="nb-item-meta">'+lineCount+' satır'+(updStr?' · '+updStr:'')+'</div>';
+      sideHtml+='<button class="nb-item-del" data-delpad="'+pad.id+'" title="Sil">🗑️</button>';
+      sideHtml+='</div>';
+    });
+  }
+  sideHtml+='</div></div>';
+
+  // İçerik alanı
+  var contentHtml='<div class="nb-content">';
+  if(!curNoteId||!notePads[curNoteId]){
+    contentHtml+='<div class="nb-empty"><div class="nb-empty-icon">🗒️</div><div style="font-size:13px">Bir defter seçin veya yeni oluşturun</div></div>';
+  } else {
+    var pad=notePads[curNoteId];
+    contentHtml+='<div class="nb-content-hd">';
+    contentHtml+='<input class="nb-title-inp" id="nb-title" value="'+(pad.title||'')+'" placeholder="Defter adı..." onblur="saveNoteTitle()" onkeydown="if(event.key==\'Enter\')this.blur()">';
+    contentHtml+='</div>';
+    contentHtml+='<div class="nb-lines" id="nb-lines-wrap">';
+    var lines=pad.lines||[];
+    if(!lines.length){
+      contentHtml+='<div style="color:var(--grey);font-size:12px;padding:20px 0;text-align:center">Henüz satır yok. Aşağıdan ekleyin.</div>';
+    }
+    lines.forEach(function(ln,idx){
+      contentHtml+='<div class="nb-line" id="nl-'+ln.id+'" data-lid="'+ln.id+'">';
+      contentHtml+='<span class="nb-line-num">'+(idx+1)+'</span>';
+      contentHtml+='<textarea class="nb-line-txt" id="nlt-'+ln.id+'" data-lid="'+ln.id+'" rows="1" placeholder="Not girin...">'+escHtml(ln.text||'')+'</textarea>';
+      contentHtml+='<div class="nb-line-actions">';
+      contentHtml+='<button class="nb-line-btn" data-linkline="'+ln.id+'" title="Bağla">🔗</button>';
+      contentHtml+='<button class="nb-line-btn del" data-delline="'+ln.id+'" title="Sil">🗑️</button>';
+      contentHtml+='</div></div>';
+    });
+    contentHtml+='</div>';
+    contentHtml+='<div class="nb-add-line" onclick="addNoteLine()">';
+    contentHtml+='<span style="font-size:16px;font-weight:700">+</span><span>Yeni satır ekle</span></div>';
+  }
+  contentHtml+='</div>';
+
+  layout.innerHTML=sideHtml+contentHtml;
+  // Textarea'ları resize et
+  setTimeout(function(){
+    document.querySelectorAll('.nb-line-txt').forEach(function(ta){autoResize(ta);});
+  },0);
+}
+
+function escHtml(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function autoResize(ta){ta.style.height='auto';ta.style.height=ta.scrollHeight+'px';}
+
+function addNotePad(){
+  var id=nid();
+  notePads[id]={id:id,title:'Yeni Defter',lines:[],created:Date.now(),updated:Date.now()};
+  curNoteId=id;renderNotes();saveDB();
+  // Başlık alanına focus
+  setTimeout(function(){var t=g('nb-title');if(t){t.select();}},50);
+}
+
+function delNotePad(e,id){
+  e.stopPropagation();
+  var pad=notePads[id];
+  if(!confirm((pad?pad.title:'Defter')+' silinsin mi?'))return;
+  delete notePads[id];
+  if(curNoteId===id)curNoteId=Object.keys(notePads)[0]||null;
+  renderNotes();saveDB();
+}
+
+function selectNote(id){
+  curNoteId=id;renderNotes();
+}
+
+function saveNoteTitle(){
+  if(!curNoteId||!notePads[curNoteId])return;
+  var t=g('nb-title');if(!t)return;
+  notePads[curNoteId].title=t.value.trim()||'İsimsiz Defter';
+  notePads[curNoteId].updated=Date.now();
+  // Sidebar'ı güncelle (sadece sidebar kısmını)
+  var sidebar=document.querySelector('.nb-sidebar');
+  if(!sidebar)return;
+  var pads=Object.values(notePads).sort(function(a,b){return (b.updated||0)-(a.updated||0);});
+  var html='<div class="nb-sidebar-hd"><span>🗒️ NOT DEFTERLERİ</span><button class="nb-add-btn" onclick="addNotePad()" title="Yeni defter">+</button></div>';
+  html+='<div class="nb-list">';
+  pads.forEach(function(pad){
+    var isActive=pad.id===curNoteId;
+    var lineCount=pad.lines?pad.lines.length:0;
+    var updStr=pad.updated?new Date(pad.updated).toLocaleDateString('tr-TR',{day:'2-digit',month:'2-digit'}):'';
+    html+='<div class="nb-item'+(isActive?' active':'')+'" data-selpad="'+pad.id+'">';
+    html+='<div class="nb-item-title">'+(pad.title||'İsimsiz Defter')+'</div>';
+    html+='<div class="nb-item-meta">'+lineCount+' satır'+(updStr?' · '+updStr:'')+'</div>';
+    html+='<button class="nb-item-del" data-delpad="'+pad.id+'" title="Sil">🗑️</button>';
+    html+='</div>';
+  });
+  html+='</div>';
+  sidebar.innerHTML=html;
+  saveDB();
+}
+
+function addNoteLine(){
+  if(!curNoteId||!notePads[curNoteId])return;
+  var pad=notePads[curNoteId];
+  var ln={id:nlid(),text:'',linked:null};
+  pad.lines.push(ln);
+  pad.updated=Date.now();
+  renderNotes();saveDB();
+  // Yeni satıra focus
+  setTimeout(function(){var t=g('nlt-'+ln.id);if(t)t.focus();},50);
+}
+
+function saveLineText(lid){
+  if(!curNoteId||!notePads[curNoteId])return;
+  var ta=g('nlt-'+lid);if(!ta)return;
+  var pad=notePads[curNoteId];
+  var ln=pad.lines.find(function(x){return x.id===lid;});
+  if(ln){ln.text=ta.value;pad.updated=Date.now();saveDB();}
+}
+
+function delNoteLine(lid){
+  if(!curNoteId||!notePads[curNoteId])return;
+  var pad=notePads[curNoteId];
+  pad.lines=pad.lines.filter(function(x){return x.id!==lid;});
+  pad.updated=Date.now();
+  renderNotes();saveDB();
+}
+
+function nbKeyDown(e,lid){
+  if(e.key==='Enter'&&!e.shiftKey){
+    e.preventDefault();
+    saveLineText(lid);
+    addNoteLine();
+  }
+  if(e.key==='Backspace'){
+    var ta=g('nlt-'+lid);
+    if(ta&&ta.value===''){
+      e.preventDefault();
+      // Boş satırı sil ve öncekine git
+      var pad=notePads[curNoteId];
+      var idx=pad.lines.findIndex(function(x){return x.id===lid;});
+      if(idx>0){
+        var prevId=pad.lines[idx-1].id;
+        delNoteLine(lid);
+        setTimeout(function(){var t=g('nlt-'+prevId);if(t){t.focus();t.setSelectionRange(t.value.length,t.value.length);}},50);
+      } else if(pad.lines.length===1){
+        delNoteLine(lid);
+      }
+    }
+  }
+}
+
+// ── Satır bağlantı modalı ─────────────────────────────────────
+var nbLinkLineId=null;
+function openNoteLink(lid){
+  nbLinkLineId=lid;
+  if(!curNoteId||!notePads[curNoteId])return;
+  var pad=notePads[curNoteId];
+  var ln=pad.lines.find(function(x){return x.id===lid;});
+  if(!ln)return;
+  // Modal doldur
+  var sel=g('nbl-type');if(sel)sel.value=ln.linked?ln.linked.type:'todo';
+  nbLinkTypeChange();
+  if(ln.linked){
+    if(ln.linked.type==='todo'&&g('nbl-tp'))g('nbl-tp').value=ln.linked.tpid||'';
+    if(ln.linked.type==='action'&&g('nbl-proj'))g('nbl-proj').value=ln.linked.projId||'';
+  }
+  openM('mNoteLink');
+}
+function nbLinkTypeChange(){
+  var sel=g('nbl-type');if(!sel)return;
+  var isTodo=sel.value==='todo';
+  var todoPart=g('nbl-todo-part');var actPart=g('nbl-act-part');
+  if(todoPart)todoPart.style.display=isTodo?'':'none';
+  if(actPart)actPart.style.display=isTodo?'none':'';
+  if(isTodo){
+    var tpSel=g('nbl-tp');
+    if(tpSel)tpSel.innerHTML=Object.values(todoProjects).map(function(tp){return '<option value="'+tp.id+'">'+tp.name+'</option>';}).join('');
+  } else {
+    var pjSel=g('nbl-proj');
+    if(pjSel)pjSel.innerHTML=Object.values(projects).map(function(p){return '<option value="'+p.id+'">'+p.name+'</option>';}).join('');
+  }
+}
+function saveNoteLink(){
+  if(!curNoteId||!notePads[curNoteId]||!nbLinkLineId)return;
+  var pad=notePads[curNoteId];
+  var ln=pad.lines.find(function(x){return x.id===nbLinkLineId;});
+  if(!ln)return;
+  var type=v('nbl-type');
+  if(type==='todo'){
+    var tpid=v('nbl-tp');
+    var qk=v('nbl-qk');
+    var tp=todoProjects[tpid];if(!tp){toast('Liste bulunamadı','err');return;}
+    var txt=ln.text.trim();if(!txt){toast('Önce satıra metin girin','err');return;}
+    var end=v('nbl-end');
+    var newId=Date.now();
+    tp[qk].items.push({id:newId,text:txt,done:false,dl:end?d2s(end):'',own:'',end:end,actId:null});
+    ln.linked={type:'todo',tpid:tpid,qk:qk,itemId:newId};
+    toast('Görev listesine eklendi! ✅');
+    renderTodo();renderAgenda();
+  } else {
+    var projId=v('nbl-proj');
+    var proj=projects[projId];if(!proj){toast('Proje bulunamadı','err');return;}
+    var txt2=ln.text.trim();if(!txt2){toast('Önce satıra metin girin','err');return;}
+    var st=v('nbl-st');var en=v('nbl-en');var own=v('nbl-own');
+    if(!st||!en){toast('Başlangıç ve bitiş tarihi zorunlu','err');return;}
+    var Q_TO_PRI={q1:'ACİL & ÖNEMLİ',q2:'ACİL, ÖNEMLİ DEĞİL',q3:'ÖNEMLİ, ACİL DEĞİL',q4:'NE ACİL NE ÖNEMLİ'};
+    var anas=proj.actions.filter(function(a){return a.type==='Ana';});
+    var naid=projId+'-a'+nAId++;
+    proj.actions.push({id:naid,num:String(anas.length+1),type:'Ana',title:txt2,
+      desc:'',owner:own||'',start:st,end:en,priority:Q_TO_PRI[v('nbl-pri')]||'ÖNEMLİ, ACİL DEĞİL',
+      status:'Beklemede',pct:0,notes:'',tag:'',pid:null});
+    ln.linked={type:'action',projId:projId,actId:naid};
+    syncActToTodo(proj.actions[proj.actions.length-1]);
+    toast('Projeye aksiyon eklendi! ✅');
+    renderActs();
+  }
+  pad.updated=Date.now();
+  closeM('mNoteLink');renderNotes();saveDB();
+}
+function removeNoteLink(lid){
+  if(!curNoteId||!notePads[curNoteId])return;
+  var pad=notePads[curNoteId];
+  var ln=pad.lines.find(function(x){return x.id===lid;});
+  if(ln){ln.linked=null;pad.updated=Date.now();renderNotes();saveDB();}
 }
 
 // ─── GÜNDEM SAYFASI ───────────────────────────────────────────
@@ -2301,10 +2632,28 @@ function saveAct(){
 }
 
 // ─── EVENT DELEGATION ─────────────────────────────────────────
+document.addEventListener('blur',function(e){
+  var t=e.target;
+  if(t.dataset.lid){saveLineText(t.dataset.lid);}
+  if(t.id==='nb-title'){saveNoteTitle();}
+},true);
+document.addEventListener('keydown',function(e){
+  var t=e.target;
+  if(t.dataset.lid){nbKeyDown(e,t.dataset.lid);}
+},true);
+document.addEventListener('input',function(e){
+  var t=e.target;
+  if(t.classList.contains('nb-line-txt')){autoResize(t);}
+});
 document.addEventListener('click',function(e){
   var t=e.target;
   // Workspace satır tıklamaları
   if(t.dataset.edtTod){editTodoItem(t.dataset.edtTod,t.dataset.edtTid,t.dataset.edtQk);return;}
+  if(t.dataset.action==='addNotePad'){addNotePad();return;}
+  if(t.dataset.delpad){e.stopPropagation();delNotePad(e,t.dataset.delpad);return;}
+  if(t.dataset.linkline){openNoteLink(t.dataset.linkline);return;}
+  if(t.dataset.delline){delNoteLine(t.dataset.delline);return;}
+  var padItem=t.closest('[data-selpad]');if(padItem&&!t.dataset.delpad){selectNote(padItem.dataset.selpad);return;}
   if(t.dataset.wshare){e.stopPropagation();closeWsDrop();openShareWS(t.dataset.wshare);return;}
   if(t.dataset.wsdel){e.stopPropagation();deleteWS(t.dataset.wsdel,t.dataset.wsdelnm||t.dataset.wsdel);return;}
   if(t.dataset.wsid||t.closest('[data-wsid]')){
@@ -2422,39 +2771,19 @@ function doRegister(){
   if(pass.length<6){showAuthErr('Şifre en az 6 karakter olmalıdır.');return;}
   if(pass!==pass2){showAuthErr('Şifreler eşleşmiyor.');return;}
   var btn=g('rg-btn');btn.disabled=true;btn.textContent='Oluşturuluyor...';
-
-  function doUpdate(user){
-    sb.auth.updateUser({password:pass}).then(function(r){
-      btn.disabled=false;btn.textContent='Hesabımı Oluştur →';
-      if(r.error){showAuthErr(translateAuthErr(r.error.message));return;}
-      sb.from('pym_pending').update({user_id:user.id,status:'approved'}).eq('email',user.email||email).then(function(){
-        if(window.history&&window.history.replaceState)window.history.replaceState(null,'',window.location.pathname);
-        showLogin();
-        showAuthOk('✅ Hesabınız hazır! Şimdi giriş yapabilirsiniz.');
-      });
-    });
-  }
-
-  // Önce mevcut session'ı kontrol et
   sb.auth.getSession().then(function(sess){
-    if(sess.data&&sess.data.session&&sess.data.session.user){
-      doUpdate(sess.data.session.user);
-      return;
-    }
-    // Session yoksa URL hash'inden token'ı oku (magic link akışı)
-    var hash=window.location.hash;
-    var params={};
-    hash.replace(/^#/,'').split('&').forEach(function(p){var kv=p.split('=');if(kv[0])params[kv[0]]=decodeURIComponent(kv[1]||'');});
-    var accessToken=params['access_token'];
-    var refreshToken=params['refresh_token'];
-    if(accessToken){
-      sb.auth.setSession({access_token:accessToken,refresh_token:refreshToken||''}).then(function(r2){
-        btn.disabled=false;
-        if(r2.error||!r2.data||!r2.data.session){
-          showAuthErr('Davet bağlantısı geçersiz veya süresi dolmuş. Lütfen adminden yeni davet isteyin.');
-          return;
-        }
-        doUpdate(r2.data.session.user);
+    if(sess.data&&sess.data.session){
+      var user=sess.data.session.user;
+      sb.auth.updateUser({password:pass}).then(function(r){
+        btn.disabled=false;btn.textContent='Hesabımı Oluştur →';
+        if(r.error){showAuthErr(translateAuthErr(r.error.message));return;}
+        // pym_pending: email ile kayıtlı satırı gerçek user_id ile güncelle
+        sb.from('pym_pending').update({user_id:user.id,status:'approved'}).eq('email',user.email||email).then(function(){
+          // URL temizle
+          if(window.history&&window.history.replaceState)window.history.replaceState(null,'',window.location.pathname);
+          showLogin();
+          showAuthOk('✅ Hesabınız hazır! Şimdi giriş yapabilirsiniz.');
+        });
       });
     } else {
       btn.disabled=false;btn.textContent='Hesabımı Oluştur →';
@@ -2553,7 +2882,8 @@ function saveDB(){
       {workspace_id:wsId,user_id:uid,key:'projects',value:JSON.stringify(projects)},
       {workspace_id:wsId,user_id:uid,key:'todoProjects',value:JSON.stringify(todoProjects)},
       {workspace_id:wsId,user_id:uid,key:'calEvents',value:JSON.stringify(calEvents)},
-      {workspace_id:wsId,user_id:uid,key:'meta',value:JSON.stringify({nPId:nPId,nAId:nAId,nEId:nEId,nTPId:nTPId,updated:Date.now()})}
+      {workspace_id:wsId,user_id:uid,key:'notePads',value:JSON.stringify(notePads)},
+      {workspace_id:wsId,user_id:uid,key:'meta',value:JSON.stringify({nPId:nPId,nAId:nAId,nEId:nEId,nTPId:nTPId,nNId:nNId,updated:Date.now()})}
     ];
     // Her satırı ayrı ayrı upsert et — toplu upsert'te constraint sorunu yaşanıyor
     var done=0;var errored=false;
@@ -2576,14 +2906,14 @@ function saveDB(){
 function loadDB(){
   if(!sb||!curUser||!curWS)return;
   fbStatus('wait','Yükleniyor...');
-  projects={};todoProjects={};calEvents=[];
+  projects={};todoProjects={};calEvents=[];notePads={};
   sb.from('pym_data').select('key,value').eq('workspace_id',curWS.id).then(function(res){
     if(res.error){console.error('loadDB error:',res.error.message,res.error.details||'');fbStatus('err','⚠️ Yükleme hatası: '+res.error.message);return;}
     var rows=res.data||[];
     if(!rows.length){
       fbStatus('ok','☁️ Bağlı');
       // Yeni boş workspace: tüm sayfaları temizle
-      projects={};todoProjects={};calEvents=[];
+      projects={};todoProjects={};calEvents=[];notePads={};
       curPid='';gSelProjs=new Set();
       renderDash();renderPBar();_origRenderActs();
       if(g('page-gantt').classList.contains('active')){renderGF();renderGantt();}
@@ -2598,7 +2928,8 @@ function loadDB(){
         if(r.key==='projects'&&Object.keys(val).length)projects=val;
         else if(r.key==='todoProjects')todoProjects=val;
         else if(r.key==='calEvents')calEvents=val;
-        else if(r.key==='meta'){if(val.nPId)nPId=val.nPId;if(val.nAId)nAId=val.nAId;if(val.nEId)nEId=val.nEId;if(val.nTPId)nTPId=val.nTPId;}
+        else if(r.key==='notePads')notePads=val;
+        else if(r.key==='meta'){if(val.nPId)nPId=val.nPId;if(val.nAId)nAId=val.nAId;if(val.nEId)nEId=val.nEId;if(val.nTPId)nTPId=val.nTPId;if(val.nNId)nNId=val.nNId;}
       }catch(err){console.warn('Parse error:',r.key,err);}
     });
     fbStatus('ok','☁️ Senkronize');
@@ -2696,7 +3027,7 @@ function selectWS(wsId){
   if(!ws)return;
   curWS=ws;
   // Alan değişince tüm verileri ve filter'ı sıfırla
-  projects={};todoProjects={};calEvents=[];
+  projects={};todoProjects={};calEvents=[];notePads={};
   curPid='';gSelProjs=new Set();actFilter=null;
   updateWsLogo();renderWsDrop();loadDB();
 }

@@ -1836,6 +1836,7 @@ function renderNotes(){
     var pad=notePads[curNoteId];
     contentHtml+='<div class="nb-content-hd">';
     contentHtml+='<input class="nb-title-inp" id="nb-title" value="'+(pad.title||'')+'" placeholder="Defter adı..." onblur="saveNoteTitle()" onkeydown="if(event.key==\'Enter\')this.blur()">';
+    contentHtml+='<button class="btn btn-p btn-sm" data-action="addNoteLine" style="flex-shrink:0;font-size:13px;padding:5px 12px">+ Yeni Satır</button>';
     contentHtml+='</div>';
     contentHtml+='<div class="nb-lines" id="nb-lines-wrap">';
     var lines=pad.lines||[];
@@ -1852,8 +1853,7 @@ function renderNotes(){
       contentHtml+='</div></div>';
     });
     contentHtml+='</div>';
-    contentHtml+='<div class="nb-add-line" onclick="addNoteLine()">';
-    contentHtml+='<span style="font-size:16px;font-weight:700">+</span><span>Yeni satır ekle</span></div>';
+
   }
   contentHtml+='</div>';
 
@@ -2650,6 +2650,7 @@ document.addEventListener('click',function(e){
   // Workspace satır tıklamaları
   if(t.dataset.edtTod){editTodoItem(t.dataset.edtTod,t.dataset.edtTid,t.dataset.edtQk);return;}
   if(t.dataset.action==='addNotePad'){addNotePad();return;}
+  if(t.dataset.action==='addNoteLine'){addNoteLine();return;}
   if(t.dataset.delpad){e.stopPropagation();delNotePad(e,t.dataset.delpad);return;}
   if(t.dataset.linkline){openNoteLink(t.dataset.linkline);return;}
   if(t.dataset.delline){delNoteLine(t.dataset.delline);return;}

@@ -2422,19 +2422,39 @@ function doRegister(){
   if(pass.length<6){showAuthErr('Şifre en az 6 karakter olmalıdır.');return;}
   if(pass!==pass2){showAuthErr('Şifreler eşleşmiyor.');return;}
   var btn=g('rg-btn');btn.disabled=true;btn.textContent='Oluşturuluyor...';
+
+  function doUpdate(user){
+    sb.auth.updateUser({password:pass}).then(function(r){
+      btn.disabled=false;btn.textContent='Hesabımı Oluştur →';
+      if(r.error){showAuthErr(translateAuthErr(r.error.message));return;}
+      sb.from('pym_pending').update({user_id:user.id,status:'approved'}).eq('email',user.email||email).then(function(){
+        if(window.history&&window.history.replaceState)window.history.replaceState(null,'',window.location.pathname);
+        showLogin();
+        showAuthOk('✅ Hesabınız hazır! Şimdi giriş yapabilirsiniz.');
+      });
+    });
+  }
+
+  // Önce mevcut session'ı kontrol et
   sb.auth.getSession().then(function(sess){
-    if(sess.data&&sess.data.session){
-      var user=sess.data.session.user;
-      sb.auth.updateUser({password:pass}).then(function(r){
-        btn.disabled=false;btn.textContent='Hesabımı Oluştur →';
-        if(r.error){showAuthErr(translateAuthErr(r.error.message));return;}
-        // pym_pending: email ile kayıtlı satırı gerçek user_id ile güncelle
-        sb.from('pym_pending').update({user_id:user.id,status:'approved'}).eq('email',user.email||email).then(function(){
-          // URL temizle
-          if(window.history&&window.history.replaceState)window.history.replaceState(null,'',window.location.pathname);
-          showLogin();
-          showAuthOk('✅ Hesabınız hazır! Şimdi giriş yapabilirsiniz.');
-        });
+    if(sess.data&&sess.data.session&&sess.data.session.user){
+      doUpdate(sess.data.session.user);
+      return;
+    }
+    // Session yoksa URL hash'inden token'ı oku (magic link akışı)
+    var hash=window.location.hash;
+    var params={};
+    hash.replace(/^#/,'').split('&').forEach(function(p){var kv=p.split('=');if(kv[0])params[kv[0]]=decodeURIComponent(kv[1]||'');});
+    var accessToken=params['access_token'];
+    var refreshToken=params['refresh_token'];
+    if(accessToken){
+      sb.auth.setSession({access_token:accessToken,refresh_token:refreshToken||''}).then(function(r2){
+        btn.disabled=false;
+        if(r2.error||!r2.data||!r2.data.session){
+          showAuthErr('Davet bağlantısı geçersiz veya süresi dolmuş. Lütfen adminden yeni davet isteyin.');
+          return;
+        }
+        doUpdate(r2.data.session.user);
       });
     } else {
       btn.disabled=false;btn.textContent='Hesabımı Oluştur →';
@@ -2904,7 +2924,7 @@ function sendInvite(){
   sb.auth.admin;// admin API yok, signInWithOtp kullan
   sb.auth.signInWithOtp({
     email:email,
-    options:{emailRedirectTo:'https://oguzhanemremail.github.io/proje-yms?invited=1'}
+    options:{emailRedirectTo:window.location.href+'?invited=1'}
   }).then(function(res){
     if(btn){btn.disabled=false;btn.textContent='📩 Davet Gönder';}
     if(res.error){showInvMsg('Hata: '+res.error.message,'err');return;}
@@ -2921,7 +2941,7 @@ function resendInvite(email){
   if(!confirm(email+' adresine davet yeniden gönderilsin mi?'))return;
   sb.auth.signInWithOtp({
     email:email,
-    options:{emailRedirectTo:'https://oguzhanemremail.github.io/proje-yms?invited=1'}
+    options:{emailRedirectTo:window.location.href+'?invited=1'}
   }).then(function(res){
     if(res.error){toast('Hata: '+res.error.message,'err');return;}
     toast('📩 Davet yeniden gönderildi → '+email);

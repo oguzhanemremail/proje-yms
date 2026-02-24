@@ -434,7 +434,11 @@ html,body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--tx);mi
     <div class="ntab" data-page="notes">🗒️ Notlar</div>
     <div class="ntab" data-page="board">🗂️ Board</div>
   </div>
-  <div style="display:flex;align-items:center;gap:8px;margin-left:auto;flex-shrink:0;">
+  <div style="display:flex;align-items:center;gap:6px;margin-left:auto;flex-shrink:0;padding-right:4px">
+    <button onclick="backupHTML()" style="background:rgba(255,255,255,.13);color:#fff;border:none;border-radius:6px;padding:4px 10px;font-size:10px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:4px;transition:background .15s" onmouseover="this.style.background='rgba(33,150,243,.5)'" onmouseout="this.style.background='rgba(255,255,255,.13)'">💾 Yedek Al</button>
+    <label style="background:rgba(255,255,255,.13);color:#fff;border:none;border-radius:6px;padding:4px 10px;font-size:10px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:4px;transition:background .15s" onmouseover="this.style.background='rgba(46,125,50,.5)'" onmouseout="this.style.background='rgba(255,255,255,.13)'">📂 Yükle<input type="file" accept=".html" onchange="restoreHTML(this)" style="display:none"></label>
+  </div>
+  <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
     <div class="fbst wait" id="fbst"><span class="fbst-dot"></span><span id="fbst-lbl">Bağlanıyor...</span></div>
     <div class="user-menu" id="userMenu" style="display:none">
       <button class="user-btn" onclick="toggleUserDrop()">
@@ -785,7 +789,8 @@ html,body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--tx);mi
 <div id="page-dash" class="page active">
   <div class="ph">
     <div><div class="ptitle">📊 Kontrol Paneli</div><div class="psub">Tüm projelerin özeti</div></div>
-    <button class="btn btn-xl btn-sm" onclick="exportXLS('dash')">📥 Excel İndir</button>
+    <button class="btn btn-xl btn-sm" onclick="exportXLS('dash')">📥 Excel</button>
+      <button class="btn btn-xl btn-sm" onclick="exportPDF('dash')">🖨️ PDF</button>
   </div>
   <div class="krow" id="dash-kpis"></div>
   <!-- Üst satır: aksiyonlar (proje bazlı) + yaklaşan etkinlikler -->
@@ -817,7 +822,8 @@ html,body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--tx);mi
   <div class="ph">
     <div><div class="ptitle" id="ak-ttl">📋 Aksiyon Planı</div><div class="psub" id="ak-sub">KPI kartına tıklayarak filtreleyin</div><div id="ak-shortcuts" style="display:none;gap:5px;margin-top:6px;flex-wrap:wrap"></div></div>
     <div class="brow">
-      <button class="btn btn-xl btn-sm" onclick="exportXLS('ak')">📥 Excel İndir</button>
+      <button class="btn btn-xl btn-sm" onclick="exportXLS('ak')">📥 Excel</button>
+      <button class="btn btn-xl btn-sm" onclick="exportPDF('ak')">🖨️ PDF</button>
       <button class="btn btn-g btn-sm" id="cfbtn" style="display:none" data-action="clrFilter">✕ Filtre</button>
       <button class="btn btn-g btn-sm" data-action="openNewProj">📁 Yeni Proje</button>
       <button class="btn btn-p btn-sm" data-action="openWiz">➕ Yeni Aksiyon</button>
@@ -856,7 +862,8 @@ html,body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--tx);mi
   <div class="gpi">
     <div class="ph">
       <div><div class="ptitle">📅 Gantt Chart</div><div class="psub" id="g-sub">Proje seçin</div></div>
-      <button class="btn btn-xl btn-sm" onclick="exportXLS('gantt')">📥 Excel İndir</button>
+      <button class="btn btn-xl btn-sm" onclick="exportXLS('gantt')">📥 Excel</button>
+      <button class="btn btn-xl btn-sm" onclick="exportPDF('gantt')">🖨️ PDF</button>
     </div>
     <div style="font-size:9px;font-weight:700;color:var(--tx2);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px">Gösterilecek Projeler:</div>
     <div class="gfrow" id="gfilter"></div>
@@ -870,7 +877,8 @@ html,body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--tx);mi
   <div class="ph">
     <div><div class="ptitle">✅ Görev Listesi</div><div class="psub">Eisenhower Matrisi — Proje bazlı</div></div>
     <div class="brow">
-      <button class="btn btn-xl btn-sm" onclick="exportXLS('todo')">📥 Excel İndir</button>
+      <button class="btn btn-xl btn-sm" onclick="exportXLS('todo')">📥 Excel</button>
+      <button class="btn btn-xl btn-sm" onclick="exportPDF('todo')">🖨️ PDF</button>
       <button class="btn btn-g btn-sm" data-action="openNewTodoProj">📁 Yeni Liste</button>
     </div>
   </div>
@@ -890,6 +898,8 @@ html,body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--tx);mi
   <div class="ph">
     <div><div class="ptitle">📌 Gündem</div><div class="psub">Bugün, Yarın ve İlerideki görevler</div></div>
     <div class="brow">
+      <button class="btn btn-xl btn-sm" onclick="exportXLS_agenda()">📥 Excel</button>
+      <button class="btn btn-xl btn-sm" onclick="exportPDF('agenda')">🖨️ PDF</button>
       <button class="btn btn-p btn-sm" onclick="openAgendaAdd()">＋ Yeni Görev</button>
     </div>
   </div>
@@ -925,7 +935,8 @@ html,body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--tx);mi
   <div class="ph">
     <div><div class="ptitle">🗓️ Takvim</div><div class="psub" id="cal-sub">Pzt–Cum gösteriliyor</div></div>
     <div class="brow">
-      <button class="btn btn-xl btn-sm" onclick="exportXLS('cal')">📥 Excel İndir</button>
+      <button class="btn btn-xl btn-sm" onclick="exportXLS('cal')">📥 Excel</button>
+      <button class="btn btn-xl btn-sm" onclick="exportPDF('cal')">🖨️ PDF</button>
       <button class="btn btn-p btn-sm" data-action="openCalNew">➕ Yeni Etkinlik</button>
     </div>
   </div>
@@ -1522,6 +1533,196 @@ function exportXLS(page){
   toast('Excel indirildi! 📥');
 }
 
+
+// ═══════════════════════════════════════════════════════════
+// YEDEKLEME & GERİ YÜKLEME
+// ═══════════════════════════════════════════════════════════
+function backupHTML(){
+  var snapshot={
+    projects:projects, todoProjects:todoProjects, calEvents:calEvents,
+    noteBooks:noteBooks, notePages:notePages, boards:boards,
+    meta:{nPId:nPId,nAId:nAId,nEId:nEId,nTPId:nTPId,nNId:nNId,
+          nBId:nBId,nPgId:nPgId,nBoardId:nBoardId,nCardId:nCardId}
+  };
+  var json=JSON.stringify(snapshot);
+  // Mevcut sayfanın HTML'ini al, içine JSON bloğu göm
+  var html=document.documentElement.outerHTML;
+  // Eski yedek bloğunu temizle
+  html=html.replace(/<script id="__pym_backup__"[\s\S]*?<\/script>/,'');
+  var block='<script id="__pym_backup__" type="application/json">'+json+'<\/script>';
+  html=html.replace('</head>',block+'</head>');
+  var blob=new Blob([html],{type:'text/html;charset=utf-8'});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a');
+  a.href=url; a.download='PYM_Yedek_'+todays()+'.html'; a.click();
+  setTimeout(function(){URL.revokeObjectURL(url);},2000);
+  toast('💾 Yedek alındı: PYM_Yedek_'+todays()+'.html');
+}
+
+function restoreHTML(input){
+  var file=input.files[0]; if(!file)return;
+  var reader=new FileReader();
+  reader.onload=function(ev){
+    var html=ev.target.result;
+    var m=html.match(/<script id="__pym_backup__" type="application\/json">([\s\S]*?)<\/script>/);
+    if(!m){toast('⚠️ Bu dosyada yedek verisi bulunamadı!','err');return;}
+    try{
+      var d=JSON.parse(m[1]);
+      if(d.projects)     projects=d.projects;
+      if(d.todoProjects) todoProjects=d.todoProjects;
+      if(d.calEvents)    calEvents=d.calEvents;
+      if(d.noteBooks)    noteBooks=d.noteBooks;
+      if(d.notePages)    notePages=d.notePages;
+      if(d.boards)       boards=d.boards;
+      if(d.meta){
+        var mt=d.meta;
+        if(mt.nPId)   nPId=mt.nPId;   if(mt.nAId) nAId=mt.nAId;
+        if(mt.nEId)   nEId=mt.nEId;   if(mt.nTPId)nTPId=mt.nTPId;
+        if(mt.nNId)   nNId=mt.nNId;   if(mt.nBId) nBId=mt.nBId;
+        if(mt.nPgId)  nPgId=mt.nPgId; if(mt.nBoardId)nBoardId=mt.nBoardId;
+        if(mt.nCardId)nCardId=mt.nCardId;
+      }
+      saveDB();
+      // Aktif sayfayı yenile
+      var ap=document.querySelector('.ntab.active');
+      if(ap)showPage(ap.dataset.page);
+      toast('✅ Yedek başarıyla yüklendi!');
+    }catch(ex){toast('❌ Dosya okunamadı: '+ex.message,'err');}
+  };
+  reader.readAsText(file,'UTF-8');
+  input.value='';
+}
+
+// ═══════════════════════════════════════════════════════════
+// PDF / YAZDIR
+// ═══════════════════════════════════════════════════════════
+function exportPDF(page){
+  // Her sayfa için özel print CSS: sadece o sayfayı göster, butonları gizle
+  var names={dash:'Dashboard',ak:'Aksiyon Planı',gantt:'Gantt',todo:'Görev Listesi',
+             cal:'Takvim',agenda:'Gündem',notes:'Notlar',board:'Board'};
+  var prev=document.title;
+  document.title='PYM – '+(names[page]||page)+' – '+todays();
+  // Geçici print stili
+  var st=document.createElement('style');st.id='__pym_print_style__';
+  st.textContent=[
+    '@media print{',
+    // Tüm sayfaları gizle
+    '.page{display:none!important}',
+    // Sadece aktif sayfayı göster
+    '#page-'+page+'{display:block!important;position:static!important;',
+      'overflow:visible!important;height:auto!important;max-height:none!important;}',
+    '#page-'+page+' *{overflow:visible!important;max-height:none!important;}',
+    // Navbar, butonlar, aksiyonlar gizle
+    'nav,header,.ntab,.wl-btn,.wl-divider,.user-menu,.fbst{display:none!important}',
+    '.ph .brow,.ph button{display:none!important}',
+    '.board-topbar button,.nb-add-btn,.nb-book-del,.nb-page-del{display:none!important}',
+    '.board-card-del,.tl-ev-del{display:none!important}',
+    // Board yatay scroll için landscape
+    '@page{margin:12mm;size:A4 landscape;}',
+    // Tablo kırılma
+    'table{page-break-inside:auto}',
+    'tr{page-break-inside:avoid;page-break-after:auto}',
+    'thead{display:table-header-group}',
+    // Nb layout overflow
+    '.nb-layout,.nb-books,.nb-pages,.nb-content{overflow:visible!important;height:auto!important;}',
+    '}'
+  ].join('');
+  document.head.appendChild(st);
+  window.print();
+  setTimeout(function(){
+    var old=document.getElementById('__pym_print_style__');
+    if(old)old.remove();
+    document.title=prev;
+  },1500);
+  toast('🖨️ Yazdır/Farklı kaydet → PDF');
+}
+
+// ═══════════════════════════════════════════════════════════
+// EXCEL — Gündem, Notlar, Board (eksik sayfalar)
+// ═══════════════════════════════════════════════════════════
+function exportXLS_agenda(){
+  if(typeof XLSX==='undefined'){toast('XLSX yüklenemedi','err');return;}
+  var wb=XLSX.utils.book_new();
+  var BD={style:'thin',color:{rgb:'CCCCCC'}};
+  var BORD={top:BD,bottom:BD,left:BD,right:BD};
+  function hdr(v){return {v:v,t:'s',s:{font:{bold:true,color:{rgb:'FFFFFF'},name:'Calibri',sz:10},
+    fill:{patternType:'solid',fgColor:{rgb:'1A2F42'}},border:BORD,alignment:{horizontal:'center'}}};}
+  function cel(v,bg){return {v:v||'',t:'s',s:{font:{name:'Calibri',sz:10},
+    fill:bg?{patternType:'solid',fgColor:{rgb:bg}}:{patternType:'none'},border:BORD}};}
+  var priMap={q1:'ACİL & ÖNEMLİ',q2:'ACİL, ÖNEMLİ DEĞİL',q3:'ÖNEMLİ, ACİL DEĞİL',q4:'NE ACİL NE ÖNEMLİ'};
+  var priBg={q1:'FFEBEE',q2:'FFF8E1',q3:'E8F5E9',q4:'ECEFF1'};
+  var rows=[[hdr('Görev'),hdr('Liste'),hdr('Öncelik'),hdr('Bitiş'),hdr('Durum')]];
+  Object.values(todoProjects).forEach(function(tp){
+    ['q1','q2','q3','q4'].forEach(function(qk){
+      (tp[qk].items||[]).forEach(function(it){
+        rows.push([cel(it.text),cel(tp.name),cel(priMap[qk],priBg[qk]),cel(it.dl||''),cel(it.done?'✅ Tamamlandı':'⏳ Bekliyor')]);
+      });
+    });
+  });
+  var ws=XLSX.utils.aoa_to_sheet(rows);
+  ws['!cols']=[{wch:42},{wch:22},{wch:28},{wch:12},{wch:16}];
+  XLSX.utils.book_append_sheet(wb,ws,'Gündem');
+  XLSX.writeFile(wb,'PYM_Gundem_'+todays()+'.xlsx');
+  toast('📥 Gündem Excel indirildi!');
+}
+
+function exportXLS_notes(){
+  if(typeof XLSX==='undefined'){toast('XLSX yüklenemedi','err');return;}
+  var wb=XLSX.utils.book_new();
+  var BD={style:'thin',color:{rgb:'CCCCCC'}};
+  var BORD={top:BD,bottom:BD,left:BD,right:BD};
+  function hdr(v){return {v:v,t:'s',s:{font:{bold:true,color:{rgb:'FFFFFF'},name:'Calibri',sz:10},
+    fill:{patternType:'solid',fgColor:{rgb:'1A2F42'}},border:BORD}};}
+  function cel(v){return {v:v||'',t:'s',s:{font:{name:'Calibri',sz:10},fill:{patternType:'none'},border:BORD}};}
+  var hasSheet=false;
+  Object.values(noteBooks).forEach(function(bk){
+    var pgs=Object.values(notePages).filter(function(p){return p.bookId===bk.id;});
+    if(!pgs.length)return;
+    var rows=[[hdr('Sayfa'),hdr('No'),hdr('İçerik')]];
+    pgs.forEach(function(pg){
+      (pg.lines||[]).forEach(function(ln,i){rows.push([cel(pg.title),{v:i+1,t:'n',s:cel('').s},cel(ln.text||'')]);});
+    });
+    if(rows.length<2)return;
+    var ws=XLSX.utils.aoa_to_sheet(rows);
+    ws['!cols']=[{wch:24},{wch:6},{wch:72}];
+    XLSX.utils.book_append_sheet(wb,ws,(bk.title||'Defter').replace(/[\\\/:?*\[\]]/g,'_').slice(0,31));
+    hasSheet=true;
+  });
+  if(!hasSheet)XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([['Henüz not yok.']]),'Notlar');
+  XLSX.writeFile(wb,'PYM_Notlar_'+todays()+'.xlsx');
+  toast('📥 Notlar Excel indirildi!');
+}
+
+function exportXLS_board(){
+  if(typeof XLSX==='undefined'){toast('XLSX yüklenemedi','err');return;}
+  var wb=XLSX.utils.book_new();
+  var BD={style:'thin',color:{rgb:'CCCCCC'}};
+  var BORD={top:BD,bottom:BD,left:BD,right:BD};
+  function hdr(v,bg){return {v:v,t:'s',s:{font:{bold:true,color:{rgb:'FFFFFF'},name:'Calibri',sz:10},
+    fill:{patternType:'solid',fgColor:{rgb:bg||'1A2F42'}},border:BORD,alignment:{horizontal:'center'}}};}
+  function cel(v){return {v:v||'',t:'s',s:{font:{name:'Calibri',sz:10},fill:{patternType:'none'},border:BORD}};}
+  var colBg={Draft:'78909C',Yapılacak:'2196F3','Devam Ediyor':'E65100',İncelemede:'6A1B9A',Tamamlandı:'2E7D32'};
+  Object.values(boards).forEach(function(bd){
+    var rows=[[hdr('Sütun'),hdr('Başlık'),hdr('Açıklama'),hdr('Sorumlu'),hdr('Tarih'),hdr('Öncelik'),hdr('Etiketler'),hdr('Checklist')]];
+    (bd.columns||[]).forEach(function(col){
+      var bg=colBg[col.name]||'78909C';
+      (col.cards||[]).forEach(function(card){
+        var cl=(card.checklist||[]).map(function(x){return (x.done?'☑':'☐')+' '+x.text;}).join(' | ');
+        var tg=(card.tags||[]).map(function(t){return t.name;}).join(', ');
+        rows.push([{v:col.name,t:'s',s:{font:{bold:true,color:{rgb:'FFFFFF'},name:'Calibri',sz:10},
+          fill:{patternType:'solid',fgColor:{rgb:bg}},border:BORD}},
+          cel(card.title),cel(card.desc),cel(card.assign),cel(card.date?d2s(card.date):''),cel(card.priority),cel(tg),cel(cl)]);
+      });
+    });
+    var ws=XLSX.utils.aoa_to_sheet(rows);
+    ws['!cols']=[{wch:16},{wch:30},{wch:30},{wch:15},{wch:12},{wch:26},{wch:20},{wch:30}];
+    XLSX.utils.book_append_sheet(wb,ws,(bd.name||'Board').replace(/[\\\/:?*\[\]]/g,'_').slice(0,31));
+  });
+  if(!wb.SheetNames||!wb.SheetNames.length)XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([['Veri yok.']]),'Board');
+  XLSX.writeFile(wb,'PYM_Board_'+todays()+'.xlsx');
+  toast('📥 Board Excel indirildi!');
+}
+
 // ─── NAVIGATION ───────────────────────────────────────────────
 function showPage(id){
   document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');});
@@ -2042,6 +2243,10 @@ function renderNotes(){
   // Sol: Defterler
   var booksHtml='<div class="nb-books">';
   booksHtml+='<div class="nb-books-hd"><span>📓 Defterler</span><button class="nb-add-btn" data-action="addNoteBook" title="Yeni defter">+</button></div>';
+  booksHtml+='<div style="padding:5px 7px;border-bottom:1px solid rgba(255,255,255,.08);display:flex;gap:3px">';
+  booksHtml+='<button onclick="exportXLS_notes()" style="flex:1;background:rgba(255,255,255,.1);color:#fff;border:none;border-radius:4px;padding:3px 0;font-size:9px;font-weight:600;cursor:pointer">📥 XLS</button>';
+  booksHtml+='<button onclick="exportPDF(\'notes\')" style="flex:1;background:rgba(255,255,255,.1);color:#fff;border:none;border-radius:4px;padding:3px 0;font-size:9px;font-weight:600;cursor:pointer">🖨️ PDF</button>';
+  booksHtml+='</div>';
   booksHtml+='<div class="nb-books-list">';
   var books=Object.values(noteBooks).sort(function(a,b){return (a.created||0)-(b.created||0);});
   if(!books.length){
@@ -2387,6 +2592,8 @@ function renderBoard(){
   }
   tb+='</select>';
   tb+='</div>';
+  tb+='<button class="btn btn-xl btn-sm" onclick="exportXLS_board()" style="font-size:11px">📥 Excel</button>';
+  tb+='<button class="btn btn-xl btn-sm" onclick="exportPDF(\'board\')" style="font-size:11px">🖨️ PDF</button>';
   tb+='<button class="btn btn-g btn-sm" data-action="addBoard" style="font-size:11px">+ Yeni Board</button>';
   tb+='<button class="btn btn-g btn-sm" data-action="delCurBoard" style="font-size:11px;color:var(--red)">🗑️ Board Sil</button>';
   tb+='<button class="btn btn-p btn-sm" data-action="addBoardCol" style="font-size:11px">+ Sütun Ekle</button>';

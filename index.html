@@ -406,6 +406,7 @@ html,body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--tx);mi
 .board-col-add:hover{border-color:var(--blue);color:var(--blue);background:var(--blt);}
 .board-col-drag{opacity:.5;}
 .board-card.drag-over{border-color:var(--blue);background:var(--blt);}
+.board-cards.drag-active{background:var(--blt);border:2px dashed var(--blue);border-radius:8px;min-height:80px;transition:background .15s;}
 </style>
 </head>
 <body>
@@ -1832,7 +1833,12 @@ function togCol(pid){if(colPar.has(pid))colPar.delete(pid);else colPar.add(pid);
 function updA(id,f,val){
   var found=null;
   Object.values(projects).forEach(function(p){var a=p.actions.find(function(x){return x.id===id;});if(a)found=a;});
-  if(found){found[f]=f==='pct'?parseInt(val):val;if(f==='priority'&&found.type==='Ana')syncActToTodo(found);}
+  if(found){
+    found[f]=f==='pct'?parseInt(val):val;
+    if(found.type==='Ana'){
+      syncActToTodo(found);// todo + board güncelle
+    }
+  }
   renderActs();
 }
 function delAct(id){
@@ -1946,7 +1952,7 @@ function saveEdit(){
   }
 
   // Sadece Ana aksiyonlar todo'ya eklenir
-  if(a.type==='Ana')syncActToTodo(a);
+  if(a.type==='Ana'){syncActToTodo(a);}
 
   closeM('mEdit');renderActs();toast('Aksiyon güncellendi! ✏️');saveDB();
 }
@@ -1986,10 +1992,9 @@ function syncActToBoard(a,parentProj,qKey){
   bd.columns.forEach(function(col){
     col.cards=(col.cards||[]).filter(function(card){return card.actId!==a.id;});
   });
-  // Done sütununa mı yoksa qKey sütununa mı?
-  var targetQk=(a.status==='Tamamlandı')?'done':qKey;
+  // Aksiyonun durumuna göre sütun seç
+  var targetQk=STATUS_TO_QK[a.status]||'todo';
   var targetCol=bd.columns.find(function(col){return col.qk===targetQk;});
-  if(!targetCol)targetCol=bd.columns.find(function(col){return col.qk===qKey;});
   if(!targetCol)targetCol=bd.columns[0];
   if(!targetCol)return;
   var card={
@@ -2304,6 +2309,7 @@ function saveNoteLink(){
     ln.linked={type:'action',projId:projId,actId:naid};
     syncActToTodo(proj.actions[proj.actions.length-1]);
     toast('Projeye aksiyon eklendi! ✅');renderActs();
+    if(g('page-board').classList.contains('active'))renderBoard();
   }
   pg.updated=Date.now();
   closeM('mNoteLink');renderNotes();saveDB();
@@ -2331,13 +2337,17 @@ var CARD_PRIS={
 };
 var Q_TO_PRI={'q1':'ACİL & ÖNEMLİ','q2':'ACİL, ÖNEMLİ DEĞİL','q3':'ÖNEMLİ, ACİL DEĞİL','q4':'NE ACİL NE ÖNEMLİ'};
 // Board sütunları projeler için Eisenhower bazlı
+// Proje board sütunları — proje aksiyon durumlarıyla eşleşir
 var BOARD_PROJ_COLS=[
-  {qk:'q1',name:'🔴 ACİL & ÖNEMLİ',color:'#C62828'},
-  {qk:'q2',name:'🟡 ACİL, ÖNEMLİ DEĞİL',color:'#F57F17'},
-  {qk:'q3',name:'🟢 ÖNEMLİ, ACİL DEĞİL',color:'#2E7D32'},
-  {qk:'q4',name:'⚪ NE ACİL NE ÖNEMLİ',color:'#546E7A'},
-  {qk:'done',name:'✅ Tamamlandı',color:'#1565C0'}
+  {qk:'draft',name:'Draft',color:'#78909C'},
+  {qk:'todo',name:'Yapılacak',color:'#2196F3'},
+  {qk:'doing',name:'Devam Ediyor',color:'#E65100'},
+  {qk:'review',name:'İncelemede',color:'#6A1B9A'},
+  {qk:'done',name:'Tamamlandı',color:'#2E7D32'}
 ];
+// qk → aksiyon durumu eşleştirmesi
+var QK_TO_STATUS={draft:'Beklemede',todo:'Beklemede',doing:'Devam Ediyor',review:'Devam Ediyor',done:'Tamamlandı'};
+var STATUS_TO_QK={'Beklemede':'todo','Devam Ediyor':'doing','Tamamlandı':'done','İptal':'done'};
 var AVATAR_COLORS=['#2196F3','#E65100','#2E7D32','#6A1B9A','#C62828','#00695C','#F57C00','#0277BD'];
 
 function brdId(){return 'bd'+nBoardId++;}
@@ -2526,8 +2536,7 @@ function syncCardToAct(card,col){
   if(card.date)act.end=card.date;
   act.priority=Q_TO_PRI[card.priority]||act.priority;
   // Sütun done ise tamamlandı
-  if(col.qk==='done')act.status='Tamamlandı';
-  else if(act.status==='Tamamlandı'&&col.qk!=='done')act.status='Devam Ediyor';
+  if(QK_TO_STATUS[col.qk])act.status=QK_TO_STATUS[col.qk];
   syncActToTodo(act);
   if(g('page-ak').classList.contains('active'))renderActs();
 }
@@ -2542,7 +2551,7 @@ function syncCardToTodo(card,projId,col){
   ['q1','q2','q3','q4'].forEach(function(qk){
     tp[qk].items=tp[qk].items.filter(function(it){return it.cardId!==card.id;});
   });
-  if(col.qk==='done')return;// done sütunundaysa todo'ya ekleme
+  if(col.qk==='done'||QK_TO_STATUS[col.qk]==='Tamamlandı')return;// tamamlandıysa todo'ya ekleme
   var qk2=col.qk||card.priority||'q3';
   if(!['q1','q2','q3','q4'].includes(qk2))qk2='q3';
   tp[qk2].items.push({id:Date.now(),text:card.title,done:false,dl:card.date?d2s(card.date):'',own:card.assign||'',end:card.date||'',cardId:card.id});
@@ -2592,28 +2601,51 @@ function delCurBoard(){
 // ── Drag & Drop ──────────────────────────────────────────────
 var dragCard=null;var dragFromCol=null;
 function initBoardDrag(){
+  // Mouse drag (HTML5 DnD) - closure sorununu this.dataset ile çöz
   document.querySelectorAll('.board-card[draggable]').forEach(function(el){
-    el.addEventListener('dragstart',function(ev){dragCard=el.dataset.cardid;dragFromCol=el.dataset.cardcol;el.classList.add('board-col-drag');ev.dataTransfer.effectAllowed='move';});
-    el.addEventListener('dragend',function(){el.classList.remove('board-col-drag');dragCard=null;dragFromCol=null;});
+    el.addEventListener('dragstart',function(ev){
+      dragCard=this.dataset.cardid;
+      dragFromCol=this.dataset.cardcol;
+      this.style.opacity='0.4';
+      ev.dataTransfer.effectAllowed='move';
+      ev.dataTransfer.setData('text/plain',dragCard);
+    });
+    el.addEventListener('dragend',function(){
+      this.style.opacity='';
+      dragCard=null;dragFromCol=null;
+      document.querySelectorAll('.board-cards').forEach(function(z){z.classList.remove('drag-active');});
+    });
   });
-  document.querySelectorAll('[data-dropzone]').forEach(function(zone){
-    zone.addEventListener('dragover',function(ev){ev.preventDefault();ev.dataTransfer.dropEffect='move';});
+  document.querySelectorAll('.board-cards[data-dropzone]').forEach(function(zone){
+    zone.addEventListener('dragenter',function(ev){
+      ev.preventDefault();
+      if(dragCard)this.classList.add('drag-active');
+    });
+    zone.addEventListener('dragleave',function(){
+      this.classList.remove('drag-active');
+    });
+    zone.addEventListener('dragover',function(ev){
+      ev.preventDefault();
+      ev.dataTransfer.dropEffect='move';
+    });
     zone.addEventListener('drop',function(ev){
       ev.preventDefault();
+      this.classList.remove('drag-active');
       if(!dragCard||!dragFromCol)return;
-      var toCol=zone.dataset.dropzone;
-      if(toCol===dragFromCol)return;
+      var toColId=this.dataset.dropzone;
+      if(toColId===dragFromCol)return;
       var board=boards[curBoardId];if(!board)return;
       var fromColObj=board.columns.find(function(x){return x.id===dragFromCol;});
-      var toColObj=board.columns.find(function(x){return x.id===toCol;});
+      var toColObj=board.columns.find(function(x){return x.id===toColId;});
       if(!fromColObj||!toColObj)return;
       var cardIdx=(fromColObj.cards||[]).findIndex(function(x){return x.id===dragCard;});
       if(cardIdx<0)return;
-      var card=fromColObj.cards.splice(cardIdx,1)[0];
-      toColObj.cards=toColObj.cards||[];toColObj.cards.push(card);
-      // Sütun değişince sync
-      if(card.actId){syncCardToAct(card,toColObj);}
-      else if(board.projId){syncCardToTodo(card,board.projId,toColObj);}
+      var movedCard=fromColObj.cards.splice(cardIdx,1)[0];
+      toColObj.cards=toColObj.cards||[];
+      toColObj.cards.push(movedCard);
+      // Sütun değişince çift yönlü sync
+      if(movedCard.actId){syncCardToAct(movedCard,toColObj);}
+      else if(board.projId){syncCardToTodo(movedCard,board.projId,toColObj);}
       renderBoard();saveDB();
       toast('Kart taşındı → '+toColObj.name);
     });
@@ -2941,7 +2973,26 @@ function renderTodo(){
     html+='</div>';return html;
   }).join('');
 }
-function togTodo(tpid,id){var tp=todoProjects[tpid];if(!tp)return;['q1','q2','q3','q4'].forEach(function(qk){var i=tp[qk].items.find(function(x){return x.id===id;});if(i)i.done=!i.done;});renderTodo();renderAgenda();saveDB();}
+function togTodo(tpid,id){
+  var tp=todoProjects[tpid];if(!tp)return;
+  ['q1','q2','q3','q4'].forEach(function(qk){
+    var it=tp[qk].items.find(function(x){return x.id===id;});
+    if(it){
+      it.done=!it.done;
+      // Bağlı aksiyonu güncelle
+      if(it.actId){
+        Object.values(projects).forEach(function(p){
+          var a=p.actions.find(function(x){return x.id===it.actId;});
+          if(a){a.status=it.done?'Tamamlandı':'Devam Ediyor';var qk4=PRI_TO_Q[a.priority]||'q3';syncActToBoard(a,p,qk4);}
+        });
+      }
+    }
+  });
+  renderTodo();renderAgenda();
+  if(g('page-board').classList.contains('active'))renderBoard();
+  if(g('page-ak').classList.contains('active'))renderActs();
+  saveDB();
+}
 function editTodoItem(tpid,id,qk){
   var tp=todoProjects[tpid];if(!tp)return;
   var it=null;var foundQk=qk||'q3';

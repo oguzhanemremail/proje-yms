@@ -371,6 +371,41 @@ html,body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--tx);mi
 .nb-empty-icon{font-size:36px;opacity:.35;}
 .nb-link-wrap{background:var(--blt);border:1px solid var(--bmd);border-radius:8px;padding:10px 12px;margin-top:4px;font-size:12px;}
 @media(max-width:600px){.nb-books{width:120px;min-width:120px;}.nb-pages{width:120px;min-width:120px;}}
+
+/* ─── BOARD (KANBAN) ──────────────────────────────────── */
+.board-topbar{background:#fff;border-bottom:1px solid var(--bdr);padding:8px 14px;display:flex;align-items:center;gap:8px;flex-shrink:0;flex-wrap:wrap;}
+.board-selector{font-size:13px;font-weight:700;color:var(--navy);background:none;border:none;cursor:pointer;display:flex;align-items:center;gap:5px;padding:4px 8px;border-radius:6px;transition:background .15s;}
+.board-selector:hover{background:var(--sub);}
+.board-cols{display:flex;gap:10px;padding:14px;overflow-x:auto;flex:1;align-items:flex-start;min-height:0;}
+.board-col{background:var(--bg);border-radius:10px;width:270px;min-width:270px;display:flex;flex-direction:column;max-height:100%;}
+.board-col-hd{display:flex;align-items:center;gap:7px;padding:10px 12px 8px;border-radius:10px 10px 0 0;flex-shrink:0;}
+.board-col-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+.board-col-name{font-size:12px;font-weight:700;color:var(--navy);flex:1;}
+.board-col-count{font-size:10px;color:#fff;background:var(--grey);border-radius:100px;padding:1px 7px;font-weight:700;}
+.board-col-btn{background:none;border:none;color:var(--grey);cursor:pointer;font-size:15px;padding:2px 4px;border-radius:4px;transition:all .15s;}
+.board-col-btn:hover{background:var(--blt);color:var(--blue);}
+.board-cards{flex:1;overflow-y:auto;padding:4px 8px 8px;display:flex;flex-direction:column;gap:7px;min-height:60px;}
+.board-add-card{padding:6px 8px;text-align:center;color:var(--blue);font-size:11px;font-weight:600;cursor:pointer;border-radius:6px;transition:background .15s;border:1.5px dashed var(--bmd);margin:0 8px 8px;}
+.board-add-card:hover{background:var(--blt);}
+.board-card{background:#fff;border-radius:8px;padding:10px 12px;box-shadow:0 1px 3px rgba(0,0,0,.07);cursor:pointer;border:1.5px solid transparent;transition:all .15s;position:relative;}
+.board-card:hover{border-color:var(--blue);box-shadow:0 2px 8px rgba(33,150,243,.15);}
+.board-card-title{font-size:12px;font-weight:600;color:var(--navy);line-height:1.4;margin-bottom:6px;}
+.board-card-desc{font-size:11px;color:var(--tx2);line-height:1.4;margin-bottom:7px;white-space:pre-wrap;}
+.board-card-tags{display:flex;flex-wrap:wrap;gap:3px;margin-bottom:6px;}
+.board-card-tag{font-size:9px;font-weight:700;padding:2px 6px;border-radius:4px;text-transform:uppercase;letter-spacing:.3px;}
+.board-card-footer{display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
+.board-card-pri{font-size:9px;font-weight:700;padding:2px 6px;border-radius:4px;}
+.board-card-date{font-size:9px;color:var(--tx2);font-family:'JetBrains Mono',monospace;}
+.board-card-assign{font-size:9px;font-weight:600;color:#fff;width:20px;height:20px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:9px;}
+.board-card-check{font-size:9px;color:var(--tx2);}
+.board-card-del{position:absolute;top:6px;right:6px;background:none;border:none;color:var(--grey);cursor:pointer;font-size:11px;opacity:0;padding:2px;border-radius:3px;transition:all .15s;}
+.board-card:hover .board-card-del{opacity:1;}
+.board-card-del:hover{background:var(--rlt);color:var(--red);}
+.board-empty-col{padding:12px;text-align:center;font-size:10px;color:var(--grey);border:1.5px dashed var(--bdr);border-radius:6px;margin:4px 8px;}
+.board-col-add{width:250px;min-width:250px;border:2px dashed var(--bdr);border-radius:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;height:56px;color:var(--grey);font-size:12px;font-weight:600;gap:6px;transition:all .15s;flex-shrink:0;}
+.board-col-add:hover{border-color:var(--blue);color:var(--blue);background:var(--blt);}
+.board-col-drag{opacity:.5;}
+.board-card.drag-over{border-color:var(--blue);background:var(--blt);}
 </style>
 </head>
 <body>
@@ -396,6 +431,7 @@ html,body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--tx);mi
     <div class="ntab" data-page="cal">🗓️ Takvim</div>
     <div class="ntab" data-page="agenda">📌 Gündem</div>
     <div class="ntab" data-page="notes">🗒️ Notlar</div>
+    <div class="ntab" data-page="board">🗂️ Board</div>
   </div>
   <div style="display:flex;align-items:center;gap:8px;margin-left:auto;flex-shrink:0;">
     <div class="fbst wait" id="fbst"><span class="fbst-dot"></span><span id="fbst-lbl">Bağlanıyor...</span></div>
@@ -589,6 +625,40 @@ html,body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--tx);mi
       </div>
     </div>
     <div class="mft"><button class="btn btn-g" data-close="mEditTodo">İptal</button><button class="btn btn-p" onclick="saveEditTodo()">💾 Kaydet</button></div>
+  </div>
+</div>
+
+<!-- MODAL: Board Kart -->
+<div class="mo" id="mCard">
+  <div class="mdlg" style="width:480px">
+    <div class="mhd"><div class="mttl" id="m-card-ttl">➕ Yeni Kart</div><button class="mx" data-close="mCard">✕</button></div>
+    <div class="mbdy">
+      <div class="fg"><label class="fl">Başlık *</label><input type="text" class="fi" id="bc-title" placeholder="Kart başlığı..."></div>
+      <div class="fg"><label class="fl">Açıklama</label><textarea class="fta" id="bc-desc" style="min-height:60px" placeholder="Detay..."></textarea></div>
+      <div class="fr">
+        <div class="fg"><label class="fl">Sorumlu</label><input type="text" class="fi" id="bc-assign" placeholder="İsim..."></div>
+        <div class="fg"><label class="fl">Tarih</label><input type="date" class="fi" id="bc-date"></div>
+      </div>
+      <div class="fr">
+        <div class="fg"><label class="fl">Öncelik</label>
+          <select class="fs" id="bc-pri">
+            <option value="q1">🔴 ACİL &amp; ÖNEMLİ</option>
+            <option value="q2">🟡 ACİL, ÖNEMLİ DEĞİL</option>
+            <option value="q3" selected>🟢 ÖNEMLİ, ACİL DEĞİL</option>
+            <option value="q4">⚪ NE ACİL NE ÖNEMLİ</option>
+          </select>
+        </div>
+        <div class="fg"><label class="fl">Etiketler (virgülle)</label><input type="text" class="fi" id="bc-tags" placeholder="Ör: Bug, UI, Backend"></div>
+      </div>
+      <div class="fg">
+        <label class="fl" style="display:flex;align-items:center;justify-content:space-between">
+          Kontrol Listesi
+          <button type="button" class="btn btn-g btn-sm" onclick="addChecklistItem()" style="font-size:10px;padding:2px 8px">+ Ekle</button>
+        </label>
+        <div id="bc-checklist" style="margin-top:4px;display:flex;flex-direction:column;gap:2px"></div>
+      </div>
+    </div>
+    <div class="mft"><button class="btn btn-g" data-close="mCard">İptal</button><button class="btn btn-p" onclick="saveCard()">💾 Kaydet</button></div>
   </div>
 </div>
 
@@ -842,6 +912,10 @@ html,body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--tx);mi
 </div>
 
 <!-- TAKVİM -->
+<div id="page-board" class="page">
+  <div id="board-root" style="display:flex;flex-direction:column;height:calc(100vh - 52px);overflow:hidden;"></div>
+</div>
+
 <div id="page-notes" class="page">
   <div id="notes-layout" style="display:flex;height:calc(100vh - 52px);overflow:hidden"></div>
 </div>
@@ -1098,7 +1172,9 @@ var noteBooks={};// {id:{id,title,projId,color,created}}  — defterler
 var notePages={};// {id:{id,bookId,title,lines:[{id,text,linked}],created,updated}} — sayfalar
 var curBookId=null;
 var curPageId=null;
-var nBId=1;var nPgId=1;
+var nBId=1;var nPgId=1;var nBoardId=1;var nCardId=1;
+var boards={};// {id:{id,name,columns:[{id,name,color,cards:[{id,title,desc,assign,priority,date,tags,checklist:[]}]}]}}
+var curBoardId=null;
 var selColor='#2196F3',selColor2='#2196F3';
 var wizAT=null,curWk=null;
 var actFilter=null,colPar=new Set(),gColPar=new Set(),selIds=new Set();
@@ -1459,6 +1535,7 @@ function showPage(id){
   if(id==='cal'){if(!curWk)curWk=wkStart(new Date());renderCal();}
   if(id==='agenda')renderAgenda();
   if(id==='notes')renderNotes();
+  if(id==='board')renderBoard();
   if(id==='dash')renderDash();
 }
 
@@ -1512,6 +1589,17 @@ function linkProjToTodo(){
   // Aksiyonları ilgili todo listelerine aktar
   Object.values(projects).forEach(function(p){
     p.actions.filter(function(a){return a.type==='Ana';}).forEach(function(a){syncActToTodo(a);});
+    // Proje için board yoksa oluştur
+    if(!p.boardId||!boards[p.boardId]){
+      var existBd=Object.values(boards).find(function(b){return b.projId===p.id;});
+      if(existBd){p.boardId=existBd.id;}
+      else{
+        var bdId2=brdId();
+        var bdCols2=BOARD_PROJ_COLS.map(function(col){return {id:colId(),name:col.name,color:col.color,qk:col.qk,cards:[]};});
+        boards[bdId2]={id:bdId2,name:p.name,projId:p.id,columns:bdCols2,created:Date.now()};
+        p.boardId=bdId2;
+      }
+    }
     // Proje için not defteri yoksa oluştur
     if(!p.noteBookId||!noteBooks[p.noteBookId]){
       var existingBk=Object.values(noteBooks).find(function(bk){return bk.projId===p.id;});
@@ -1541,9 +1629,14 @@ function createProj(){
   var pgId=nbPageId();
   notePages[pgId]={id:pgId,bookId:bkId,title:'Genel Notlar',lines:[],created:Date.now(),updated:Date.now()};
   projects[id].noteBookId=bkId;
+  // Board (Eisenhower sütunlı)
+  var bdId=brdId();
+  var bdCols=BOARD_PROJ_COLS.map(function(col){return {id:colId(),name:col.name,color:col.color,qk:col.qk,cards:[]};});
+  boards[bdId]={id:bdId,name:nm,projId:id,columns:bdCols,created:Date.now()};
+  projects[id].boardId=bdId;
   // saveDB
   curPid=id;gSelProjs.add(id);closeM('mProj');showPage('ak');
-  toast('Proje oluşturuldu! Görev listesi, Not defteri ve Gündem listesi açıldı ✅');saveDB();
+  toast('Proje oluşturuldu! Görev listesi, Not defteri ve Board açıldı ✅');saveDB();
 }
 
 // ─── DASHBOARD ────────────────────────────────────────────────
@@ -1675,6 +1768,9 @@ function renderActs(){
     var shortcuts=g('ak-shortcuts');
     if(shortcuts){
       var shHtml='';
+      if(proj.boardId&&boards[proj.boardId]){
+        shHtml+='<button class="btn btn-g btn-sm" data-goto-board="'+proj.boardId+'" style="font-size:10px">🗂️ Board</button>';
+      }
       if(proj.noteBookId&&noteBooks[proj.noteBookId]){
         shHtml+='<button class="btn btn-g btn-sm" data-goto-note="'+proj.noteBookId+'" style="font-size:10px">🗒️ Not Defteri</button>';
       }
@@ -1866,14 +1962,50 @@ function syncActToTodo(a){
   Object.values(todoProjects).forEach(function(tp){
     ['q1','q2','q3','q4'].forEach(function(qk){tp[qk].items=tp[qk].items.filter(function(it){return it.actId!==a.id;});});
   });
-  // Projeyle eşleşen todo listesini bul, yoksa ilk listeyi kullan
+  // Todo sync
   var tp=null;
   if(parentProj&&parentProj.tpId&&todoProjects[parentProj.tpId])tp=todoProjects[parentProj.tpId];
   else tp=Object.values(todoProjects)[0];
-  if(!tp)return;
-  tp[qKey].items.push({id:Date.now(),text:a.title,done:a.status==='Tamamlandı',dl:a.end?d2s(a.end):'',own:a.owner||'',end:a.end||'',actId:a.id});
+  if(tp){
+    tp[qKey].items.push({id:Date.now(),text:a.title,done:a.status==='Tamamlandı',dl:a.end?d2s(a.end):'',own:a.owner||'',end:a.end||'',actId:a.id});
+  }
+  // Board sync
+  syncActToBoard(a,parentProj,qKey);
   if(g('page-todo').classList.contains('active'))renderTodo();
   if(g('page-agenda').classList.contains('active'))renderAgenda();
+  if(g('page-board').classList.contains('active'))renderBoard();
+}
+
+function syncActToBoard(a,parentProj,qKey){
+  if(!a)return;
+  // Projenin boardını bul
+  var bd=null;
+  if(parentProj&&parentProj.boardId&&boards[parentProj.boardId])bd=boards[parentProj.boardId];
+  if(!bd)return;
+  // Eski kartı tüm sütunlardan sil
+  bd.columns.forEach(function(col){
+    col.cards=(col.cards||[]).filter(function(card){return card.actId!==a.id;});
+  });
+  // Done sütununa mı yoksa qKey sütununa mı?
+  var targetQk=(a.status==='Tamamlandı')?'done':qKey;
+  var targetCol=bd.columns.find(function(col){return col.qk===targetQk;});
+  if(!targetCol)targetCol=bd.columns.find(function(col){return col.qk===qKey;});
+  if(!targetCol)targetCol=bd.columns[0];
+  if(!targetCol)return;
+  var card={
+    id:crdId(),
+    title:a.title,
+    desc:a.desc||'',
+    assign:a.owner||'',
+    date:a.end||'',
+    priority:qKey,
+    tags:[],
+    checklist:[],
+    actId:a.id,// bağlantı referansı
+    projId:parentProj?parentProj.id:null
+  };
+  targetCol.cards=targetCol.cards||[];
+  targetCol.cards.push(card);
 }
 
 // ─── NOTLAR SAYFASI ───────────────────────────────────────────
@@ -2182,6 +2314,312 @@ function removeNoteLink(lid){
   var ln=pg.lines.find(function(x){return x.id===lid;});
   if(ln){ln.linked=null;pg.updated=Date.now();renderNotes();saveDB();}
 }
+
+// ─── BOARD (KANBAN) ──────────────────────────────────────────
+var BOARD_COLS_DEFAULT=[
+  {id:'bc1',name:'Draft',color:'#78909C'},
+  {id:'bc2',name:'Yapılacak',color:'#2196F3'},
+  {id:'bc3',name:'Devam Ediyor',color:'#E65100'},
+  {id:'bc4',name:'İncelemede',color:'#6A1B9A'},
+  {id:'bc5',name:'Tamamlandı',color:'#2E7D32'}
+];
+var CARD_PRIS={
+  q1:{label:'🔴 ACİL & ÖNEMLİ',bg:'#FFEBEE',color:'#C62828',qk:'q1'},
+  q2:{label:'🟡 ACİL, ÖNEMLİ DEĞİL',bg:'#FFF8E1',color:'#F57F17',qk:'q2'},
+  q3:{label:'🟢 ÖNEMLİ, ACİL DEĞİL',bg:'#E8F5E9',color:'#2E7D32',qk:'q3'},
+  q4:{label:'⚪ NE ACİL NE ÖNEMLİ',bg:'#ECEFF1',color:'#546E7A',qk:'q4'}
+};
+var Q_TO_PRI={'q1':'ACİL & ÖNEMLİ','q2':'ACİL, ÖNEMLİ DEĞİL','q3':'ÖNEMLİ, ACİL DEĞİL','q4':'NE ACİL NE ÖNEMLİ'};
+// Board sütunları projeler için Eisenhower bazlı
+var BOARD_PROJ_COLS=[
+  {qk:'q1',name:'🔴 ACİL & ÖNEMLİ',color:'#C62828'},
+  {qk:'q2',name:'🟡 ACİL, ÖNEMLİ DEĞİL',color:'#F57F17'},
+  {qk:'q3',name:'🟢 ÖNEMLİ, ACİL DEĞİL',color:'#2E7D32'},
+  {qk:'q4',name:'⚪ NE ACİL NE ÖNEMLİ',color:'#546E7A'},
+  {qk:'done',name:'✅ Tamamlandı',color:'#1565C0'}
+];
+var AVATAR_COLORS=['#2196F3','#E65100','#2E7D32','#6A1B9A','#C62828','#00695C','#F57C00','#0277BD'];
+
+function brdId(){return 'bd'+nBoardId++;}
+function crdId(){return 'c'+nCardId++;}
+function colId(){return 'col'+Date.now();}
+
+function getDefaultBoard(){
+  var id=brdId();
+  var cols=BOARD_COLS_DEFAULT.map(function(col){return {id:col.id,name:col.name,color:col.color,cards:[]};});
+  boards[id]={id:id,name:'Ana Board',columns:cols,created:Date.now()};
+  return id;
+}
+
+function renderBoard(){
+  var root=g('board-root');if(!root)return;
+  if(!Object.keys(boards).length){curBoardId=getDefaultBoard();saveDB();}
+  if(!curBoardId||!boards[curBoardId])curBoardId=Object.keys(boards)[0];
+  var board=boards[curBoardId];
+
+  // Topbar
+  var tb='<div class="board-topbar">';
+  tb+='<div style="display:flex;align-items:center;gap:4px;flex:1">';
+  tb+='<span style="font-size:16px">🗂️</span>';
+  tb+='<select id="board-sel" style="font-size:13px;font-weight:700;color:var(--navy);border:none;background:none;cursor:pointer;outline:none;font-family:inherit">';
+  // Proje boardlarını üstte, bağımsızları altta göster
+  var projBoards=Object.values(boards).filter(function(b){return !!b.projId&&projects[b.projId];});
+  var freeBoards=Object.values(boards).filter(function(b){return !b.projId||!projects[b.projId];});
+  if(projBoards.length){
+    tb+='<optgroup label="📋 Proje Boardları">';
+    projBoards.forEach(function(b){tb+='<option value="'+b.id+'"'+(b.id===curBoardId?' selected':'')+'>'+escHtml(b.name)+'</option>';});
+    tb+='</optgroup>';
+  }
+  if(freeBoards.length){
+    tb+='<optgroup label="🗂️ Diğer Boardlar">';
+    freeBoards.forEach(function(b){tb+='<option value="'+b.id+'"'+(b.id===curBoardId?' selected':'')+'>'+escHtml(b.name)+'</option>';});
+    tb+='</optgroup>';
+  }
+  tb+='</select>';
+  tb+='</div>';
+  tb+='<button class="btn btn-g btn-sm" data-action="addBoard" style="font-size:11px">+ Yeni Board</button>';
+  tb+='<button class="btn btn-g btn-sm" data-action="delCurBoard" style="font-size:11px;color:var(--red)">🗑️ Board Sil</button>';
+  tb+='<button class="btn btn-p btn-sm" data-action="addBoardCol" style="font-size:11px">+ Sütun Ekle</button>';
+  tb+='</div>';
+
+  // Sütunlar
+  var cols='<div class="board-cols" id="board-cols">';
+  (board.columns||[]).forEach(function(col){
+    var cnt=col.cards?col.cards.length:0;
+    cols+='<div class="board-col" data-colid="'+col.id+'" id="brcol-'+col.id+'">';
+    cols+='<div class="board-col-hd" style="background:'+hexLight(col.color)+'">';
+    cols+='<div class="board-col-dot" style="background:'+col.color+'"></div>';
+    cols+='<div class="board-col-name">'+escHtml(col.name)+'</div>';
+    cols+='<span class="board-col-count" style="background:'+col.color+'">'+cnt+'</span>';
+    cols+='<button class="board-col-btn" data-coladd="'+col.id+'" title="Kart ekle">+</button>';
+    cols+='<button class="board-col-btn" data-colrename="'+col.id+'" title="Yeniden adlandır">✏️</button>';
+    cols+='<button class="board-col-btn" data-coldel="'+col.id+'" title="Sütunu sil" style="font-size:11px">✕</button>';
+    cols+='</div>';
+    cols+='<div class="board-cards" id="brcards-'+col.id+'" data-dropzone="'+col.id+'">';
+    if(!cnt){cols+='<div class="board-empty-col">Kart yok</div>';}
+    (col.cards||[]).forEach(function(card){
+      cols+=renderCard(card,col.id);
+    });
+    cols+='</div>';
+    cols+='<div class="board-add-card" data-coladd="'+col.id+'">+ Kart Ekle</div>';
+    cols+='</div>';
+  });
+  cols+='<div class="board-col-add" data-action="addBoardCol">+ Sütun Ekle</div>';
+  cols+='</div>';
+
+  root.innerHTML=tb+cols;
+  g('board-sel').addEventListener('change',function(){curBoardId=this.value;renderBoard();});
+  initBoardDrag();
+}
+
+function hexLight(hex){
+  // hex rengi çok açık yap
+  try{var r=parseInt(hex.slice(1,3),16),gr=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);
+    return 'rgba('+r+','+gr+','+b+',.08)';}catch(e){return '#f5f7fa';}
+}
+
+function renderCard(card,colId){
+  var pri=card.priority?CARD_PRIS[card.priority]:null;
+  var html='<div class="board-card" draggable="true" data-cardid="'+card.id+'" data-cardcol="'+colId+'">';
+  // Tags
+  if(card.tags&&card.tags.length){
+    html+='<div class="board-card-tags">';
+    card.tags.forEach(function(t){
+      html+='<span class="board-card-tag" style="background:'+t.bg+';color:'+t.color+'">'+escHtml(t.name)+'</span>';
+    });
+    html+='</div>';
+  }
+  html+='<div class="board-card-title">'+escHtml(card.title||'')+'</div>';
+  if(card.desc)html+='<div class="board-card-desc">'+escHtml(card.desc)+'</div>';
+  // Footer
+  html+='<div class="board-card-footer">';
+  if(pri)html+='<span class="board-card-pri" style="background:'+pri.bg+';color:'+pri.color+'">'+pri.label+'</span>';
+  if(card.date)html+='<span class="board-card-date">📅 '+d2s(card.date)+'</span>';
+  if(card.checklist&&card.checklist.length){
+    var done=card.checklist.filter(function(x){return x.done;}).length;
+    html+='<span class="board-card-check">☑️ '+done+'/'+card.checklist.length+'</span>';
+  }
+  if(card.assign){
+    var initials=(card.assign||'').split(' ').map(function(w){return w[0]||'';}).join('').slice(0,2).toUpperCase()||'?';
+    var aCol=AVATAR_COLORS[card.assign.charCodeAt(0)%AVATAR_COLORS.length];
+    html+='<span class="board-card-assign" style="background:'+aCol+';margin-left:auto" title="'+escHtml(card.assign)+'">'+initials+'</span>';
+  }
+  html+='</div>';
+  html+='<button class="board-card-del" data-carddel="'+card.id+'" data-carddel-col="'+colId+'">✕</button>';
+  html+='</div>';
+  return html;
+}
+
+// ── Kart modalı ──────────────────────────────────────────────
+var editCardColId=null;var editCardId=null;
+function openCardModal(colId,cardId){
+  editCardColId=colId;editCardId=cardId;
+  var board=boards[curBoardId];if(!board)return;
+  var col=board.columns.find(function(x){return x.id===colId;});if(!col)return;
+  var card=cardId?(col.cards||[]).find(function(x){return x.id===cardId;}):null;
+  sv('bc-title',card?card.title:'');
+  sv('bc-desc',card?card.desc||'':'');
+  sv('bc-assign',card?card.assign||'':'');
+  sv('bc-date',card?card.date||'':'');
+  sv('bc-pri',card?card.priority||'q3':'q3');
+  sv('bc-tags',card&&card.tags?card.tags.map(function(t){return t.name;}).join(', '):'');
+  // Checklist
+  var cl=card&&card.checklist?card.checklist:[];
+  g('bc-checklist').innerHTML=cl.map(function(it,i){
+    return '<div style="display:flex;align-items:center;gap:6px;padding:4px 0">'+
+      '<input type="checkbox" '+(it.done?'checked':'')+' data-cli="'+i+'" style="cursor:pointer;accent-color:var(--blue)">'+
+      '<input type="text" value="'+escHtml(it.text)+'" data-clt="'+i+'" class="fi" style="flex:1;padding:3px 6px;font-size:12px">'+
+      '<button data-clx="'+i+'" style="background:none;border:none;color:var(--grey);cursor:pointer">✕</button>'+
+      '</div>';
+  }).join('');
+  g('m-card-ttl').textContent=cardId?'✏️ Kartı Düzenle':'➕ Yeni Kart';
+  openM('mCard');
+}
+
+function saveCard(){
+  var title=v('bc-title').trim();if(!title){toast('Başlık zorunlu','err');return;}
+  var board=boards[curBoardId];if(!board)return;
+  var col=board.columns.find(function(x){return x.id===editCardColId;});if(!col)return;
+  // Checklist oku
+  var clInputs=document.querySelectorAll('[data-clt]');
+  var clChecks=document.querySelectorAll('[data-cli]');
+  var cl=[];
+  clInputs.forEach(function(inp,i){if(inp.value.trim())cl.push({text:inp.value.trim(),done:clChecks[i]?clChecks[i].checked:false});});
+  // Tags parse
+  var tagsRaw=v('bc-tags').split(',').map(function(t){return t.trim();}).filter(Boolean);
+  var TAG_COLORS=['#FFF3E0-#E65100','#E3F2FD-#1565C0','#E8F5E9-#2E7D32','#EDE7F6-#4527A0','#FFEBEE-#C62828','#E0F7FA-#00695C'];
+  var tags=tagsRaw.map(function(t,i){var p=TAG_COLORS[i%TAG_COLORS.length].split('-');return{name:t,bg:p[0],color:p[1]};});
+  var newPri=v('bc-pri');
+  var cardData={title:title,desc:v('bc-desc').trim(),assign:v('bc-assign').trim(),date:v('bc-date'),priority:newPri,tags:tags,checklist:cl};
+  var existCard=null;
+  if(editCardId){
+    existCard=(col.cards||[]).find(function(x){return x.id===editCardId;});
+    if(existCard)Object.assign(existCard,cardData);
+  } else {
+    cardData.id=crdId();
+    col.cards=col.cards||[];
+    col.cards.push(cardData);
+    existCard=cardData;
+  }
+  // Eğer kart bir aksiyona bağlıysa: aksiyon ve todo'yu güncelle
+  if(existCard&&existCard.actId){
+    syncCardToAct(existCard,col);
+  }
+  // Eğer kart bir projeye bağlı ama aksiyonsuzsa: todo'ya ekle
+  if(existCard&&!existCard.actId&&board.projId){
+    syncCardToTodo(existCard,board.projId,col);
+  }
+  closeM('mCard');renderBoard();saveDB();
+  toast(editCardId?'Kart güncellendi ✏️':'Kart eklendi ✅');
+}
+
+function syncCardToAct(card,col){
+  // Kart üzerindeki değişiklikleri ilgili aksiyona yansıt
+  var act=null;var parentProj=null;
+  Object.values(projects).forEach(function(p){
+    var a=p.actions.find(function(x){return x.id===card.actId;});
+    if(a){act=a;parentProj=p;}
+  });
+  if(!act)return;
+  act.title=card.title;
+  act.owner=card.assign||act.owner;
+  if(card.date)act.end=card.date;
+  act.priority=Q_TO_PRI[card.priority]||act.priority;
+  // Sütun done ise tamamlandı
+  if(col.qk==='done')act.status='Tamamlandı';
+  else if(act.status==='Tamamlandı'&&col.qk!=='done')act.status='Devam Ediyor';
+  syncActToTodo(act);
+  if(g('page-ak').classList.contains('active'))renderActs();
+}
+
+function syncCardToTodo(card,projId,col){
+  // Proje boardundaki serbest kartı todo listesine ekle/güncelle
+  var tp=null;
+  var proj=projects[projId];
+  if(proj&&proj.tpId&&todoProjects[proj.tpId])tp=todoProjects[proj.tpId];
+  if(!tp)return;
+  // cardId referansıyla eski item'ı sil
+  ['q1','q2','q3','q4'].forEach(function(qk){
+    tp[qk].items=tp[qk].items.filter(function(it){return it.cardId!==card.id;});
+  });
+  if(col.qk==='done')return;// done sütunundaysa todo'ya ekleme
+  var qk2=col.qk||card.priority||'q3';
+  if(!['q1','q2','q3','q4'].includes(qk2))qk2='q3';
+  tp[qk2].items.push({id:Date.now(),text:card.title,done:false,dl:card.date?d2s(card.date):'',own:card.assign||'',end:card.date||'',cardId:card.id});
+  if(g('page-todo').classList.contains('active'))renderTodo();
+  if(g('page-agenda').classList.contains('active'))renderAgenda();
+}
+
+function addChecklistItem(){
+  var cl=g('bc-checklist');
+  var idx=cl.children.length;
+  var div=document.createElement('div');
+  div.style.cssText='display:flex;align-items:center;gap:6px;padding:4px 0';
+  div.innerHTML='<input type="checkbox" data-cli="'+idx+'" style="cursor:pointer;accent-color:var(--blue)"><input type="text" data-clt="'+idx+'" class="fi" placeholder="Kontrol maddesi..." style="flex:1;padding:3px 6px;font-size:12px"><button data-clx="'+idx+'" onclick="this.parentElement.remove()" style="background:none;border:none;color:var(--grey);cursor:pointer">✕</button>';
+  cl.appendChild(div);
+  div.querySelector('input[type=text]').focus();
+}
+
+function addBoardCol(){
+  var nm=prompt('Sütun adı:','Yeni Sütun');
+  if(!nm||!nm.trim())return;
+  var board=boards[curBoardId];if(!board)return;
+  var colors=['#78909C','#2196F3','#E65100','#6A1B9A','#2E7D32','#C62828','#F57C00'];
+  board.columns=board.columns||[];
+  board.columns.push({id:colId(),name:nm.trim(),color:colors[board.columns.length%colors.length],cards:[]});
+  renderBoard();saveDB();
+}
+
+function addBoard(){
+  var nm=prompt('Board adı:','Yeni Board');
+  if(!nm||!nm.trim())return;
+  var id=brdId();
+  var cols=BOARD_COLS_DEFAULT.map(function(col){return{id:colId(),name:col.name,color:col.color,cards:[]};});
+  boards[id]={id:id,name:nm.trim(),columns:cols,created:Date.now()};
+  curBoardId=id;renderBoard();saveDB();
+  toast('Board oluşturuldu: '+nm.trim());
+}
+
+function delCurBoard(){
+  if(Object.keys(boards).length<=1){toast('Son board silinemez','err');return;}
+  var board=boards[curBoardId];
+  if(!confirm((board?board.name:'Board')+' silinsin mi?'))return;
+  delete boards[curBoardId];
+  curBoardId=Object.keys(boards)[0];
+  renderBoard();saveDB();
+}
+
+// ── Drag & Drop ──────────────────────────────────────────────
+var dragCard=null;var dragFromCol=null;
+function initBoardDrag(){
+  document.querySelectorAll('.board-card[draggable]').forEach(function(el){
+    el.addEventListener('dragstart',function(ev){dragCard=el.dataset.cardid;dragFromCol=el.dataset.cardcol;el.classList.add('board-col-drag');ev.dataTransfer.effectAllowed='move';});
+    el.addEventListener('dragend',function(){el.classList.remove('board-col-drag');dragCard=null;dragFromCol=null;});
+  });
+  document.querySelectorAll('[data-dropzone]').forEach(function(zone){
+    zone.addEventListener('dragover',function(ev){ev.preventDefault();ev.dataTransfer.dropEffect='move';});
+    zone.addEventListener('drop',function(ev){
+      ev.preventDefault();
+      if(!dragCard||!dragFromCol)return;
+      var toCol=zone.dataset.dropzone;
+      if(toCol===dragFromCol)return;
+      var board=boards[curBoardId];if(!board)return;
+      var fromColObj=board.columns.find(function(x){return x.id===dragFromCol;});
+      var toColObj=board.columns.find(function(x){return x.id===toCol;});
+      if(!fromColObj||!toColObj)return;
+      var cardIdx=(fromColObj.cards||[]).findIndex(function(x){return x.id===dragCard;});
+      if(cardIdx<0)return;
+      var card=fromColObj.cards.splice(cardIdx,1)[0];
+      toColObj.cards=toColObj.cards||[];toColObj.cards.push(card);
+      // Sütun değişince sync
+      if(card.actId){syncCardToAct(card,toColObj);}
+      else if(board.projId){syncCardToTodo(card,board.projId,toColObj);}
+      renderBoard();saveDB();
+      toast('Kart taşındı → '+toColObj.name);
+    });
+  });
+}
+
 
 // ─── GÜNDEM SAYFASI ───────────────────────────────────────────
 var agendaFilter='__all__';// seçili liste filtresi
@@ -2882,10 +3320,40 @@ document.addEventListener('click',function(e){
   var t=e.target;
   // Workspace satır tıklamaları
   if(t.dataset.edtTod){editTodoItem(t.dataset.edtTod,t.dataset.edtTid,t.dataset.edtQk);return;}
+  if(t.dataset.action==='addBoard'){addBoard();return;}
+  if(t.dataset.action==='delCurBoard'){delCurBoard();return;}
+  if(t.dataset.action==='addBoardCol'){addBoardCol();return;}
+  if(t.dataset.coladd){openCardModal(t.dataset.coladd,null);return;}
+  if(t.dataset.colrename){
+    var brd=boards[curBoardId];if(!brd)return;
+    var colx=brd.columns.find(function(x){return x.id===t.dataset.colrename;});if(!colx)return;
+    var nm2=prompt('Sütun adı:',colx.name);if(!nm2||!nm2.trim())return;
+    colx.name=nm2.trim();renderBoard();saveDB();return;
+  }
+  if(t.dataset.coldel){
+    var brd2=boards[curBoardId];if(!brd2)return;
+    var cIdx=brd2.columns.findIndex(function(x){return x.id===t.dataset.coldel;});
+    if(cIdx<0)return;
+    if(!confirm(brd2.columns[cIdx].name+' sütunu silinsin mi?'))return;
+    brd2.columns.splice(cIdx,1);renderBoard();saveDB();return;
+  }
+  if(t.dataset.carddel){
+    var brd3=boards[curBoardId];if(!brd3)return;
+    var colx2=brd3.columns.find(function(x){return x.id===t.dataset.carddelCol;});if(!colx2)return;
+    colx2.cards=(colx2.cards||[]).filter(function(x){return x.id!==t.dataset.carddel;});
+    renderBoard();saveDB();return;
+  }
+  var cardEl=t.closest('.board-card[data-cardid]');
+  if(cardEl&&!t.dataset.carddel){openCardModal(cardEl.dataset.cardcol,cardEl.dataset.cardid);return;}
   if(t.dataset.action==='addNoteBook'){addNoteBook();return;}
   if(t.dataset.action==='addNotePage'){addNotePage();return;}
   if(t.dataset.action==='addNoteLine'){addNoteLine();return;}
   if(t.dataset.action==='addAgendaList'){addAgendaList();return;}
+  if(t.dataset.gotoBoard){
+    var targetBdId=t.dataset.gotoBoard;
+    curBoardId=targetBdId;
+    showPage('board');return;
+  }
   if(t.dataset.gotoNote){
     var noteBookId=t.dataset.gotoNote;
     curBookId=noteBookId;
@@ -3151,9 +3619,10 @@ function saveDB(){
       {workspace_id:wsId,user_id:uid,key:'projects',value:JSON.stringify(projects)},
       {workspace_id:wsId,user_id:uid,key:'todoProjects',value:JSON.stringify(todoProjects)},
       {workspace_id:wsId,user_id:uid,key:'calEvents',value:JSON.stringify(calEvents)},
+      {workspace_id:wsId,user_id:uid,key:'boards',value:JSON.stringify(boards)},
       {workspace_id:wsId,user_id:uid,key:'noteBooks',value:JSON.stringify(noteBooks)},
       {workspace_id:wsId,user_id:uid,key:'notePages',value:JSON.stringify(notePages)},
-      {workspace_id:wsId,user_id:uid,key:'meta',value:JSON.stringify({nPId:nPId,nAId:nAId,nEId:nEId,nTPId:nTPId,nNId:nNId,nBId:nBId,nPgId:nPgId,updated:Date.now()})}
+      {workspace_id:wsId,user_id:uid,key:'meta',value:JSON.stringify({nPId:nPId,nAId:nAId,nEId:nEId,nTPId:nTPId,nNId:nNId,nBId:nBId,nPgId:nPgId,nBoardId:nBoardId,nCardId:nCardId,updated:Date.now()})}
     ];
     // Her satırı ayrı ayrı upsert et — toplu upsert'te constraint sorunu yaşanıyor
     var done=0;var errored=false;
@@ -3183,7 +3652,7 @@ function loadDB(){
     if(!rows.length){
       fbStatus('ok','☁️ Bağlı');
       // Yeni boş workspace: tüm sayfaları temizle
-      projects={};todoProjects={};calEvents=[];noteBooks={};notePages={};
+      projects={};todoProjects={};calEvents=[];noteBooks={};notePages={};boards={};
       curPid='';gSelProjs=new Set();
       renderDash();renderPBar();_origRenderActs();
       if(g('page-gantt').classList.contains('active')){renderGF();renderGantt();}
@@ -3198,10 +3667,11 @@ function loadDB(){
         if(r.key==='projects'&&Object.keys(val).length)projects=val;
         else if(r.key==='todoProjects')todoProjects=val;
         else if(r.key==='calEvents')calEvents=val;
+        else if(r.key==='boards')boards=val;
         else if(r.key==='noteBooks')noteBooks=val;
         else if(r.key==='notePages')notePages=val;
         else if(r.key==='notePads'){migrateNotePads(val);}// eski format
-        else if(r.key==='meta'){if(val.nPId)nPId=val.nPId;if(val.nAId)nAId=val.nAId;if(val.nEId)nEId=val.nEId;if(val.nTPId)nTPId=val.nTPId;if(val.nNId)nNId=val.nNId;if(val.nBId)nBId=val.nBId;if(val.nPgId)nPgId=val.nPgId;}
+        else if(r.key==='meta'){if(val.nPId)nPId=val.nPId;if(val.nAId)nAId=val.nAId;if(val.nEId)nEId=val.nEId;if(val.nTPId)nTPId=val.nTPId;if(val.nNId)nNId=val.nNId;if(val.nBId)nBId=val.nBId;if(val.nPgId)nPgId=val.nPgId;if(val.nBoardId)nBoardId=val.nBoardId;if(val.nCardId)nCardId=val.nCardId;}
       }catch(err){console.warn('Parse error:',r.key,err);}
     });
     fbStatus('ok','☁️ Senkronize');

@@ -421,6 +421,13 @@ html,body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--tx);mi
 /* Sütun resize handle */
 .res-handle{position:absolute;right:0;top:0;height:100%;width:6px;cursor:col-resize;background:transparent;z-index:10;}
 .res-handle:hover{background:var(--bmd);}
+
+/* ── Gündem drag & drop ──────────────────────────────── */
+.ag-item{cursor:grab;}
+.ag-item:active{cursor:grabbing;}
+.ag-item.dragging{opacity:0.35;}
+.ag-drop-zone{transition:background .15s,outline .15s;min-height:48px;}
+.ag-drop-zone.drag-over{background:var(--blt)!important;outline:2px dashed var(--blue);border-radius:4px;}
 </style>
 </head>
 <body>
@@ -924,15 +931,15 @@ html,body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--tx);mi
   <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px" id="agenda-grid">
     <div class="card" style="padding:0;overflow:hidden">
       <div style="background:var(--blue);color:#fff;padding:10px 14px;font-size:12px;font-weight:700">🔵 Bugün</div>
-      <div id="agenda-today" style="padding:6px 0"></div>
+      <div id="agenda-today" class="ag-drop-zone" data-ag-zone="today" style="padding:6px 0"></div>
     </div>
     <div class="card" style="padding:0;overflow:hidden">
       <div style="background:var(--navy2);color:#fff;padding:10px 14px;font-size:12px;font-weight:700">🟣 Yarın</div>
-      <div id="agenda-tomorrow" style="padding:6px 0"></div>
+      <div id="agenda-tomorrow" class="ag-drop-zone" data-ag-zone="tomorrow" style="padding:6px 0"></div>
     </div>
     <div class="card" style="padding:0;overflow:hidden">
       <div style="background:#546E7A;color:#fff;padding:10px 14px;font-size:12px;font-weight:700">⚪ Daha Sonra</div>
-      <div id="agenda-later" style="padding:6px 0"></div>
+      <div id="agenda-later" class="ag-drop-zone" data-ag-zone="later" style="padding:6px 0"></div>
     </div>
   </div>
 </div>
@@ -1784,6 +1791,98 @@ function initActDescExpand(){
       this.classList.toggle('expanded');
     });
   });
+}
+
+
+// ─── GÜNDEM DRAG & DROP ───────────────────────────────────────
+var agDragTpid=null,agDragTid=null,agDragQk=null;
+
+function initAgendaDrag(){
+  // Sürüklenebilir itemlar
+  document.querySelectorAll('.ag-item[draggable]').forEach(function(el){
+    el.ondragstart=function(ev){
+      agDragTpid=this.dataset.agTpid;
+      agDragTid=this.dataset.agTid;
+      agDragQk=this.dataset.agQk;
+      var self=this;
+      setTimeout(function(){self.classList.add('dragging');},0);
+      ev.dataTransfer.effectAllowed='move';
+      ev.dataTransfer.setData('text/plain',agDragTid||'');
+    };
+    el.ondragend=function(){
+      this.classList.remove('dragging');
+      agDragTpid=null;agDragTid=null;agDragQk=null;
+      document.querySelectorAll('.ag-drop-zone').forEach(function(z){
+        z.classList.remove('drag-over');
+      });
+    };
+  });
+
+  // Drop zone'lar: today / tomorrow / later
+  document.querySelectorAll('.ag-drop-zone[data-ag-zone]').forEach(function(zone){
+    zone.ondragover=function(ev){ev.preventDefault();ev.dataTransfer.dropEffect='move';};
+    zone.ondragenter=function(ev){
+      ev.preventDefault();
+      if(agDragTid)this.classList.add('drag-over');
+    };
+    zone.ondragleave=function(ev){
+      var rel=ev.relatedTarget;
+      if(rel&&this.contains(rel))return;
+      this.classList.remove('drag-over');
+    };
+    zone.ondrop=function(ev){
+      ev.preventDefault();
+      this.classList.remove('drag-over');
+      if(!agDragTpid||!agDragTid)return;
+      var targetZone=this.dataset.agZone;// 'today','tomorrow','later'
+      dropAgendaItem(agDragTpid,agDragTid,agDragQk,targetZone);
+    };
+  });
+}
+
+function dropAgendaItem(tpid,tid,qk,targetZone){
+  var tp=todoProjects[tpid];if(!tp)return;
+  // Item'ı bul
+  var item=null;
+  ['q1','q2','q3','q4'].forEach(function(k){
+    var f=tp[k].items.find(function(x){return String(x.id)===String(tid);});
+    if(f)item=f;
+  });
+  if(!item)return;
+
+  // Hedef tarihi hesapla
+  var today=todays();
+  var tmParts=today.split('-');
+  var tmDt=new Date(parseInt(tmParts[0]),parseInt(tmParts[1])-1,parseInt(tmParts[2])+1);
+  var tomorrow=iso(tmDt);
+  var laterDt=new Date(parseInt(tmParts[0]),parseInt(tmParts[1])-1,parseInt(tmParts[2])+7);
+  var laterDate=iso(laterDt);
+
+  var newEnd;
+  if(targetZone==='today')newEnd=today;
+  else if(targetZone==='tomorrow')newEnd=tomorrow;
+  else{
+    // Daha Sonra: eğer zaten bugün/yarın ise +7 gün, değilse tarihi koru ya da +7
+    if(!item.end||item.end<=tomorrow)newEnd=laterDate;
+    else newEnd=item.end;// zaten ileride, olduğu yerde bırak
+  }
+
+  item.end=newEnd;
+  item.dl=d2s(newEnd);
+
+  // Bağlı aksiyon varsa onu da güncelle
+  if(item.actId){
+    Object.values(projects).forEach(function(p){
+      var a=p.actions.find(function(x){return x.id===item.actId;});
+      if(a){a.end=newEnd;syncActToBoard(a,p,PRI_TO_Q[a.priority]||'q3');}
+    });
+    if(g('page-ak').classList.contains('active'))renderActs();
+  }
+
+  saveDB();
+  renderAgenda();
+  var zoneNames={today:'Bugün',tomorrow:'Yarın',later:'Daha Sonra'};
+  toast('📅 "'+item.text.slice(0,25)+(item.text.length>25?'…':'')+'" → '+zoneNames[targetZone]);
 }
 
 // ─── NAVIGATION ───────────────────────────────────────────────
@@ -2789,14 +2888,34 @@ function saveCard(){
     col.cards=col.cards||[];
     col.cards.push(cardData);
     existCard=cardData;
+    // Proje boarduna yeni kart → aksiyona da ekle
+    if(board.projId&&projects[board.projId]){
+      var proj=projects[board.projId];
+      var anas=proj.actions.filter(function(a){return a.type==='Ana';});
+      var naid=proj.id+'-a'+nAId++;
+      var qkPri=col.qk||'todo';
+      var priMap={q1:'ACİL & ÖNEMLİ',q2:'ACİL, ÖNEMLİ DEĞİL',q3:'ÖNEMLİ, ACİL DEĞİL',q4:'NE ACİL NE ÖNEMLİ'};
+      // öncelik: kart priority q1-q4 ise kullan, yoksa todo önceliğini varsay
+      var actPri=Q_TO_PRI[cardData.priority]||'ÖNEMLİ, ACİL DEĞİL';
+      var actStatus=QK_TO_STATUS[qkPri]||'Beklemede';
+      var newAct={id:naid,num:String(anas.length+1),type:'Ana',
+        title:cardData.title,desc:cardData.desc||'',owner:cardData.assign||'',
+        start:todays(),end:cardData.date||todays(),
+        priority:actPri,status:actStatus,
+        pct:actStatus==='Tamamlandı'?100:0,notes:'',tag:'',pid:null};
+      proj.actions.push(newAct);
+      existCard.actId=naid;// kartı aksiyona bağla
+      // Todo'ya da ekle
+      syncActToTodo(newAct);
+      if(g('page-ak').classList.contains('active'))renderActs();
+    } else if(!board.projId){
+      // Bağımsız board: todo'ya ekle
+      syncCardToTodo(existCard,null,col);
+    }
   }
-  // Eğer kart bir aksiyona bağlıysa: aksiyon ve todo'yu güncelle
-  if(existCard&&existCard.actId){
+  // Varolan kart güncelleme: aksiyon bağlıysa sync
+  if(editCardId&&existCard&&existCard.actId){
     syncCardToAct(existCard,col);
-  }
-  // Eğer kart bir projeye bağlı ama aksiyonsuzsa: todo'ya ekle
-  if(existCard&&!existCard.actId&&board.projId){
-    syncCardToTodo(existCard,board.projId,col);
   }
   closeM('mCard');renderBoard();saveDB();
   toast(editCardId?'Kart güncellendi ✏️':'Kart eklendi ✅');
@@ -2880,12 +2999,12 @@ function delCurBoard(){
 // ── Drag & Drop ──────────────────────────────────────────────
 var dragCard=null;var dragFromCol=null;
 function initBoardDrag(){
-  var cards=document.querySelectorAll('.board-card[draggable]');
-  cards.forEach(function(el){
+  document.querySelectorAll('.board-card[draggable]').forEach(function(el){
     el.ondragstart=function(ev){
       dragCard=this.getAttribute('data-cardid');
       dragFromCol=this.getAttribute('data-cardcol');
-      this.style.opacity='0.35';
+      var self=this;
+      setTimeout(function(){self.style.opacity='0.35';},0);// Chrome fix
       ev.dataTransfer.effectAllowed='move';
       ev.dataTransfer.setData('text/plain',dragCard||'');
     };
@@ -2893,19 +3012,32 @@ function initBoardDrag(){
       this.style.opacity='';
       dragCard=null;dragFromCol=null;
       document.querySelectorAll('.board-cards').forEach(function(z){
+        z.dataset.dragOver='';
         z.style.background='';z.style.outline='';
       });
     };
   });
   document.querySelectorAll('.board-cards[data-dropzone]').forEach(function(zone){
-    zone.ondragover=function(ev){ev.preventDefault();ev.dataTransfer.dropEffect='move';};
-    zone.ondragenter=function(ev){
+    zone.ondragover=function(ev){
       ev.preventDefault();
-      if(dragCard){this.style.background='var(--blt)';this.style.outline='2px dashed var(--blue)';}
+      ev.dataTransfer.dropEffect='move';
+      if(dragCard&&!this.dataset.dragOver){
+        this.dataset.dragOver='1';
+        this.style.background='var(--blt)';
+        this.style.outline='2px dashed var(--blue)';
+      }
     };
-    zone.ondragleave=function(){this.style.background='';this.style.outline='';};
+    zone.ondragleave=function(ev){
+      // Sadece gerçekten zone'dan çıkınca temizle (child'a girmince değil)
+      var related=ev.relatedTarget;
+      if(related&&this.contains(related))return;
+      this.dataset.dragOver='';
+      this.style.background='';
+      this.style.outline='';
+    };
     zone.ondrop=function(ev){
       ev.preventDefault();
+      this.dataset.dragOver='';
       this.style.background='';this.style.outline='';
       var cid=dragCard||(ev.dataTransfer.getData('text/plain'));
       var fromCid=dragFromCol;
@@ -2921,6 +3053,7 @@ function initBoardDrag(){
       var movedCard=fromColObj.cards.splice(cardIdx,1)[0];
       toColObj.cards=toColObj.cards||[];
       toColObj.cards.push(movedCard);
+      dragCard=null;dragFromCol=null;
       if(movedCard.actId){syncCardToAct(movedCard,toColObj);}
       else if(board.projId){syncCardToTodo(movedCard,board.projId,toColObj);}
       renderBoard();saveDB();
@@ -2979,8 +3112,7 @@ function renderAgenda(){
   var priShort={q1:'Acil & Önemli',q2:'Acil',q3:'Önemli',q4:'Düşük'};
 
   function agendaItem(it){
-    var isManual=!it.actId;
-    var html='<div style="display:flex;align-items:flex-start;gap:7px;padding:8px 12px;border-bottom:1px solid var(--bdr)">';
+    var html='<div class="ag-item" draggable="true" data-ag-tpid="'+it._tpid+'" data-ag-tid="'+it.id+'" data-ag-qk="'+it._qk+'" style="display:flex;align-items:flex-start;gap:7px;padding:8px 12px;border-bottom:1px solid var(--bdr)">';
     html+='<div class="tchk'+(it.done?' on':'')+'" data-tod="'+it._tpid+'" data-tid="'+it.id+'" style="margin-top:2px;flex-shrink:0">'+(it.done?'✓':'')+'</div>';
     html+='<div style="flex:1;min-width:0">';
     html+='<div style="font-size:12px;font-weight:'+(it.done?'400':'600')+';color:'+(it.done?'var(--tx2)':'var(--tx)')+(it.done?';text-decoration:line-through':'')+';overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+it.text+'</div>';
@@ -3022,6 +3154,7 @@ function renderAgenda(){
   g('agenda-today').innerHTML=todayAll.length?todayAll.map(agendaItem).join(''):empty;
   g('agenda-tomorrow').innerHTML=tmItems.length?tmItems.map(agendaItem).join(''):empty;
   g('agenda-later').innerHTML=laterItems.length?laterItems.map(agendaItem).join(''):empty;
+  initAgendaDrag();
 }
 
 function agTpChanged(){

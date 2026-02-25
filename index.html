@@ -407,6 +407,20 @@ html,body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--tx);mi
 .board-col-drag{opacity:.5;}
 .board-card.drag-over{border-color:var(--blue);background:var(--blt);}
 .board-cards.drag-active{background:var(--blt);border:2px dashed var(--blue);border-radius:8px;min-height:80px;transition:background .15s;}
+
+/* ── Aksiyon tablosu sıralama + sütun resize ─── */
+.srt-th{position:relative;}
+.srt-th:hover{background:var(--sub);}
+.srt-ico{font-size:9px;opacity:.5;}
+.srt-th.asc .srt-ico::after{content:'▲';}
+.srt-th.desc .srt-ico::after{content:'▼';}
+.act-desc-cell{position:relative;transition:max-width .2s;}
+.act-desc-cell.expanded{max-width:400px!important;white-space:normal!important;}
+.act-desc-text{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.act-desc-cell.expanded .act-desc-text{white-space:normal;overflow:visible;text-overflow:clip;}
+/* Sütun resize handle */
+.res-handle{position:absolute;right:0;top:0;height:100%;width:6px;cursor:col-resize;background:transparent;z-index:10;}
+.res-handle:hover{background:var(--bmd);}
 </style>
 </head>
 <body>
@@ -603,6 +617,7 @@ html,body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--tx);mi
     <div class="mbdy">
       <input type="hidden" id="etd-tpid">
       <input type="hidden" id="etd-id">
+      <div id="etd-act-info" style="margin-bottom:6px;display:none"></div>
       <div class="fg"><label class="fl">Görev *</label><input type="text" class="fi" id="etd-txt" placeholder="Görev metni..." onkeydown="if(event.key==='Enter')saveEditTodo()"></div>
       <div class="fg"><label class="fl">Önem / Öncelik</label>
         <select class="fs" id="etd-qk">
@@ -841,14 +856,14 @@ html,body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--tx);mi
       <thead><tr>
         <th style="width:28px"><input type="checkbox" class="cb" id="ahcb" data-action="selAll"></th>
         <th style="width:30px">#</th><th style="width:40px">TÜR</th>
-        <th style="min-width:155px">AKSİYON</th>
-        <th style="min-width:90px">AÇIKLAMA</th>
-        <th style="width:80px">SORUMLU</th>
-        <th style="width:74px">BAŞL.</th><th style="width:74px">BİTİŞ</th>
-        <th style="width:105px">KATEGORİ</th>
-        <th style="width:100px">DURUM</th>
-        <th style="width:95px">TAMAMLANMA</th>
-        <th style="width:75px">NOTLAR</th>
+        <th class="srt-th" data-sort="title" style="min-width:150px;cursor:pointer;user-select:none">AKSİYON <span class="srt-ico" id="srt-title"></span></th>
+        <th class="srt-th" data-sort="desc" style="min-width:120px;cursor:pointer;user-select:none">AÇIKLAMA <span class="srt-ico" id="srt-desc"></span></th>
+        <th class="srt-th" data-sort="owner" style="width:80px;cursor:pointer;user-select:none">SORUMLU <span class="srt-ico" id="srt-owner"></span></th>
+        <th class="srt-th" data-sort="start" style="width:74px;cursor:pointer;user-select:none">BAŞL. <span class="srt-ico" id="srt-start"></span></th>
+        <th class="srt-th" data-sort="end" style="width:74px;cursor:pointer;user-select:none">BİTİŞ <span class="srt-ico" id="srt-end"></span></th>
+        <th class="srt-th" data-sort="priority" style="width:105px;cursor:pointer;user-select:none">KATEGORİ <span class="srt-ico" id="srt-priority"></span></th>
+        <th class="srt-th" data-sort="status" style="width:100px;cursor:pointer;user-select:none">DURUM <span class="srt-ico" id="srt-status"></span></th>
+        <th class="srt-th" data-sort="pct" style="width:95px;cursor:pointer;user-select:none">TAMAMLANMA <span class="srt-ico" id="srt-pct"></span></th>
         <th style="width:55px">ETİKET</th>
         <th style="width:56px"></th>
       </tr></thead>
@@ -1723,6 +1738,54 @@ function exportXLS_board(){
   toast('📥 Board Excel indirildi!');
 }
 
+
+// ─── AKSİYON TABLOSU: SIRALAMA & SÜTUN GENİŞLİĞİ ─────────────
+var actSortCol=null;var actSortDir=1;// 1=asc, -1=desc
+
+function initActSort(){
+  document.querySelectorAll('.srt-th').forEach(function(th){
+    // Resize handle ekle
+    var rh=document.createElement('div');
+    rh.className='res-handle';
+    rh.addEventListener('mousedown',function(ev){
+      ev.stopPropagation();
+      var startX=ev.pageX;
+      var startW=th.offsetWidth;
+      function onMove(e){th.style.width=(Math.max(60,startW+e.pageX-startX))+'px';}
+      function onUp(){document.removeEventListener('mousemove',onMove);document.removeEventListener('mouseup',onUp);}
+      document.addEventListener('mousemove',onMove);
+      document.addEventListener('mouseup',onUp);
+    });
+    th.appendChild(rh);
+    // Sıralama tıklaması
+    th.addEventListener('click',function(ev){
+      if(ev.target.classList.contains('res-handle'))return;
+      var col=this.dataset.sort;
+      if(actSortCol===col)actSortDir*=-1;
+      else{actSortCol=col;actSortDir=1;}
+      renderActs();
+    });
+  });
+}
+
+function sortActs(acts){
+  if(!actSortCol)return acts;
+  return acts.slice().sort(function(a,b){
+    var av=a[actSortCol]||'';var bv=b[actSortCol]||'';
+    if(actSortCol==='pct'){av=parseInt(av)||0;bv=parseInt(bv)||0;return actSortDir*(av-bv);}
+    return actSortDir*av.localeCompare(bv,'tr');
+  });
+}
+
+function initActDescExpand(){
+  document.querySelectorAll('.act-desc-cell').forEach(function(td){
+    td.addEventListener('click',function(ev){
+      ev.stopPropagation();
+      this.classList.toggle('expanded');
+    });
+  });
+}
+
 // ─── NAVIGATION ───────────────────────────────────────────────
 function showPage(id){
   document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');});
@@ -1990,8 +2053,8 @@ function renderActs(){
     var shortcuts2=g('ak-shortcuts');if(shortcuts2)shortcuts2.style.display='none';
   }
   renderKPIs();
-  var acts=curActs();var tb=g('atbody');
-  if(!acts.length){tb.innerHTML='<tr><td colspan="14" style="padding:28px;text-align:center;color:var(--tx2)"><div style="font-size:30px;margin-bottom:7px">📋</div>Henüz aksiyon yok.</td></tr>';return;}
+  var acts=curActs();if(actSortCol)acts=sortActs(acts);var tb=g('atbody');
+  if(!acts.length){tb.innerHTML='<tr><td colspan="13" style="padding:28px;text-align:center;color:var(--tx2)"><div style="font-size:30px;margin-bottom:7px">📋</div>Henüz aksiyon yok.</td></tr>';return;}
   var PRIS=['ACİL & ÖNEMLİ','ACİL, ÖNEMLİ DEĞİL','ÖNEMLİ, ACİL DEĞİL','NE ACİL NE ÖNEMLİ'];
   var rows='';
   acts.forEach(function(a,i){
@@ -2016,19 +2079,26 @@ function renderActs(){
     rows+='<td><span class="rn">'+a.num+'</span></td>';
     rows+='<td><span class="rb '+(isSub?'alt':'ana')+'">'+a.type+'</span></td>';
     rows+='<td>'+tc2+'</td>';
-    rows+='<td style="font-size:10px;color:var(--tx2);max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+a.desc+'</td>';
+    rows+='<td class="act-desc-cell" style="font-size:10px;color:var(--tx2);max-width:160px;cursor:pointer" data-desc-id="'+a.id+'" title="'+escHtml(a.desc||'')+'"><span class="act-desc-text" id="adesc-'+a.id+'">'+escHtml(a.desc||'')+'</span></td>';
     rows+='<td style="font-size:11px">'+a.owner+'</td>';
     rows+='<td class="dc">'+d2s(a.start)+'</td>';
     rows+='<td class="dc"'+(late?' style="color:var(--red);font-weight:700"':'')+'>'+d2s(a.end)+'</td>';
     rows+='<td><select class="isel pb '+pCls(a.priority)+'" data-upd-id="'+a.id+'" data-upd-f="priority">'+opts1+'</select></td>';
     rows+='<td><select class="isel sb '+(late?'late':sCls(a.status))+'" data-upd-id="'+a.id+'" data-upd-f="status">'+opts0+'</select></td>';
     rows+='<td><div class="pbw"><div class="pbg"><div class="pbf'+(pct===100?' full':'')+'" style="width:'+pct+'%"></div></div><select class="isel pts" data-upd-id="'+a.id+'" data-upd-f="pct">'+pctOpts+'</select></div></td>';
-    rows+='<td style="font-size:10px;color:var(--tx2);max-width:75px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+a.notes+'</td>';
+
     rows+='<td>'+(a.tag?'<span class="tp">'+a.tag+'</span>':'')+'</td>';
     rows+='<td><div class="aicn"><button class="ib e" data-edit-id="'+a.id+'">✏️</button><button class="ib d" data-del-id="'+a.id+'">🗑️</button></div></td>';
     rows+='</tr>';
   });
   tb.innerHTML=rows;applyFilt();updBulk();
+  // Sıralama ikon güncelle
+  document.querySelectorAll('.srt-th').forEach(function(th){
+    th.classList.remove('asc','desc');
+    if(th.dataset.sort===actSortCol)th.classList.add(actSortDir===1?'asc':'desc');
+  });
+  initActSort();
+  initActDescExpand();
 }
 function togCol(pid){if(colPar.has(pid))colPar.delete(pid);else colPar.add(pid);renderActs();}
 function updA(id,f,val){
@@ -2528,11 +2598,12 @@ function removeNoteLink(lid){
 
 // ─── BOARD (KANBAN) ──────────────────────────────────────────
 var BOARD_COLS_DEFAULT=[
-  {id:'bc1',name:'Draft',color:'#78909C'},
-  {id:'bc2',name:'Yapılacak',color:'#2196F3'},
-  {id:'bc3',name:'Devam Ediyor',color:'#E65100'},
-  {id:'bc4',name:'İncelemede',color:'#6A1B9A'},
-  {id:'bc5',name:'Tamamlandı',color:'#2E7D32'}
+  {id:'bc1',name:'Draft',color:'#78909C',qk:'draft'},
+  {id:'bc2',name:'Yapılacak',color:'#2196F3',qk:'todo'},
+  {id:'bc3',name:'Devam Ediyor',color:'#E65100',qk:'doing'},
+  {id:'bc4',name:'İncelemede',color:'#6A1B9A',qk:'review'},
+  {id:'bc5',name:'Tamamlandı',color:'#2E7D32',qk:'done'},
+  {id:'bc6',name:'İptal',color:'#B0BEC5',qk:'cancel'}
 ];
 var CARD_PRIS={
   q1:{label:'🔴 ACİL & ÖNEMLİ',bg:'#FFEBEE',color:'#C62828',qk:'q1'},
@@ -2548,11 +2619,12 @@ var BOARD_PROJ_COLS=[
   {qk:'todo',name:'Yapılacak',color:'#2196F3'},
   {qk:'doing',name:'Devam Ediyor',color:'#E65100'},
   {qk:'review',name:'İncelemede',color:'#6A1B9A'},
-  {qk:'done',name:'Tamamlandı',color:'#2E7D32'}
+  {qk:'done',name:'Tamamlandı',color:'#2E7D32'},
+  {qk:'cancel',name:'İptal',color:'#B0BEC5'}
 ];
 // qk → aksiyon durumu eşleştirmesi
-var QK_TO_STATUS={draft:'Beklemede',todo:'Beklemede',doing:'Devam Ediyor',review:'Devam Ediyor',done:'Tamamlandı'};
-var STATUS_TO_QK={'Beklemede':'todo','Devam Ediyor':'doing','Tamamlandı':'done','İptal':'done'};
+var QK_TO_STATUS={draft:'Beklemede',todo:'Beklemede',doing:'Devam Ediyor',review:'Devam Ediyor',done:'Tamamlandı',cancel:'İptal'};
+var STATUS_TO_QK={'Beklemede':'todo','Devam Ediyor':'doing','Tamamlandı':'done','İptal':'cancel'};
 var AVATAR_COLORS=['#2196F3','#E65100','#2E7D32','#6A1B9A','#C62828','#00695C','#F57C00','#0277BD'];
 
 function brdId(){return 'bd'+nBoardId++;}
@@ -2561,7 +2633,7 @@ function colId(){return 'col'+Date.now();}
 
 function getDefaultBoard(){
   var id=brdId();
-  var cols=BOARD_COLS_DEFAULT.map(function(col){return {id:col.id,name:col.name,color:col.color,cards:[]};});
+  var cols=BOARD_COLS_DEFAULT.map(function(col){return {id:col.id,name:col.name,color:col.color,qk:col.qk,cards:[]};});
   boards[id]={id:id,name:'Ana Board',columns:cols,created:Date.now()};
   return id;
 }
@@ -2790,7 +2862,7 @@ function addBoard(){
   var nm=prompt('Board adı:','Yeni Board');
   if(!nm||!nm.trim())return;
   var id=brdId();
-  var cols=BOARD_COLS_DEFAULT.map(function(col){return{id:colId(),name:col.name,color:col.color,cards:[]};});
+  var cols=BOARD_COLS_DEFAULT.map(function(col){return{id:colId(),name:col.name,color:col.color,qk:col.qk,cards:[]};});
   boards[id]={id:id,name:nm.trim(),columns:cols,created:Date.now()};
   curBoardId=id;renderBoard();saveDB();
   toast('Board oluşturuldu: '+nm.trim());
@@ -2808,54 +2880,52 @@ function delCurBoard(){
 // ── Drag & Drop ──────────────────────────────────────────────
 var dragCard=null;var dragFromCol=null;
 function initBoardDrag(){
-  // Mouse drag (HTML5 DnD) - closure sorununu this.dataset ile çöz
-  document.querySelectorAll('.board-card[draggable]').forEach(function(el){
-    el.addEventListener('dragstart',function(ev){
-      dragCard=this.dataset.cardid;
-      dragFromCol=this.dataset.cardcol;
-      this.style.opacity='0.4';
+  var cards=document.querySelectorAll('.board-card[draggable]');
+  cards.forEach(function(el){
+    el.ondragstart=function(ev){
+      dragCard=this.getAttribute('data-cardid');
+      dragFromCol=this.getAttribute('data-cardcol');
+      this.style.opacity='0.35';
       ev.dataTransfer.effectAllowed='move';
-      ev.dataTransfer.setData('text/plain',dragCard);
-    });
-    el.addEventListener('dragend',function(){
+      ev.dataTransfer.setData('text/plain',dragCard||'');
+    };
+    el.ondragend=function(){
       this.style.opacity='';
       dragCard=null;dragFromCol=null;
-      document.querySelectorAll('.board-cards').forEach(function(z){z.classList.remove('drag-active');});
-    });
+      document.querySelectorAll('.board-cards').forEach(function(z){
+        z.style.background='';z.style.outline='';
+      });
+    };
   });
   document.querySelectorAll('.board-cards[data-dropzone]').forEach(function(zone){
-    zone.addEventListener('dragenter',function(ev){
+    zone.ondragover=function(ev){ev.preventDefault();ev.dataTransfer.dropEffect='move';};
+    zone.ondragenter=function(ev){
       ev.preventDefault();
-      if(dragCard)this.classList.add('drag-active');
-    });
-    zone.addEventListener('dragleave',function(){
-      this.classList.remove('drag-active');
-    });
-    zone.addEventListener('dragover',function(ev){
+      if(dragCard){this.style.background='var(--blt)';this.style.outline='2px dashed var(--blue)';}
+    };
+    zone.ondragleave=function(){this.style.background='';this.style.outline='';};
+    zone.ondrop=function(ev){
       ev.preventDefault();
-      ev.dataTransfer.dropEffect='move';
-    });
-    zone.addEventListener('drop',function(ev){
-      ev.preventDefault();
-      this.classList.remove('drag-active');
-      if(!dragCard||!dragFromCol)return;
-      var toColId=this.dataset.dropzone;
-      if(toColId===dragFromCol)return;
+      this.style.background='';this.style.outline='';
+      var cid=dragCard||(ev.dataTransfer.getData('text/plain'));
+      var fromCid=dragFromCol;
+      if(!cid||!fromCid)return;
+      var toColId=this.getAttribute('data-dropzone');
+      if(toColId===fromCid)return;
       var board=boards[curBoardId];if(!board)return;
-      var fromColObj=board.columns.find(function(x){return x.id===dragFromCol;});
+      var fromColObj=board.columns.find(function(x){return x.id===fromCid;});
       var toColObj=board.columns.find(function(x){return x.id===toColId;});
       if(!fromColObj||!toColObj)return;
-      var cardIdx=(fromColObj.cards||[]).findIndex(function(x){return x.id===dragCard;});
+      var cardIdx=(fromColObj.cards||[]).findIndex(function(x){return x.id===cid;});
       if(cardIdx<0)return;
       var movedCard=fromColObj.cards.splice(cardIdx,1)[0];
       toColObj.cards=toColObj.cards||[];
       toColObj.cards.push(movedCard);
-      // Sütun değişince çift yönlü sync
       if(movedCard.actId){syncCardToAct(movedCard,toColObj);}
       else if(board.projId){syncCardToTodo(movedCard,board.projId,toColObj);}
       renderBoard();saveDB();
       toast('Kart taşındı → '+toColObj.name);
-    });
+    };
   });
 }
 
@@ -2920,7 +2990,7 @@ function renderAgenda(){
     if(it.own)html+='<span style="font-size:9px;color:var(--tx2)">👤'+it.own+'</span>';
     html+='</div></div>';
     html+='<div style="display:flex;gap:2px;flex-shrink:0">';
-    if(isManual)html+='<button class="tdl" style="color:var(--blue)" data-edt-tod="'+it._tpid+'" data-edt-tid="'+it.id+'" data-edt-qk="'+it._qk+'">✏️</button>';
+    html+='<button class="tdl" style="color:var(--blue)" data-edt-tod="'+it._tpid+'" data-edt-tid="'+it.id+'" data-edt-qk="'+it._qk+'">✏️</button>';
     html+='<button class="tdl" data-del-tod="'+it._tpid+'" data-del-tid="'+it.id+'">🗑️</button>';
     html+='</div></div>';
     return html;
@@ -3226,7 +3296,6 @@ function editTodoItem(tpid,id,qk){
   var addActCb=g('etd-addact');
   addActCb.checked=false;
   if(tp.projId&&projects[tp.projId]&&!it.actId){
-    // Manuel görev + proje bağlı liste
     var proj=projects[tp.projId];
     g('etd-proj-name').textContent='Proje: '+proj.name;
     g('etd-pst').value=(it.end||todays()).slice(0,10);
@@ -3234,6 +3303,18 @@ function editTodoItem(tpid,id,qk){
     projWrap.style.display='';
   } else {
     projWrap.style.display='none';
+  }
+  // actId var - aksiyon bilgisini göster
+  var actInfoEl=g('etd-act-info');
+  if(actInfoEl){
+    if(it.actId){
+      var relAct=null;
+      Object.values(projects).forEach(function(p){var a=p.actions.find(function(x){return x.id===it.actId;});if(a)relAct=a;});
+      actInfoEl.style.display='';
+      actInfoEl.innerHTML=relAct?'<span style="font-size:9px;background:var(--blt);color:var(--blue);padding:2px 6px;border-radius:4px;font-weight:600">🔗 Aksiyon: '+escHtml(relAct.title)+'</span>':'';
+    } else {
+      actInfoEl.style.display='none';
+    }
   }
 
   // Liste değişince proje wrap güncelle
@@ -3275,6 +3356,19 @@ function saveEditTodo(){
   oldItem.own=ownVal;
   oldItem.end=endVal;
   oldItem.dl=endVal?d2s(endVal):'';
+
+  // Eğer aksiyon bağlıysa aksiyonu da güncelle
+  if(oldItem.actId){
+    Object.values(projects).forEach(function(p){
+      var a=p.actions.find(function(x){return x.id===oldItem.actId;});
+      if(a){
+        a.title=txt;a.owner=ownVal;a.end=endVal;
+        a.priority=Q_TO_PRI[newQk]||a.priority;
+        syncActToBoard(a,p,newQk);
+      }
+    });
+    if(g('page-ak').classList.contains('active'))renderActs();
+  }
 
   // Yeni listeye ekle (değişmiş olabilir)
   dstTp[newQk].items.push(oldItem);
@@ -3578,6 +3672,7 @@ document.addEventListener('click',function(e){
   var t=e.target;
   // Workspace satır tıklamaları
   if(t.dataset.edtTod){editTodoItem(t.dataset.edtTod,t.dataset.edtTid,t.dataset.edtQk);return;}
+  if(t.dataset.sort){/* th click handled by initActSort */return;}
   if(t.dataset.action==='addBoard'){addBoard();return;}
   if(t.dataset.action==='delCurBoard'){delCurBoard();return;}
   if(t.dataset.action==='addBoardCol'){addBoardCol();return;}

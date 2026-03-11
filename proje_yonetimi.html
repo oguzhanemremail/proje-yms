@@ -92,6 +92,9 @@ html,body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--tx);m
 .kval{font-size:22px;font-weight:700;color:var(--navy);font-family:'JetBrains Mono',monospace;}
 .kval.g{color:var(--green);}.kval.b{color:var(--blue);}.kval.o{color:var(--orange);}.kval.r{color:var(--red);}
 .card{background:var(--card);border-radius:var(--radius);border:1px solid var(--bdr);overflow:hidden;box-shadow:var(--card-shadow);transition:box-shadow .2s;}
+.dash-chip{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:16px;font-size:11px;font-weight:600;cursor:pointer;border:1.5px solid var(--bdr);background:#fff;color:var(--navy);transition:all .15s;white-space:nowrap;user-select:none;}
+.dash-chip:hover{border-color:var(--blue);background:var(--blt);}
+.dash-chip.active{background:var(--blue);color:#fff;border-color:var(--blue);box-shadow:0 1px 5px rgba(25,118,210,.25);}
 /* Sticky table header for aksiyon page */
 .ak-sticky-wrap{max-height:calc(100vh - 180px);overflow-y:auto;overflow-x:auto;border-radius:9px;border:1px solid var(--bdr);box-shadow:0 1px 3px rgba(0,0,0,.04);-webkit-overflow-scrolling:touch;}
 .tbl{width:100%;border-collapse:collapse;font-size:11px;}
@@ -1104,12 +1107,28 @@ html,body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--tx);m
 <!-- DASHBOARD -->
 <div id="page-dash" class="page active">
   <div class="ph">
-    <div><div class="ptitle">📊 Kontrol Paneli</div><div class="psub">Tüm projelerin özeti</div></div>
+    <div><div class="ptitle">📊 Kontrol Paneli</div><div class="psub" id="dash-sub">Tüm projelerin özeti</div></div>
     <button class="btn btn-xl btn-sm" onclick="exportXLS('dash')">📥 Excel</button>
       <button class="btn btn-xl btn-sm" onclick="exportPDF('dash')">🖨️ PDF</button>
   </div>
+  <!-- Kişi filtresi -->
+  <div id="dash-owner-bar" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:10px;padding:8px 12px;background:#fff;border-radius:9px;border:1px solid var(--bdr)">
+    <span style="font-size:10px;font-weight:700;color:var(--tx2);text-transform:uppercase;letter-spacing:.4px;margin-right:2px">👤 Kişi:</span>
+    <div id="dash-owner-chips" style="display:flex;gap:5px;flex-wrap:wrap"></div>
+  </div>
   <div class="krow" id="dash-kpis"></div>
-  <!-- Üst satır: aksiyonlar (proje bazlı) + yaklaşan etkinlikler -->
+  <!-- Üst satır: bugün bitmesi gerekenler (sol) + geciken işler (sağ) -->
+  <div class="dgrid" style="margin-bottom:12px">
+    <div class="card" style="padding:13px;border-top:3px solid var(--blue)">
+      <div style="font-size:12px;font-weight:700;color:var(--blue);margin-bottom:9px">🎯 Bugün Bitmesi Gerekenler</div>
+      <div id="dash-today"></div>
+    </div>
+    <div class="card" style="padding:13px;border-top:3px solid var(--red)">
+      <div style="font-size:12px;font-weight:700;color:var(--red);margin-bottom:9px">⚠️ Geciken İşler</div>
+      <div id="dash-late"></div>
+    </div>
+  </div>
+  <!-- Orta satır: haftalık aksiyonlar + yaklaşan etkinlikler -->
   <div class="dgrid" style="margin-bottom:12px">
     <div class="card" style="padding:13px">
       <div style="font-size:12px;font-weight:700;color:var(--navy);margin-bottom:9px">📋 Bu Haftanın Aksiyonları</div>
@@ -1120,15 +1139,15 @@ html,body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--tx);m
       <div id="dash-vis"></div>
     </div>
   </div>
-  <!-- Alt satır: geciken işler + bugün bitmesi gerekenler -->
+  <!-- Alt satır: Acil & Önemli + Acil, Önemli Değil -->
   <div class="dgrid">
-    <div class="card" style="padding:13px">
-      <div style="font-size:12px;font-weight:700;color:var(--red);margin-bottom:9px">⚠️ Geciken İşler</div>
-      <div id="dash-late"></div>
+    <div class="card" style="padding:13px;border-top:3px solid #C62828">
+      <div style="font-size:12px;font-weight:700;color:#C62828;margin-bottom:9px">🔴 Acil & Önemli</div>
+      <div id="dash-pri-urgent"></div>
     </div>
-    <div class="card" style="padding:13px">
-      <div style="font-size:12px;font-weight:700;color:var(--navy);margin-bottom:9px">🎯 Bugün Bitmesi Gerekenler</div>
-      <div id="dash-today"></div>
+    <div class="card" style="padding:13px;border-top:3px solid #E65100">
+      <div style="font-size:12px;font-weight:700;color:#E65100;margin-bottom:9px">🟡 Acil, Önemli Değil</div>
+      <div id="dash-pri-notimportant"></div>
     </div>
   </div>
 </div>
@@ -1153,6 +1172,27 @@ html,body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--tx);m
     </div>
   </div>
   <div class="krow" id="ak-kpis"></div>
+  <!-- Aksiyon Filtre Çubuğu -->
+  <div id="ak-fbar" style="background:#fff;border:1px solid var(--bdr);border-radius:9px;padding:8px 12px;margin-bottom:8px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+    <span style="font-size:10px;font-weight:700;color:var(--tx2);text-transform:uppercase;letter-spacing:.4px;flex-shrink:0">🔍 Filtre:</span>
+    <input id="ak-f-owner" type="text" placeholder="👤 Sorumlu..." style="font-size:11px;padding:4px 8px;border:1.5px solid var(--bdr);border-radius:6px;font-family:inherit;width:110px;outline:none" oninput="applyAkFilter()">
+    <input id="ak-f-tag" type="text" placeholder="🏷️ Etiket..." style="font-size:11px;padding:4px 8px;border:1.5px solid var(--bdr);border-radius:6px;font-family:inherit;width:100px;outline:none" oninput="applyAkFilter()">
+    <select id="ak-f-status" style="font-size:11px;padding:4px 8px;border:1.5px solid var(--bdr);border-radius:6px;font-family:inherit;outline:none;color:var(--tx)" onchange="applyAkFilter()">
+      <option value="">📊 Tüm Durumlar</option>
+      <option>Taslak</option><option>Beklemede</option><option>Devam Ediyor</option><option>Tamamlandı</option><option>İptal</option>
+    </select>
+    <select id="ak-f-cat" style="font-size:11px;padding:4px 8px;border:1.5px solid var(--bdr);border-radius:6px;font-family:inherit;outline:none;color:var(--tx)" onchange="applyAkFilter()">
+      <option value="">📁 Tüm Kategoriler</option>
+      <option>ACİL &amp; ÖNEMLİ</option><option>ACİL, ÖNEMLİ DEĞİL</option><option>ÖNEMLİ, ACİL DEĞİL</option><option>NE ACİL NE ÖNEMLİ</option>
+    </select>
+    <div style="display:flex;align-items:center;gap:4px;flex-shrink:0">
+      <input id="ak-f-start" type="date" style="font-size:11px;padding:4px 8px;border:1.5px solid var(--bdr);border-radius:6px;font-family:inherit;outline:none;color:var(--tx)" onchange="applyAkFilter()" title="Başlangıç tarihi ≥">
+      <span style="font-size:10px;color:var(--tx2)">—</span>
+      <input id="ak-f-end" type="date" style="font-size:11px;padding:4px 8px;border:1.5px solid var(--bdr);border-radius:6px;font-family:inherit;outline:none;color:var(--tx)" onchange="applyAkFilter()" title="Bitiş tarihi ≤">
+    </div>
+    <button onclick="clearAkFilter()" style="font-size:11px;padding:4px 10px;border:1.5px solid var(--bdr);border-radius:6px;background:none;cursor:pointer;color:var(--tx2);font-family:inherit;flex-shrink:0">✕ Temizle</button>
+    <span id="ak-f-count" style="font-size:10px;color:var(--tx2);margin-left:auto"></span>
+  </div>
   <div class="bulkt" id="bulkt">
     <input type="checkbox" class="cb" id="hcb" data-action="selAll">
     <span id="sel-lbl" style="font-size:11px;font-weight:600;color:var(--orange)">0 seçili</span>
@@ -3315,56 +3355,112 @@ function createProj(){
 }
 
 // ─── DASHBOARD ────────────────────────────────────────────────
+var _dashOwnerFilter = null; // null = tümü, string = kişi adı
+
+function setDashOwner(name) {
+  _dashOwnerFilter = (_dashOwnerFilter === name) ? null : name;
+  renderDash();
+}
+
 function renderDash(){
   var td=todays();
-  // Tüm ana aksiyonlar + proje bilgisi
+
+  // Tüm aksiyonlardan benzersiz sorumlu isimlerini topla (virgülle ayrılmış çoklu kişiler de ayrıştırılır)
+  var ownerSet={};
+  Object.values(projects).forEach(function(p){
+    p.actions.forEach(function(a){
+      if(a.owner && a.owner.trim()){
+        a.owner.split(/[,،;\/]/).forEach(function(o){var ot=o.trim();if(ot)ownerSet[ot]=true;});
+      }
+    });
+  });
+  var owners=Object.keys(ownerSet).sort(function(a,b){return a.localeCompare(b,'tr');});
+
+  // Kişi çipleri
+  var chipHtml='<span class="dash-chip'+(!_dashOwnerFilter?' active':'')+'" onclick="setDashOwner(null)">Tümü</span>';
+  owners.forEach(function(o){
+    chipHtml+='<span class="dash-chip'+(_dashOwnerFilter===o?' active':'')+'" onclick="setDashOwner(\''+escHtml(o.replace(/'/g,"\\'"))+'\')">'+escHtml(o)+'</span>';
+  });
+  g('dash-owner-chips').innerHTML=chipHtml;
+
+  // Subtitle güncelle
+  g('dash-sub').textContent=_dashOwnerFilter?'📌 '+_dashOwnerFilter+' — kişiye özel görünüm':'Tüm projelerin özeti';
+
+  // Tüm ana aksiyonlar + proje bilgisi + owner + priority
   var allA=[];
   Object.values(projects).forEach(function(p){
     p.actions.filter(function(a){return a.type==='Ana';}).forEach(function(a){
-      allA.push({id:a.id,t:a.title,s:a.status,l:isLate(a),pc:p.color,pn:p.name,end:a.end||''});
+      allA.push({id:a.id,t:a.title,s:a.status,l:isLate(a),pc:p.color,pn:p.name,end:a.end||'',own:a.owner||'',pri:a.priority||''});
     });
   });
-  var tA=allA.length;
-  var tD=allA.filter(function(a){return a.s==='Tamamlandı';}).length;
-  var tP=allA.filter(function(a){return a.s==='Devam Ediyor';}).length;
-  var tW=allA.filter(function(a){return a.s==='Beklemede';}).length;
-  var tL=allA.filter(function(a){return a.l;}).length;
-  var pct=tA?Math.round(tD/tA*100):0;
-  g('dash-kpis').innerHTML=kc('Proje',Object.keys(projects).length,'')+kc('Toplam Aksiyon',tA,'')+kc('Tamamlanan',tD,'g')+kc('Devam Eden',tP,'b')+kc('Beklemede',tW,'o')+kc('Geciken',tL,'r')+kc('Oran',pct+'%','');
 
-  // Bu haftanın aksiyonları: proje bazlı gruplu
-  var wsS=iso(wkStart(new Date()));var wsE=iso(addD(wkStart(new Date()),6));
-  var weekA={};
-  Object.values(projects).forEach(function(p){
-    p.actions.filter(function(a){
-      return a.type==='Ana'&&a.status!=='Tamamlandı'&&a.status!=='İptal'&&
-        ((a.start&&a.start<=wsE)||(a.end&&a.end>=wsS));
-    }).forEach(function(a){
-      if(!weekA[p.id])weekA[p.id]={name:p.name,color:p.color,acts:[]};
-      weekA[p.id].acts.push(a);
-    });
-  });
+  // Kişi filtresini uygula (birden fazla sorumlu varsa içerir mantığı)
+  function ownerMatch(own,filter){if(!filter)return true;if(!own)return false;return own.split(/[,،;\/]/).map(function(s){return s.trim();}).indexOf(filter)>=0;}
+  var fA=_dashOwnerFilter?allA.filter(function(a){return ownerMatch(a.own,_dashOwnerFilter);}):allA;
+
+  var tA=fA.length;
+  var tD=fA.filter(function(a){return a.s==='Tamamlandı';}).length;
+  var tP=fA.filter(function(a){return a.s==='Devam Ediyor';}).length;
+  var tW=fA.filter(function(a){return a.s==='Beklemede';}).length;
+  var tL=fA.filter(function(a){return a.l;}).length;
+  var pct=tA?Math.round(tD/tA*100):0;
+  // Alt aksiyonlar dahil toplam hesapla
+  var allActsForCount=[];Object.values(projects).forEach(function(p){p.actions.forEach(function(a){allActsForCount.push(a);});});
+  var fAllActs=_dashOwnerFilter?allActsForCount.filter(function(a){return a.owner&&a.owner.split(/[,،;\/]/).map(function(s){return s.trim();}).indexOf(_dashOwnerFilter)>=0;}):allActsForCount;
+  var tAna=fAllActs.filter(function(a){return a.type==='Ana';}).length;
+  var tAlt=fAllActs.filter(function(a){return a.type==='Alt';}).length;
+  var tTop=tAna+tAlt;
+  var toplamCard='<div class="kcard"><div class="klbl">Toplam Aksiyon</div><div class="kval" style="font-size:16px">'+tTop+'</div><div style="display:flex;gap:8px;margin-top:4px"><span style="font-size:9px;color:var(--navy);font-weight:700">Ana: '+tAna+'</span><span style="font-size:9px;color:var(--subt);font-weight:700">Alt: '+tAlt+'</span></div></div>';
+  g('dash-kpis').innerHTML=kc('Proje',Object.keys(projects).length,'')+toplamCard+kc('Tamamlanan',tD,'g')+kc('Devam Eden',tP,'b')+kc('Beklemede',tW,'o')+kc('Geciken',tL,'r')+kc('Oran',pct+'%','');
+
+  // ── Bu haftanın aksiyonları: gün bazlı (Pzt-Cum) ──
+  var wsStart=wkStart(new Date());
+  var DAY_N=['Pazartesi','Salı','Çarşamba','Perşembe','Cuma'];
+  var DAY_CLR=['#1976D2','#7B1FA2','#00796B','#E65100','#C62828'];
   var weekHtml='';
-  Object.values(weekA).forEach(function(pg){
-    weekHtml+='<div style="margin-bottom:7px">';
-    weekHtml+='<div style="display:flex;align-items:center;gap:5px;padding:3px 0 3px 0">';
-    weekHtml+='<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:'+pg.color+'"></span>';
-    weekHtml+='<span style="font-size:10px;font-weight:700;color:var(--navy)">'+pg.name+'</span></div>';
-    pg.acts.slice(0,5).forEach(function(a){
-      var sb=isLate(a)?'<span class="sb late" style="font-size:9px">⚠️Gecikti</span>':
-        (a.status==='Devam Ediyor'?'<span class="sb d" style="font-size:9px">Devam</span>':'<span class="sb b" style="font-size:9px">Bekle</span>');
-      weekHtml+='<div style="display:flex;align-items:center;gap:5px;padding:3px 0 3px 13px;border-bottom:1px solid var(--bdr)">'+sb;
-      weekHtml+='<span style="font-size:11px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+a.title+'</span>';
-      if(a.end)weekHtml+='<span style="font-size:9px;color:var(--tx2)">'+d2s(a.end)+'</span>';
-      weekHtml+='</div>';
+  for(var di=0;di<5;di++){
+    var dd=addD(wsStart,di);var ddIso=iso(dd);
+    var isToday=ddIso===td;
+    var monthN=['Oca','Şub','Mar','Nis','May','Haz','Tem','Ağu','Eyl','Eki','Kas','Ara'];
+    var dateLabel=dd.getDate()+' '+monthN[dd.getMonth()];
+    var dayActs=[];
+    Object.values(projects).forEach(function(p){
+      p.actions.filter(function(a){
+        if(a.status==='Tamamlandı'||a.status==='İptal') return false;
+        if(_dashOwnerFilter && !ownerMatch(a.owner,_dashOwnerFilter)) return false;
+        return a.end===ddIso;
+      }).forEach(function(a){ dayActs.push({a:a,pn:p.name,pc:p.color}); });
     });
+    weekHtml+='<div style="margin-bottom:2px">';
+    weekHtml+='<div style="display:flex;align-items:center;gap:6px;padding:5px 0 3px;'+(isToday?'background:#E3F2FD;border-radius:5px;padding-left:6px;margin:0 -6px':'')+'">';
+    weekHtml+='<span style="display:inline-block;width:4px;height:20px;border-radius:2px;background:'+DAY_CLR[di]+'"></span>';
+    weekHtml+='<span style="font-size:10px;font-weight:800;color:'+DAY_CLR[di]+';min-width:70px">'+DAY_N[di]+'</span>';
+    weekHtml+='<span style="font-size:9px;color:var(--tx2)">'+dateLabel+'</span>';
+    if(isToday) weekHtml+='<span style="font-size:8px;background:'+DAY_CLR[di]+';color:#fff;padding:1px 5px;border-radius:3px;font-weight:700">BUGÜN</span>';
+    weekHtml+='<span style="margin-left:auto;font-size:9px;font-weight:700;color:'+(dayActs.length?DAY_CLR[di]:'var(--tx2)')+'">'+(dayActs.length||'—')+'</span>';
     weekHtml+='</div>';
-  });
+    if(dayActs.length){
+      dayActs.forEach(function(item){
+        var a=item.a;
+        var sb=isLate(a)?'<span class="sb late" style="font-size:9px">⚠️Gecikti</span>':
+          (a.status==='Devam Ediyor'?'<span class="sb d" style="font-size:9px">Devam</span>':'<span class="sb b" style="font-size:9px">Bekle</span>');
+        weekHtml+='<div style="display:flex;align-items:center;gap:5px;padding:3px 0 3px 16px;border-bottom:1px solid var(--bdr)">';
+        weekHtml+='<span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:'+item.pc+';flex-shrink:0"></span>';
+        weekHtml+=sb;
+        weekHtml+='<span style="font-size:11px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+escHtml(a.title)+'</span>';
+        if(!_dashOwnerFilter && a.owner) weekHtml+='<span style="font-size:9px;color:var(--blue);white-space:nowrap">'+escHtml(a.owner)+'</span>';
+        weekHtml+='<span style="font-size:9px;color:var(--tx2);white-space:nowrap">'+item.pn+'</span>';
+        weekHtml+='</div>';
+      });
+    }
+    weekHtml+='</div>';
+  }
   g('dash-acts').innerHTML=weekHtml||'<div style="padding:18px;text-align:center;color:var(--tx2)">Bu hafta aktif aksiyon yok</div>';
 
-  // Yaklaşan etkinlikler: tip etiketi
-  var uv=calEvents.filter(function(e){return e.date>=td&&e.sts!=='İptal';})
-    .sort(function(a,b){return (a.date+'T'+(a.time||'00:00')).localeCompare(b.date+'T'+(b.time||'00:00'));}).slice(0,7);
+  // ── Yaklaşan etkinlikler ──
+  var uvAll=calEvents.filter(function(e){return e.date>=td&&e.sts!=='İptal';});
+  if(_dashOwnerFilter) uvAll=uvAll.filter(function(e){return e.own===_dashOwnerFilter;});
+  var uv=uvAll.sort(function(a,b){return (a.date+'T'+(a.time||'00:00')).localeCompare(b.date+'T'+(b.time||'00:00'));}).slice(0,7);
   g('dash-vis').innerHTML=uv.map(function(e){
     var tag=e.type==='visit'
       ?'<span style="font-size:9px;background:#E3F2FD;color:#1565C0;padding:1px 5px;border-radius:3px;font-weight:700;white-space:nowrap">🤝 Ziyaret</span>'
@@ -3377,8 +3473,8 @@ function renderDash(){
       '</div>';
   }).join('')||'<div style="padding:18px;text-align:center;color:var(--tx2)">Yaklaşan etkinlik yok</div>';
 
-  // Geciken işler
-  var lateA=allA.filter(function(a){return a.l;}).sort(function(a,b){return a.end.localeCompare(b.end);});
+  // ── Geciken işler ──
+  var lateA=fA.filter(function(a){return a.l;}).sort(function(a,b){return a.end.localeCompare(b.end);});
   g('dash-late').innerHTML=lateA.length?lateA.slice(0,8).map(function(a){
     var days=Math.round((new Date(td+'T00:00:00')-new Date(a.end+'T00:00:00'))/86400000);
     return '<div style="display:flex;align-items:center;gap:5px;padding:5px 0;border-bottom:1px solid var(--bdr)">'+
@@ -3389,8 +3485,8 @@ function renderDash(){
       '</div>';
   }).join(''):'<div style="padding:18px;text-align:center;color:var(--green)">✅ Geciken iş yok!</div>';
 
-  // Bugün bitmesi gerekenler
-  var todayA=allA.filter(function(a){return a.end===td&&a.s!=='Tamamlandı'&&a.s!=='İptal';});
+  // ── Bugün bitmesi gerekenler ──
+  var todayA=fA.filter(function(a){return a.end===td&&a.s!=='Tamamlandı'&&a.s!=='İptal';});
   g('dash-today').innerHTML=todayA.length?todayA.map(function(a){
     return '<div style="display:flex;align-items:center;gap:5px;padding:5px 0;border-bottom:1px solid var(--bdr)">'+
       '<span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:'+a.pc+';flex-shrink:0"></span>'+
@@ -3399,6 +3495,34 @@ function renderDash(){
       '<span style="font-size:9px;color:var(--tx2);white-space:nowrap">'+a.pn+'</span>'+
       '</div>';
   }).join(''):'<div style="padding:18px;text-align:center;color:var(--tx2)">Bugün son günü olan iş yok</div>';
+
+  // ── Acil & Önemli ──
+  var urgentA=fA.filter(function(a){return a.pri==='ACİL & ÖNEMLİ'&&a.s!=='Tamamlandı'&&a.s!=='İptal';});
+  g('dash-pri-urgent').innerHTML=urgentA.length?urgentA.map(function(a){
+    var sb=a.l?'<span class="sb late" style="font-size:9px">⚠️Gecikti</span>':
+      (a.s==='Devam Ediyor'?'<span class="sb d" style="font-size:9px">Devam</span>':'<span class="sb b" style="font-size:9px">Bekle</span>');
+    return '<div style="display:flex;align-items:center;gap:5px;padding:5px 0;border-bottom:1px solid var(--bdr)">'+
+      '<span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:'+a.pc+';flex-shrink:0"></span>'+
+      sb+
+      '<span style="font-size:11px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+a.t+'</span>'+
+      '<span style="font-size:9px;color:var(--tx2);white-space:nowrap">'+a.pn+'</span>'+
+      (a.end?'<span style="font-size:9px;color:var(--tx2);white-space:nowrap;margin-left:3px">'+d2s(a.end)+'</span>':'')+
+      '</div>';
+  }).join(''):'<div style="padding:18px;text-align:center;color:var(--tx2)">Acil & önemli iş yok</div>';
+
+  // ── Acil, Önemli Değil ──
+  var urgNotImpA=fA.filter(function(a){return a.pri==='ACİL, ÖNEMLİ DEĞİL'&&a.s!=='Tamamlandı'&&a.s!=='İptal';});
+  g('dash-pri-notimportant').innerHTML=urgNotImpA.length?urgNotImpA.map(function(a){
+    var sb=a.l?'<span class="sb late" style="font-size:9px">⚠️Gecikti</span>':
+      (a.s==='Devam Ediyor'?'<span class="sb d" style="font-size:9px">Devam</span>':'<span class="sb b" style="font-size:9px">Bekle</span>');
+    return '<div style="display:flex;align-items:center;gap:5px;padding:5px 0;border-bottom:1px solid var(--bdr)">'+
+      '<span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:'+a.pc+';flex-shrink:0"></span>'+
+      sb+
+      '<span style="font-size:11px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+a.t+'</span>'+
+      '<span style="font-size:9px;color:var(--tx2);white-space:nowrap">'+a.pn+'</span>'+
+      (a.end?'<span style="font-size:9px;color:var(--tx2);white-space:nowrap;margin-left:3px">'+d2s(a.end)+'</span>':'')+
+      '</div>';
+  }).join(''):'<div style="padding:18px;text-align:center;color:var(--tx2)">Acil & önemsiz iş yok</div>';
 }
 function kc(l,val,c){return '<div class="kcard"><div class="klbl">'+l+'</div><div class="kval '+c+'">'+val+'</div></div>';}
 
@@ -3415,20 +3539,50 @@ function renderKPIs(){
 }
 function togFilt(k){if(actFilter===k){clrFilter();return;}actFilter=k;g('cfbtn').style.display='';renderKPIs();applyFilt();}
 function clrFilter(){actFilter=null;g('cfbtn').style.display='none';renderKPIs();applyFilt();}
-function applyFilt(){
+function clearAkFilter(){
+  var ids=['ak-f-owner','ak-f-tag','ak-f-status','ak-f-cat','ak-f-start','ak-f-end'];
+  ids.forEach(function(id){var el=g(id);if(el)el.value='';});
+  applyAkFilter();
+}
+function applyAkFilter(){
+  var fOwner=(g('ak-f-owner')||{value:''}).value.trim().toLowerCase();
+  var fTag=(g('ak-f-tag')||{value:''}).value.trim().toLowerCase();
+  var fStatus=(g('ak-f-status')||{value:''}).value;
+  var fCat=(g('ak-f-cat')||{value:''}).value;
+  var fStart=(g('ak-f-start')||{value:''}).value;
+  var fEnd=(g('ak-f-end')||{value:''}).value;
   var acts=curActs();
+  var visible=0,total=0;
   document.querySelectorAll('#atbody tr[data-aid]').forEach(function(row){
     var a=acts.find(function(x){return x.id===row.dataset.aid;});
     if(!a){row.classList.remove('fhid');return;}
-    var show=true;
-    if(actFilter==='d')show=a.status==='Tamamlandı';
-    else if(actFilter==='p')show=a.status==='Devam Ediyor';
-    else if(actFilter==='w')show=a.status==='Beklemede';
-    else if(actFilter==='l')show=isLate(a);
-    else if(actFilter==='t')show=a.type==='Ana';
+    total++;
+    // KPI filtresi
+    var kpiShow=true;
+    if(actFilter==='d')kpiShow=a.status==='Tamamlandı';
+    else if(actFilter==='p')kpiShow=a.status==='Devam Ediyor';
+    else if(actFilter==='w')kpiShow=a.status==='Beklemede';
+    else if(actFilter==='l')kpiShow=isLate(a);
+    else if(actFilter==='t')kpiShow=a.type==='Ana';
+    // Filtre çubuğu
+    var barShow=true;
+    if(fOwner){
+      var owners=(a.owner||'').split(/[,،;\/]/).map(function(s){return s.trim().toLowerCase();});
+      barShow=owners.some(function(o){return o.indexOf(fOwner)>=0;});
+    }
+    if(barShow&&fTag) barShow=(a.tag||'').toLowerCase().indexOf(fTag)>=0;
+    if(barShow&&fStatus) barShow=a.status===fStatus;
+    if(barShow&&fCat) barShow=a.priority===fCat;
+    if(barShow&&fStart) barShow=!a.start||a.start>=fStart;
+    if(barShow&&fEnd) barShow=!a.end||a.end<=fEnd;
+    var show=kpiShow&&barShow;
     row.classList.toggle('fhid',!show);
+    if(show)visible++;
   });
+  var cnt=g('ak-f-count');
+  if(cnt){var hasFilter=fOwner||fTag||fStatus||fCat||fStart||fEnd;cnt.textContent=hasFilter?(visible+' / '+total+' aksiyon gösteriliyor'):'';} 
 }
+function applyFilt(){applyAkFilter();}
 
 // ─── ACTION TABLE ─────────────────────────────────────────────
 function findActProj(id){var res=null;Object.values(projects).forEach(function(p){if(p.actions.find(function(x){return x.id===id;}))res=p;});return res;}
@@ -3751,24 +3905,41 @@ function _renderAkTask() {
 }
 
 /* ── Haftalık Görünüm ───────────────────────────────── */
+var _akWkOffset = 0;
+function _akWkPrev() { _akWkOffset--; _renderAkWeekly(); }
+function _akWkNext() { _akWkOffset++; _renderAkWeekly(); }
+function _akWkToday() { _akWkOffset = 0; _renderAkWeekly(); }
+
 function _renderAkWeekly() {
   var wrap = g('ak-weekly-view');
   if (!wrap) return;
   var acts = curActs();
-  // Haftanın başını bul (Pazartesi)
   var today = new Date(); today.setHours(0,0,0,0);
-  var dow = today.getDay(); // 0=Pazar
+  var dow = today.getDay();
   var diff = dow === 0 ? -6 : 1 - dow;
-  var monday = new Date(today); monday.setDate(today.getDate() + diff);
+  var baseMonday = new Date(today); baseMonday.setDate(today.getDate() + diff);
+  var monday = addD(baseMonday, _akWkOffset * 7);
+  var sundayD = addD(monday, 6);
+  var todayIso = iso(today);
   var DAY_NAMES = ['Pazartesi','Salı','Çarşamba','Perşembe','Cuma','Cumartesi','Pazar'];
   var DAY_COLORS = ['#1976D2','#7B1FA2','#00796B','#E65100','#C62828','#37474F','#546E7A'];
-  // 7 günlük kolonlar oluştur
+  var monthFull = ['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
+  var monthShort = ['Oca','Şub','Mar','Nis','May','Haz','Tem','Ağu','Eyl','Eki','Kas','Ara'];
+  var isThisWeek = _akWkOffset === 0;
+  var wkLabel = monday.getDate() + ' ' + monthFull[monday.getMonth()] + ' — ' + sundayD.getDate() + ' ' + monthFull[sundayD.getMonth()] + ' ' + sundayD.getFullYear();
+  var navH = '<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap">';
+  navH += '<button class="btn btn-g btn-sm" onclick="_akWkPrev()">← Önceki</button>';
+  navH += '<button class="btn btn-g btn-sm" onclick="_akWkToday()"' + (isThisWeek ? ' style="background:var(--blue);color:#fff;border-color:var(--blue)"' : '') + '>Bu Hafta</button>';
+  navH += '<button class="btn btn-g btn-sm" onclick="_akWkNext()">Sonraki →</button>';
+  navH += '<span style="font-size:13px;font-weight:700;color:var(--navy);margin-left:6px">📆 ' + wkLabel + '</span>';
+  if (isThisWeek) navH += '<span style="font-size:9px;background:var(--blue);color:#fff;padding:2px 7px;border-radius:4px;font-weight:700">BU HAFTA</span>';
+  navH += '</div>';
   var cols = [];
   for (var i = 0; i < 7; i++) {
-    var d = new Date(monday); d.setDate(monday.getDate() + i);
-    var iso = d.toISOString().slice(0,10);
-    var isToday = iso === today.toISOString().slice(0,10);
-    cols.push({name: DAY_NAMES[i], iso: iso, isToday: isToday, color: DAY_COLORS[i], items: []});
+    var d = addD(monday, i);
+    var isoD = iso(d);
+    var isToday = isoD === todayIso;
+    cols.push({name: DAY_NAMES[i], iso: isoD, date: d, isToday: isToday, color: DAY_COLORS[i], items: []});
   }
   // Aksiyonları bitiş tarihine göre kolonlara dağıt
   var unscheduled = [];
@@ -3778,12 +3949,9 @@ function _renderAkWeekly() {
     if (col) col.items.push(a);
     else if (a.end < cols[0].iso) cols[0].items.unshift(a); // geçmiş → Pzt'ye ekle
   });
-  var h = '<div style="display:flex;gap:8px;min-width:max-content;padding:4px 2px">';
+  var h = navH + '<div style="display:flex;gap:8px;min-width:max-content;padding:4px 2px">';
   cols.forEach(function(col) {
-    var d = new Date(col.iso);
-    var dayNum = d.getDate();
-    var monthNames = ['Oca','Şub','Mar','Nis','May','Haz','Tem','Ağu','Eyl','Eki','Kas','Ara'];
-    var dateStr = dayNum + ' ' + monthNames[d.getMonth()];
+    var dateStr = col.date.getDate() + ' ' + monthShort[col.date.getMonth()];
     h += '<div class="akbc" style="min-width:200px;max-width:240px' + (col.isToday ? ';box-shadow:0 0 0 2px ' + col.color : '') + '">';
     h += '<div class="akbc-hd" style="' + (col.isToday ? 'background:' + col.color + '18;' : '') + 'border-radius:8px 8px 0 0;padding:8px 10px">';
     h += '<div class="akbc-bar" style="background:' + col.color + '"></div>';

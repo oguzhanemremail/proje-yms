@@ -572,7 +572,7 @@ body.fs-xl *:not(.gantt-bar):not(.gantt-bar *){font-size:125%!important;}
 .akbc-cnt{font-size:11px;font-weight:700;background:#fff;border:1px solid var(--bdr);border-radius:20px;padding:1px 8px;color:var(--tx2);}
 .akbc-body{flex:1;overflow-y:visible;padding:8px;display:flex;flex-direction:column;gap:5px;min-height:50px;scrollbar-width:thin;}
 .akbc-body.over{background:rgba(25,118,210,.05);outline:2px dashed var(--blue);outline-offset:-4px;border-radius:0 0 10px 10px;}
-.akbcard{background:#fff;border:1.5px solid var(--bdr);border-radius:9px;padding:9px 11px 11px;cursor:grab;transition:box-shadow .15s,transform .12s;position:relative;overflow:hidden;}
+.akbcard{background:#fff;border:1.5px solid var(--bdr);border-radius:9px;padding:9px 11px 11px;cursor:grab;transition:box-shadow .15s,transform .12s;position:relative;overflow:hidden;touch-action:none;-webkit-user-select:none;}
 .akbcard:hover{border-color:var(--bmd);box-shadow:0 3px 10px rgba(0,0,0,.08);transform:translateY(-1px);}
 .akbcard.dragging{opacity:.3;transform:scale(.96);}
 .akbcard-stripe{position:absolute;top:0;left:0;right:0;height:3px;}
@@ -1224,6 +1224,85 @@ body.fs-xl *:not(.gantt-bar):not(.gantt-bar *){font-size:125%!important;}
     </div>
   </div>
   <div id="deps-content" style="padding:0 4px"></div>
+</div>
+
+<div id="page-report" class="page">
+  <div class="ph">
+    <div><div class="ptitle">🔍 Global Filtre &amp; Rapor</div><div class="psub">Tüm projeler genelinde aksiyon arama</div></div>
+    <div class="brow">
+      <button class="btn btn-xl btn-sm" onclick="exportXLS_report()">📥 Excel</button>
+    </div>
+  </div>
+  <!-- Filtre paneli -->
+  <div class="card" style="padding:14px;margin-bottom:14px">
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;align-items:end">
+      <div>
+        <div style="font-size:11px;font-weight:700;color:var(--tx2);margin-bottom:4px;text-transform:uppercase">Sorumlu</div>
+        <input id="rf-owner" type="text" class="finput" placeholder="Sorumlu adı..." oninput="renderReport()" style="width:100%">
+      </div>
+      <div>
+        <div style="font-size:11px;font-weight:700;color:var(--tx2);margin-bottom:4px;text-transform:uppercase">Etiket</div>
+        <input id="rf-tag" type="text" class="finput" placeholder="Etiket..." oninput="renderReport()" style="width:100%">
+      </div>
+      <div>
+        <div style="font-size:11px;font-weight:700;color:var(--tx2);margin-bottom:4px;text-transform:uppercase">Durum</div>
+        <select id="rf-status" class="fs" onchange="renderReport()" style="width:100%">
+          <option value="">Tümü</option>
+          <option>Beklemede</option><option>Devam Ediyor</option><option>Tamamlandı</option><option>İptal</option>
+        </select>
+      </div>
+      <div>
+        <div style="font-size:11px;font-weight:700;color:var(--tx2);margin-bottom:4px;text-transform:uppercase">Öncelik</div>
+        <select id="rf-pri" class="fs" onchange="renderReport()" style="width:100%">
+          <option value="">Tümü</option>
+          <option>ACİL &amp; ÖNEMLİ</option><option>ACİL, ÖNEMLİ DEĞİL</option><option>ÖNEMLİ, ACİL DEĞİL</option><option>NE ACİL NE ÖNEMLİ</option>
+        </select>
+      </div>
+      <div>
+        <div style="font-size:11px;font-weight:700;color:var(--tx2);margin-bottom:4px;text-transform:uppercase">Proje</div>
+        <select id="rf-proj" class="fs" onchange="renderReport()" style="width:100%">
+          <option value="">Tüm Projeler</option>
+        </select>
+      </div>
+      <div>
+        <div style="font-size:11px;font-weight:700;color:var(--tx2);margin-bottom:4px;text-transform:uppercase">Bitiş Başlangıç</div>
+        <input id="rf-date-start" type="date" class="fs" onchange="renderReport()" style="width:100%">
+      </div>
+      <div>
+        <div style="font-size:11px;font-weight:700;color:var(--tx2);margin-bottom:4px;text-transform:uppercase">Bitiş Son</div>
+        <input id="rf-date-end" type="date" class="fs" onchange="renderReport()" style="width:100%">
+      </div>
+      <div style="display:flex;align-items:flex-end;gap:6px">
+        <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;margin-bottom:6px">
+          <input type="checkbox" id="rf-late" onchange="renderReport()"> Sadece gecikenler
+        </label>
+        <button class="btn btn-sm" onclick="clearReportFilters()" style="margin-bottom:5px;white-space:nowrap">🗑 Temizle</button>
+      </div>
+    </div>
+  </div>
+  <!-- Özet kartlar -->
+  <div id="report-summary" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-bottom:14px"></div>
+  <!-- Sonuç tablosu -->
+  <div class="card" style="padding:0;overflow:hidden">
+    <div id="report-table-wrap" style="overflow-x:auto">
+      <table id="report-table" style="width:100%;border-collapse:collapse;font-size:12px">
+        <thead>
+          <tr style="background:var(--navy);color:#fff">
+            <th style="padding:9px 12px;text-align:left;white-space:nowrap">AKSİYON</th>
+            <th style="padding:9px 12px;text-align:left;white-space:nowrap">PROJE</th>
+            <th style="padding:9px 12px;text-align:left;white-space:nowrap">SORUMLU</th>
+            <th style="padding:9px 12px;text-align:left;white-space:nowrap">DURUM</th>
+            <th style="padding:9px 12px;text-align:left;white-space:nowrap">ÖNCELİK</th>
+            <th style="padding:9px 12px;text-align:left;white-space:nowrap">ETİKET</th>
+            <th style="padding:9px 12px;text-align:left;white-space:nowrap">BİTİŞ</th>
+            <th style="padding:9px 12px;text-align:left;white-space:nowrap">%</th>
+          </tr>
+        </thead>
+        <tbody id="report-tbody"></tbody>
+      </table>
+    </div>
+    <div id="report-empty" style="display:none;padding:32px;text-align:center;color:var(--tx2)">Eşleşen aksiyon bulunamadı</div>
+  </div>
 </div>
 
 <div id="page-gantt" class="page">
@@ -3250,6 +3329,7 @@ function _renderAkGanttGrid() {
     });
     drawGanttDepArrows(gsw,gleft,rowData,days,DW,RH);
     if(window._bindGanttScroll) _bindGanttScroll();
+    if(window._bindGanttRowClick) _bindGanttRowClick(gleft, gsw);
   }
   setTimeout(_renderAkGanttBars, 50);
 
@@ -3354,7 +3434,7 @@ function _pgBuildKanban(acts, keyFn, labelFn, iconFn, colorFn, emptyLabel, dragT
     if(items.length){
       h += '<div style="height:3px;background:#e0e0e0"><div style="height:100%;background:'+color+';width:'+doneRatio+'%"></div></div>';
     }
-    h += '<div class="akbc-body">';
+    h += '<div class="akbc-body"'+(dragType?' data-akbd="'+zoneId+'" data-akbtype="pg-'+dragType+'" data-zone-key="'+escHtml(key)+'"':'')+' >';
     if(!items.length){ h += '<div class="akbc-empty">Aksiyon yok</div>'; }
     items.forEach(function(a){
       var pct=a.pct||0; var late=isLate(a);
@@ -3362,7 +3442,7 @@ function _pgBuildKanban(acts, keyFn, labelFn, iconFn, colorFn, emptyLabel, dragT
       var pColor=proj?proj.color:'#ccc';
       var stColor=a.status==='Tamamlandı'?'#2E7D32':a.status==='Devam Ediyor'?'#1565C0':late?'#C62828':'#546E7A';
       var stBg=a.status==='Tamamlandı'?'#E8F5E9':a.status==='Devam Ediyor'?'#E3F2FD':late?'#FFEBEE':'#ECEFF1';
-      h += '<div class="akbcard" style="cursor:'+(dragType?'grab':'pointer')+'"'+(dragType?' data-akbqk="'+a.id+'"':' onclick="openActDetail(\''+a.id+'\');"')+' title="'+escHtml(a.title)+'">';
+      h += '<div class="akbcard" data-akbid="'+a.id+'" style="cursor:'+(dragType?'grab':'pointer')+'"'+(dragType?' data-akbqk="'+a.id+'"':' onclick="openActDetail(\''+a.id+'\');"')+' title="'+escHtml(a.title)+'">';
       h += '<div class="akbcard-stripe" style="background:'+color+'"></div>';
       if(proj){
         h += '<div style="display:flex;align-items:center;gap:4px;margin-bottom:4px">';
@@ -3448,6 +3528,145 @@ function pgWeeklyPrev(){ _pgWkOffset--; renderPageWeekly(); }
 function pgWeeklyNext(){ _pgWkOffset++; renderPageWeekly(); }
 function pgWeeklyToday(){ _pgWkOffset=0; renderPageWeekly(); }
 
+// ══════════════════════════════════════════════════════════════
+// GLOBAL FİLTRE & RAPOR SAYFASI
+// ══════════════════════════════════════════════════════════════
+function renderReport(){
+  if(!g('page-report').classList.contains('active')) return;
+  // Proje select'ini güncelle
+  var projSel=g('rf-proj');
+  if(projSel){
+    var curVal=projSel.value;
+    projSel.innerHTML='<option value="">Tüm Projeler</option>';
+    Object.values(projects).forEach(function(p){
+      var opt=document.createElement('option');
+      opt.value=p.id; opt.textContent=p.name;
+      if(p.id===curVal) opt.selected=true;
+      projSel.appendChild(opt);
+    });
+  }
+  // Filtre değerlerini oku
+  var fOwner=(v('rf-owner')||'').trim().toLowerCase();
+  var fTag=(v('rf-tag')||'').trim().toLowerCase();
+  var fStatus=v('rf-status')||'';
+  var fPri=v('rf-pri')||'';
+  var fProj=v('rf-proj')||'';
+  var fDateStart=v('rf-date-start')||'';
+  var fDateEnd=v('rf-date-end')||'';
+  var fLate=g('rf-late')&&g('rf-late').checked;
+
+  // Tüm aksiyonları topla
+  var rows=[];
+  Object.values(projects).forEach(function(proj){
+    proj.actions.forEach(function(a){
+      // Filtreler
+      if(fOwner){
+        var owners=(a.owner||'').toLowerCase();
+        if(owners.indexOf(fOwner)<0) return;
+      }
+      if(fTag && (a.tag||'').toLowerCase().indexOf(fTag)<0) return;
+      if(fStatus && a.status!==fStatus) return;
+      if(fPri && a.priority!==fPri) return;
+      if(fProj && proj.id!==fProj) return;
+      if(fDateStart && a.end && a.end<fDateStart) return;
+      if(fDateEnd && a.end && a.end>fDateEnd) return;
+      if(fLate && !isLate(a)) return;
+      rows.push({a:a,proj:proj});
+    });
+  });
+
+  // Özet kartlar
+  var total=rows.length;
+  var done=rows.filter(function(r){return r.a.status==='Tamamlandı';}).length;
+  var late=rows.filter(function(r){return isLate(r.a);}).length;
+  var inprog=rows.filter(function(r){return r.a.status==='Devam Ediyor';}).length;
+  var owners={};
+  rows.forEach(function(r){ var o=r.a.owner||'Atanmamış'; owners[o]=(owners[o]||0)+1; });
+  var topOwner=Object.keys(owners).sort(function(a,b){return owners[b]-owners[a];})[0]||'-';
+
+  var sumCards=[
+    {lbl:'Toplam',val:total,color:'var(--navy)'},
+    {lbl:'Devam Ediyor',val:inprog,color:'var(--blue)'},
+    {lbl:'Tamamlandı',val:done,color:'var(--green)'},
+    {lbl:'Geciken',val:late,color:'#C62828'},
+    {lbl:'En Çok Sorumlu',val:topOwner,color:'#7B1FA2',small:true}
+  ];
+  g('report-summary').innerHTML=sumCards.map(function(c){
+    return '<div class="card" style="padding:13px 16px;display:flex;flex-direction:column;gap:4px">'
+      +'<div style="font-size:10px;font-weight:700;color:var(--tx2);text-transform:uppercase;letter-spacing:.4px">'+c.lbl+'</div>'
+      +'<div style="font-size:'+(c.small?'15':'22')+'px;font-weight:800;color:'+c.color+'">'+c.val+'</div>'
+      +'</div>';
+  }).join('');
+
+  // Tablo
+  var priColors={'ACİL & ÖNEMLİ':'#C62828','ACİL, ÖNEMLİ DEĞİL':'#E65100','ÖNEMLİ, ACİL DEĞİL':'#2E7D32','NE ACİL NE ÖNEMLİ':'#546E7A'};
+  var tbody=g('report-tbody');
+  if(!rows.length){
+    tbody.innerHTML='';
+    g('report-empty').style.display='';
+    return;
+  }
+  g('report-empty').style.display='none';
+  // Sırala: geciken önce, sonra bitiş tarihi
+  rows.sort(function(a,b){
+    var la=isLate(a.a)?0:1, lb=isLate(b.a)?0:1;
+    if(la!==lb) return la-lb;
+    var ea=a.a.end||'9999', eb=b.a.end||'9999';
+    return ea.localeCompare(eb);
+  });
+  tbody.innerHTML=rows.map(function(r,i){
+    var a=r.a; var late2=isLate(a);
+    var bg=i%2===0?'#fff':'#fafbfc';
+    if(late2) bg='#FFF3E0';
+    var priColor=priColors[a.priority]||'#546E7A';
+    var statusCls=sCls(a.status);
+    return '<tr style="background:'+bg+';cursor:pointer;border-bottom:1px solid var(--bdr)" onclick="openActDetail(\''+a.id+'\')">'
+      +'<td style="padding:8px 12px;font-weight:600;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'
+        +(late2?'<span style="color:#C62828;margin-right:4px" title="Gecikmiş">⚠️</span>':'')+escHtml(a.title)
+      +'</td>'
+      +'<td style="padding:8px 12px"><span style="display:inline-flex;align-items:center;gap:4px"><span style="width:8px;height:8px;border-radius:50%;background:'+r.proj.color+';display:inline-block;flex-shrink:0"></span>'+escHtml(r.proj.name)+'</span></td>'
+      +'<td style="padding:8px 12px;color:var(--tx2)">'+escHtml(a.owner||'—')+'</td>'
+      +'<td style="padding:8px 12px"><span class="sb '+statusCls+'" style="font-size:10px">'+a.status+'</span></td>'
+      +'<td style="padding:8px 12px"><span style="font-size:10px;background:'+priColor+';color:#fff;padding:1px 6px;border-radius:3px;font-weight:700;white-space:nowrap">'+(a.priority||'—')+'</span></td>'
+      +'<td style="padding:8px 12px;color:var(--tx2);font-size:11px">'+escHtml(a.tag||'—')+'</td>'
+      +'<td style="padding:8px 12px;font-family:JetBrains Mono,monospace;font-size:11px;color:'+(late2?'#C62828':'var(--tx)')+'">'+d2s(a.end||'')+'</td>'
+      +'<td style="padding:8px 12px;font-weight:700;color:var(--navy)">'+(a.pct||0)+'%</td>'
+      +'</tr>';
+  }).join('');
+}
+
+function clearReportFilters(){
+  ['rf-owner','rf-tag','rf-date-start','rf-date-end'].forEach(function(id){ sv(id,''); });
+  ['rf-status','rf-pri','rf-proj'].forEach(function(id){ var el=g(id); if(el)el.value=''; });
+  var cb=g('rf-late'); if(cb)cb.checked=false;
+  renderReport();
+}
+
+function exportXLS_report(){
+  var tbody=g('report-tbody'); if(!tbody)return;
+  var rows=[['Aksiyon','Proje','Sorumlu','Durum','Öncelik','Etiket','Bitiş','%']];
+  // Mevcut filtrelenmiş satırları oku
+  tbody.querySelectorAll('tr').forEach(function(tr){
+    var cells=tr.querySelectorAll('td');
+    if(cells.length>=8){
+      rows.push([
+        cells[0].textContent.trim(),
+        cells[1].textContent.trim(),
+        cells[2].textContent.trim(),
+        cells[3].textContent.trim(),
+        cells[4].textContent.trim(),
+        cells[5].textContent.trim(),
+        cells[6].textContent.trim(),
+        cells[7].textContent.trim()
+      ]);
+    }
+  });
+  var csv=rows.map(function(r){return r.map(function(c){return '"'+(c||'').replace(/"/g,'""')+'"';}).join(',');}).join('\n');
+  var blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'});
+  var url=URL.createObjectURL(blob);
+  var a2=document.createElement('a');a2.href=url;a2.download='rapor.csv';a2.click();URL.revokeObjectURL(url);
+}
+
 function renderPageWeekly(){
   var wrap=g('pg-weekly-body'); if(!wrap) return;
   var ownerVal=(g('pg-wkl-f-owner')||{}).value||'';
@@ -3498,7 +3717,7 @@ function renderPageWeekly(){
     h+='<span class="akbc-cnt" style="background:'+color+';color:#fff">'+dayActs.length+'</span>';
     h+='</div>';
 
-    h+='<div class="akbc-body">';
+    h+='<div class="akbc-body" data-akbd="pg-weekly-'+dayIso+'" data-akbtype="pg-weekly" data-zone-key="'+dayIso+'">';
     if(!dayActs.length){ h+='<div class="akbc-empty">Aksiyon yok</div>'; }
     dayActs.forEach(function(a){
       var pct=a.pct||0; var isLt=isLate(a);
@@ -3506,7 +3725,7 @@ function renderPageWeekly(){
       var pColor=proj?proj.color:'#ccc';
       var stColor=a.status==='Devam Ediyor'?'#1565C0':isLt?'#C62828':'#546E7A';
       var stBg=a.status==='Devam Ediyor'?'#E3F2FD':isLt?'#FFEBEE':'#ECEFF1';
-      h+='<div class="akbcard" style="cursor:grab" data-akbqk="'+a.id+'" title="'+escHtml(a.title)+'">';
+      h+='<div class="akbcard" data-akbid="'+a.id+'" data-akbqk="'+a.id+'" style="cursor:grab" title="'+escHtml(a.title)+'">';
       h+='<div class="akbcard-stripe" style="background:'+color+'"></div>';
       if(proj){
         h+='<div style="display:flex;align-items:center;gap:4px;margin-bottom:3px">';
@@ -4007,7 +4226,9 @@ function _initAkbDrag() {
       // Zone tipine göre hangi preview
       var zone = el.closest('.akbc-body');
       var ztype = zone ? zone.dataset.akbtype : null;
-      if (ztype === 'owner' || ztype === 'tag') openActDetail(aid);
+      // pg-* sayfaları (Sorumlu/Etiket/Haftalık) ve diğer bağımsız sayfalar → openActDetail
+      if (ztype && ztype.startsWith('pg-')) openActDetail(aid);
+      else if (ztype === 'owner' || ztype === 'tag') openActDetail(aid);
       else openCardPreview_akb(aid);
     };
     el.onpointerdown = function(ev) {
@@ -4027,6 +4248,8 @@ function _initAkbDrag() {
       _akbd.oy = ev.clientY - r.top;
       _akbd.pendingW    = r.width;
       _akbd.pendingHtml = self.outerHTML;
+      // iOS/Android: pointer capture ile touch olayını yakala
+      try { self.setPointerCapture(ev.pointerId); } catch(e){}
       document.addEventListener('pointermove', _akbMove, {passive:false});
       document.addEventListener('pointerup',   _akbEnd);
       document.addEventListener('pointercancel',_akbEnd);
@@ -4054,14 +4277,14 @@ function _akbMove(ev) {
     if (Math.sqrt(dx*dx+dy*dy) < 6) return;
     _akbActivateDrag(ev);
   }
-  ev.preventDefault();
+  try { ev.preventDefault(); } catch(e){}
   _akbd.ghost.style.left = (ev.clientX - _akbd.ox) + 'px';
   _akbd.ghost.style.top  = (ev.clientY - _akbd.oy) + 'px';
   // hedef kolonu bul
   _akbd.ghost.style.visibility = 'hidden';
   var el   = document.elementFromPoint(ev.clientX, ev.clientY);
   _akbd.ghost.style.visibility = '';
-  var zone = el ? el.closest('.akbc-body[data-akbd]') : null;
+  var zone = el ? (el.closest('.akbc-body[data-akbd]') || el.closest('.akbc[data-akbd]')) : null;
   // vurgu
   if (_akbd.last && _akbd.last !== zone) _akbd.last.classList.remove('over');
   if (zone) { zone.classList.add('over'); _akbd.last = zone; }
@@ -4080,7 +4303,7 @@ function _akbEnd(ev) {
   // hedef
   _akbd.ghost.style.visibility = 'hidden';
   var el   = document.elementFromPoint(ev.clientX, ev.clientY);
-  var zone = _akbd.last || (el ? el.closest('.akbc-body[data-akbd]') : null);
+  var zone = _akbd.last || (el ? (el.closest('.akbc-body[data-akbd]') || el.closest('.akbc[data-akbd]')) : null);
   // temizle
   _akbd.ghost.remove(); _akbd.ghost = null;
   if (_akbd.src) _akbd.src.classList.remove('dragging');
@@ -4139,19 +4362,19 @@ function _akbEnd(ev) {
     toast(escHtml(found.title) + ' → ' + (newTag || 'Etiketsiz'));
 
   } else if (zoneType === 'pg-owner') {
-    var pgOwnerZoneKey = toZone ? toZone.dataset.zoneKey : '';
+    var pgOwnerZoneKey = zone.dataset.zoneKey || '';
     found.owner = (pgOwnerZoneKey === '__none__') ? '' : pgOwnerZoneKey;
     saveDB(); renderActs(); renderPageOwner();
     toast(escHtml(found.title) + ' → ' + (found.owner || 'Sorumlusuz'));
 
   } else if (zoneType === 'pg-tag') {
-    var pgTagZoneKey = toZone ? toZone.dataset.zoneKey : '';
+    var pgTagZoneKey = zone.dataset.zoneKey || '';
     found.tag = (pgTagZoneKey === '__none__') ? '' : pgTagZoneKey;
     saveDB(); renderActs(); renderPageTag();
     toast(escHtml(found.title) + ' → ' + (found.tag || 'Etiketsiz'));
 
   } else if (zoneType === 'pg-weekly') {
-    var pgNewDay = toZone ? toZone.dataset.zoneKey : '';
+    var pgNewDay = zone.dataset.zoneKey || '';
     if (pgNewDay && found.end !== pgNewDay) {
       if (found.start && found.end) {
         var pgDur = Math.round((pd(found.end) - pd(found.start)) / 86400000);
@@ -5479,7 +5702,7 @@ function renderAgenda(){
     var hasAct=it.actId?true:false;
     var html='<div class="ag-item" draggable="true" data-ag-tpid="'+it._tpid+'" data-ag-tid="'+it.id+'" data-ag-qk="'+it._qk+'" style="display:flex;align-items:flex-start;gap:7px;padding:8px 12px;border-bottom:1px solid var(--bdr)">';
     html+='<div class="tchk'+(it.done?' on':'')+'" data-tod="'+it._tpid+'" data-tid="'+it.id+'" style="margin-top:2px;flex-shrink:0">'+(it.done?'✓':'')+'</div>';
-    html+='<div style="flex:1;min-width:0'+(hasAct?';cursor:pointer':'')+'"'+(hasAct?' onclick="openActDetail(\''+it.actId+'\')"':'')+' title="'+(hasAct?'Aksiyonu görüntüle':'')+'">';
+    html+='<div style="flex:1;min-width:0;cursor:pointer"'+(hasAct?' onclick="openActDetail(\''+it.actId+'\')"':' onclick="editTodoItem(\''+it._tpid+'\',\''+it.id+'\',\''+it._qk+'\')";')+' title="'+(hasAct?'Aksiyonu görüntüle':'Düzenle')+'">';
     html+='<div style="font-size:13px;font-weight:'+(it.done?'400':'600')+';color:'+(it.done?'var(--tx2)':'var(--tx)')+(it.done?';text-decoration:line-through':'')+';overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+it.text+(hasAct?' <span style="font-size:10px;color:var(--blue)">↗</span>':'')+'</div>';
     html+='<div style="display:flex;gap:5px;align-items:center;margin-top:3px;flex-wrap:wrap">';
     html+='<span class="ag-pri-btn" title="Önceliği değiştir" data-ag-pri-tpid="'+it._tpid+'" data-ag-pri-tid="'+it.id+'" data-ag-pri-qk="'+it._qk+'" style="font-size:10px;background:'+priColors[it._qk]+';color:#fff;padding:2px 7px;border-radius:3px;font-weight:700;cursor:pointer;user-select:none">'+priShort[it._qk]+'</span>';
@@ -5714,6 +5937,7 @@ function renderGantt(){
     });
     drawGanttDepArrows(gsw,gleft,rowData,days,DW,RH);
     if(window._bindGanttScroll) _bindGanttScroll();
+    if(window._bindGanttRowClick) _bindGanttRowClick(gleft, gsw);
   }
   setTimeout(_renderGanttBars, 50);
   // [11] Bugün dikey çizgisi
@@ -6225,7 +6449,7 @@ function renderTodo(){
     items.forEach(function(it){
       var isToday=it.end&&it.end===tdStr&&!it.done;
       var isManual=!it.actId;// actId yoksa manuel görev
-      html+='<div class="tit'+(isToday?' today-item':'')+' td-drag" draggable="true" data-td-tpid="'+it._tpid+'" data-td-tid="'+it.id+'" data-td-qk="'+k+'"><div class="tchk'+(it.done?' on':'')+'" data-tod="'+it._tpid+'" data-tid="'+it.id+'">'+(it.done?'✓':'')+'</div>';
+      html+='<div class="tit'+(isToday?' today-item':'')+' td-drag" draggable="true" data-td-tpid="'+it._tpid+'" data-td-tid="'+it.id+'" data-td-qk="'+k+'"'+(it.actId?' onclick="openActDetail(\''+it.actId+'\')" style="cursor:pointer"':'')+' title="'+(it.actId?'Aksiyonu görüntüle':'')+'"><div class="tchk'+(it.done?' on':'')+'" data-tod="'+it._tpid+'" data-tid="'+it.id+'">'+(it.done?'✓':'')+'</div>';
       html+='<div class="ttx"><div class="ttl'+(it.done?' done':'')+'">'+it.text+'</div>';
       html+='<div class="tmt">'+(it.end?'📅 '+d2s(it.end)+(isToday?' <span style="color:var(--red);font-weight:700;font-size:10px">●Bugün</span>':''):'')+' '+(it.own?'👤 '+it.own:'')+'</div></div>';
       html+='<div style="display:flex;gap:2px;flex-shrink:0">';
@@ -6929,6 +7153,22 @@ document.addEventListener('change',function(e){
     dst.scrollTop = src.scrollTop;
   }
   // Her Gantt render'dan sonra çağrılır
+  // Gantt satır tıklama delegasyonu
+  window._bindGanttRowClick = function(gLeftEl, gSwEl){
+    function addClick(el){
+      if(!el || el._ganttClickBound) return;
+      el._ganttClickBound = true;
+      el.addEventListener('click', function(e){
+        // Buton veya drag handle ise pas geç
+        if(e.target.closest('button,input,select')) return;
+        var tr = e.target.closest('tr[data-gaid]');
+        if(!tr) return;
+        openActDetail(tr.dataset.gaid);
+      });
+    }
+    addClick(gLeftEl); addClick(gSwEl);
+  };
+
   window._bindGanttScroll = function(){
     ['gsw','ak-gsw'].forEach(function(sid){
       var sw = g(sid);
@@ -6964,6 +7204,7 @@ renderActs=function(){
   var activePage=document.querySelector('.page.active');
   if(activePage){
     var pid=activePage.id;
+    if(pid==='page-report') renderReport();
     if(pid==='page-owner')  renderPageOwner();
     if(pid==='page-tag')    renderPageTag();
     if(pid==='page-weekly') renderPageWeekly();
@@ -7718,6 +7959,7 @@ function showPage(id){
   if(id==='owner')renderPageOwner();
   if(id==='tag')renderPageTag();
   if(id==='weekly')renderPageWeekly();
+  if(id==='report')renderReport();
 }
 
 function renderPBar(){
@@ -8350,31 +8592,63 @@ function requestBrowserNotif(){
   if(Notification.permission === 'granted'){
     sendBrowserNotifs();
   } else if(Notification.permission !== 'denied'){
-    Notification.requestPermission().then(function(perm){
-      if(perm==='granted') sendBrowserNotifs();
-    });
+    // Otomatik popup yerine nazik banner göster
+    setTimeout(_showNotifPermBanner, 4000);
   }
 }
 
-var _browserNotifSent = false;
+var _browserNotifSentKey = null; // gün bazlı tekrar engellemek için
 function sendBrowserNotifs(){
-  if(_browserNotifSent) return;
-  _browserNotifSent = true;
+  if(!('Notification' in window) || Notification.permission !== 'granted') return;
+  var today = todays();
+  // Aynı gün içinde en fazla 1 kez gönder (sayfa yenilemede tekrar etmesin)
+  var sentKey = localStorage.getItem('_notifSentDay');
+  if(sentKey === today) return;
+  localStorage.setItem('_notifSentDay', today);
+
   var notifs = buildNotifications();
-  var lateNotifs = notifs.filter(function(n){return n.type==='crit';});
+  var lateNotifs  = notifs.filter(function(n){return n.type==='crit';});
   var todayNotifs = notifs.filter(function(n){return n.type==='warn';});
+  var iconSvg = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><text y="28" font-size="28">🎯</text></svg>';
 
   if(lateNotifs.length){
-    new Notification('🚨 Proje YMS — Geciken Aksiyonlar', {
+    var n = new Notification('🚨 Proje YMS — Geciken Aksiyonlar', {
       body: lateNotifs.length+' aksiyon gecikti:\n'+lateNotifs.slice(0,3).map(function(n){return '• '+n.title;}).join('\n'),
-      icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><text y="28" font-size="28">🎯</text></svg>'
+      icon: iconSvg, tag: 'pym-late'
     });
-  } else if(todayNotifs.length){
-    new Notification('⏰ Proje YMS — Bugün Teslim', {
-      body: todayNotifs.length+' aksiyon bugün bitiyor:\n'+todayNotifs.slice(0,3).map(function(n){return '• '+n.title;}).join('\n'),
-      icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><text y="28" font-size="28">🎯</text></svg>'
-    });
+    n.onclick = function(){ window.focus(); showPage('ak'); n.close(); };
   }
+  if(todayNotifs.length){
+    setTimeout(function(){
+      var n2 = new Notification('⏰ Proje YMS — Bugün Teslim', {
+        body: todayNotifs.length+' aksiyon bugün bitiyor:\n'+todayNotifs.slice(0,3).map(function(n){return '• '+n.title;}).join('\n'),
+        icon: iconSvg, tag: 'pym-today'
+      });
+      n2.onclick = function(){ window.focus(); showPage('ak'); n2.close(); };
+    }, lateNotifs.length ? 1500 : 0);
+  }
+}
+
+// Bildirim izni UI — bell yanında küçük rozet
+function _showNotifPermBanner(){
+  if(!('Notification' in window)) return;
+  if(Notification.permission === 'granted' || Notification.permission === 'denied') return;
+  if(g('notif-perm-banner')) return;
+  var banner = document.createElement('div');
+  banner.id = 'notif-perm-banner';
+  banner.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--navy);color:#fff;padding:10px 18px;border-radius:30px;font-size:13px;font-weight:600;z-index:2100;display:flex;align-items:center;gap:10px;box-shadow:0 4px 20px rgba(0,0,0,.25);white-space:nowrap;';
+  banner.innerHTML = '🔔 Tarayıcı bildirimleri açılsın mı?'
+    +'<button onclick="_enableBrowserNotifs()" style="background:#2196F3;color:#fff;border:none;border-radius:6px;padding:4px 12px;font-size:12px;font-weight:700;cursor:pointer">İzin Ver</button>'
+    +'<button onclick="g(\'notif-perm-banner\').remove()" style="background:rgba(255,255,255,.15);color:#fff;border:none;border-radius:6px;padding:4px 10px;font-size:12px;cursor:pointer">×</button>';
+  document.body.appendChild(banner);
+  setTimeout(function(){ if(g('notif-perm-banner')) g('notif-perm-banner').remove(); }, 15000);
+}
+function _enableBrowserNotifs(){
+  if(g('notif-perm-banner')) g('notif-perm-banner').remove();
+  Notification.requestPermission().then(function(perm){
+    if(perm==='granted'){ sendBrowserNotifs(); toast('✅ Tarayıcı bildirimleri açıldı'); }
+    else toast('Bildirim izni verilmedi');
+  });
 }
 
 // Topbar'a bildirim ikonu ekle
@@ -8760,7 +9034,7 @@ function _renderDepsList(pairs, el){
     html+='<div style="flex:1">';
     html+='<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">';
     html+='<span style="display:inline-flex;align-items:center;gap:4px;background:'+p.color+'22;border:1px solid '+p.color+'55;padding:2px 7px;border-radius:4px;font-size:11px;font-weight:700;color:'+p.color+';flex-shrink:0"><span style="width:7px;height:7px;border-radius:50%;background:'+p.color+';display:inline-block"></span>'+escHtml(p.name)+'</span>';
-    html+='<span style="font-size:14px;font-weight:700;color:var(--navy)">'+escHtml(a.title)+'</span>';
+    html+='<span style="font-size:14px;font-weight:700;color:var(--navy);cursor:pointer" onclick="openActDetail(\''+a.id+'\')" title="Detayı gör">'+escHtml(a.title)+' <span style="font-size:11px;opacity:.5">↗</span></span>';
     html+='<span class="sb '+sCls(a.status)+'" style="font-size:10px">'+a.status+'</span>';
     if(blocked) html+='<span style="font-size:10px;background:#FFF3E0;color:#E65100;padding:1px 6px;border-radius:3px;font-weight:700">🔗 Bloklandı</span>';
     if(late) html+='<span style="font-size:10px;background:#FFEBEE;color:#C62828;padding:1px 6px;border-radius:3px;font-weight:700">⚠️ Gecikti</span>';
@@ -8780,7 +9054,7 @@ function _renderDepsList(pairs, el){
       html+='<div style="flex:1">';
       html+='<div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin-bottom:2px">';
       html+='<span style="display:inline-flex;align-items:center;gap:3px;background:'+t.proj.color+'22;border:1px solid '+t.proj.color+'55;padding:1px 6px;border-radius:3px;font-size:10px;font-weight:700;color:'+t.proj.color+'"><span style="width:5px;height:5px;border-radius:50%;background:'+t.proj.color+';display:inline-block"></span>'+escHtml(t.proj.name)+'</span>';
-      html+='<span style="font-size:12px;font-weight:600;color:var(--navy)">'+escHtml(t.act.title)+'</span>';
+      html+='<span style="font-size:12px;font-weight:600;color:var(--navy);cursor:pointer" onclick="openActDetail(\''+t.act.id+'\')" title="Detayı gör">'+escHtml(t.act.title)+' <span style="font-size:10px;opacity:.5">↗</span></span>';
       html+='</div>';
       html+='<div style="font-size:10px;color:var(--tx2)">'+(t.act.end?'📅 '+d2s(t.act.end):'')+(t.act.owner?' · 👤 '+escHtml(t.act.owner):'')+'</div>';
       html+='</div>';
@@ -9614,6 +9888,7 @@ function _cpKeyClose(e){if(e.key==='Escape')closeCardPreview();}
   <div class="more-nav-item" data-page="owner">👤 Sorumlu</div>
   <div class="more-nav-item" data-page="tag">🏷 Etiket</div>
   <div class="more-nav-item" data-page="weekly">📆 Haftalık</div>
+  <div class="more-nav-item" data-page="report">🔍 Rapor</div>
 </div>
 <!-- MOBİL DRAWER -->
 <div id="mob-overlay" onclick="closeMobMenu()"></div>

@@ -430,6 +430,13 @@ function backToSelect() {
   showScreen('s-select');
 }
 
+// iframe'lerden gelen geçiş mesajlarını dinle
+window.addEventListener('message', function(e) {
+  if (e.data === 'openApp:pym')  openApp('pym');
+  if (e.data === 'openApp:flow') openApp('flow');
+  if (e.data === 'backToSelect') backToSelect();
+});
+
 document.getElementById('card-pym').addEventListener('click',  function(){ openApp('pym'); });
 document.getElementById('card-flow').addEventListener('click', function(){ openApp('flow'); });
 

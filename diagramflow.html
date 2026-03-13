@@ -1490,7 +1490,7 @@ body{font-family:'Inter',sans-serif;background:#f0f0f0;color:#1a1a1a;height:100v
 <!-- BOTTOM BAR -->
 <div id="bbar">
   <div class="bbp" id="pages-bar">
-    <button class="tb-ico" onclick="if(window.parent&&window.parent.openApp)window.parent.openApp('pym');else if(window.parent&&window.parent.backToSelect)window.parent.backToSelect();" title="Proje Yönetimi'ne Geç" style="font-size:13px;">📋</button>
+    <button class="tb-ico" onclick="window.parent.postMessage('openApp:pym','*');" title="Proje YMS'ye Geç" style="font-size:13px;">📋</button>
     <!-- pages inserted here -->
   </div>
   <button class="bb-add" onclick="openNewPageMenu(event)" title="Yeni sayfa ekle" style="font-size:18px;font-weight:700;">+</button>

@@ -2,7 +2,9 @@
 <html lang="tr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>Proje Yönetim Sistemi</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
@@ -41,7 +43,7 @@ body.dark-mode .gsi:hover{background:#2a2a3e!important;}
 body.dark-mode table tr:hover td{background:#2a2a3a!important;}
 body.dark-mode .ak-sticky-wrap,body.dark-mode .wswrap{border-color:var(--bdr);}
 *{box-sizing:border-box;margin:0;padding:0;}
-html,body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--tx);min-height:100vh;}
+html,body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--tx);min-height:100vh;overscroll-behavior:none;}
 /* Yazı boyutu ölçekleme - body'e class eklenerek aktif olur */
 body.fs-sm *:not(.gantt-bar):not(.gantt-bar *){font-size:90%!important;}
 body.fs-lg *:not(.gantt-bar):not(.gantt-bar *){font-size:112%!important;}
@@ -87,10 +89,10 @@ body.fs-xl *:not(.gantt-bar):not(.gantt-bar *){font-size:125%!important;}
 #more-nav-btn.active-more{color:#fff!important;border-bottom:3px solid #2196F3;}
 .ntab:hover,.ntab.active{color:#fff;}
 .ntab.active{border-bottom-color:var(--blue);}
-.projbar{background:var(--navy2);display:flex;align-items:center;padding:0 14px;height:40px;gap:3px;overflow-x:auto;scrollbar-width:none;position:sticky;top:52px;z-index:400;}
+.projbar{background:var(--navy2);display:flex;align-items:center;padding:0 14px;height:44px;gap:3px;overflow-x:auto;scrollbar-width:none;position:sticky;top:52px;z-index:400;}
 .projbar::-webkit-scrollbar{display:none;}
 .projbar.hide{display:none!important;}
-.ptab{padding:0 11px;height:38px;display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;color:rgba(255,255,255,.55);cursor:pointer;border-radius:5px 5px 0 0;transition:all .15s;white-space:nowrap;border-bottom:3px solid transparent;flex-shrink:0;}
+.ptab{padding:0 11px;height:44px;display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;color:rgba(255,255,255,.55);cursor:pointer;border-radius:5px 5px 0 0;transition:all .15s;white-space:nowrap;border-bottom:3px solid transparent;flex-shrink:0;-webkit-tap-highlight-color:transparent;}
 .ptab:hover,.ptab.active{color:#fff;}
 .ptab.active{background:rgba(255,255,255,.12);border-bottom-color:var(--blue);}
 .ptab-x{font-size:11px;color:rgba(255,255,255,.3);padding:1px 3px;border-radius:3px;cursor:pointer;margin-left:1px;}
@@ -98,9 +100,9 @@ body.fs-xl *:not(.gantt-bar):not(.gantt-bar *){font-size:125%!important;}
 .ptab-color-dot:hover{transform:scale(1.4);}
 .pnew{padding:4px 11px;font-size:12px;font-weight:700;color:rgba(255,255,255,.75);cursor:pointer;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:5px;font-family:inherit;white-space:nowrap;margin-left:6px;flex-shrink:0;}
 .pnew:hover{background:rgba(255,255,255,.18);color:#fff;}
-.page{display:none;padding:18px 20px;overflow-y:auto;height:calc(100vh - 56px);}
+.page{display:none;padding:18px 20px;overflow-y:auto;height:calc(100dvh - 56px);overscroll-behavior:contain;-webkit-overflow-scrolling:touch;}
 .page.active{display:block;}
-#page-gantt.active{display:flex!important;flex-direction:column;padding:12px 14px;height:calc(100vh - 56px);overflow:hidden;}
+#page-gantt.active{display:flex!important;flex-direction:column;padding:12px 14px;height:calc(100dvh - 56px);overflow:hidden;}
 #page-plantak.active{display:flex!important;}
 .ph{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px;}
 .ptitle{font-size:18px;font-weight:700;color:var(--navy);}
@@ -113,8 +115,9 @@ body.fs-xl *:not(.gantt-bar):not(.gantt-bar *){font-size:125%!important;}
 .btn-xl{background:#2E7D32;color:#fff;}.btn-xl:hover{background:#1B5E20;}
 .btn-sm{padding:5px 10px;font-size:12px;}
 .krow{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:8px;margin-bottom:12px;}
-.kcard{background:#fff;border-radius:9px;padding:11px 13px;border:1.5px solid var(--bdr);cursor:pointer;transition:all .18s;user-select:none;}
+.kcard{background:#fff;border-radius:9px;padding:13px 13px;border:1.5px solid var(--bdr);cursor:pointer;transition:all .18s;user-select:none;-webkit-tap-highlight-color:transparent;}
 .kcard:hover{transform:translateY(-1px);box-shadow:0 4px 10px rgba(0,0,0,.07);}
+.kcard:active{transform:scale(.97);}
 .kcard.on{border-color:var(--blue);box-shadow:0 0 0 3px rgba(33,150,243,.15);}
 .klbl{font-size:10px;font-weight:700;color:var(--tx2);text-transform:uppercase;letter-spacing:.4px;margin-bottom:3px;}
 .kval{font-size:24px;font-weight:700;color:var(--navy);font-family:'JetBrains Mono',monospace;}
@@ -124,7 +127,7 @@ body.fs-xl *:not(.gantt-bar):not(.gantt-bar *){font-size:125%!important;}
 .dash-chip:hover{border-color:var(--blue);background:var(--blt);}
 .dash-chip.active{background:var(--blue);color:#fff;border-color:var(--blue);box-shadow:0 1px 5px rgba(25,118,210,.25);}
 /* Sticky table header for aksiyon page */
-.ak-sticky-wrap{max-height:calc(100vh - 180px);overflow-y:auto;overflow-x:auto;border-radius:9px;border:1px solid var(--bdr);box-shadow:0 1px 3px rgba(0,0,0,.04);-webkit-overflow-scrolling:touch;}
+.ak-sticky-wrap{max-height:calc(100dvh - 180px);overflow-y:auto;overflow-x:auto;border-radius:9px;border:1px solid var(--bdr);box-shadow:0 1px 3px rgba(0,0,0,.04);-webkit-overflow-scrolling:touch;}
 .tbl{width:100%;border-collapse:collapse;font-size:12px;}
 .tbl thead{position:sticky;top:0;z-index:10;}
 .tbl thead th{background:var(--navy2);padding:7px 8px;text-align:left;font-size:10px;font-weight:700;color:rgba(255,255,255,.85);text-transform:uppercase;letter-spacing:.3px;white-space:nowrap;}
@@ -135,7 +138,7 @@ body.fs-xl *:not(.gantt-bar):not(.gantt-bar *){font-size:125%!important;}
 .tbl tbody tr.hid{display:none!important;}
 .tbl tbody tr.fhid{display:none!important;}
 .tbl tbody tr.lrow>td:first-child{border-left:4px solid var(--lateb)!important;}
-.tbl td{padding:6px 7px;vertical-align:middle;}
+.tbl td{padding:9px 7px;vertical-align:middle;}
 .cb{width:13px;height:13px;cursor:pointer;accent-color:var(--blue);}
 .rn{font-family:'JetBrains Mono';font-size:10px;color:#ccc;}
 .rb{display:inline-block;padding:1px 5px;border-radius:3px;font-size:9px;font-weight:700;text-transform:uppercase;}
@@ -214,7 +217,7 @@ body.fs-xl *:not(.gantt-bar):not(.gantt-bar *){font-size:125%!important;}
 .gd td{font-size:9px;font-weight:700;text-align:center;padding:3px 0;color:#fff;background:#3D5166;border-right:1px solid rgba(255,255,255,.06);}
 .gd td.wk{background:#E53935;}
 .gh th{background:var(--navy);color:rgba(255,255,255,.85);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.3px;padding:7px 8px;text-align:left;border-right:1px solid rgba(255,255,255,.07);white-space:nowrap;}
-.gr td{padding:5px 7px;height:40px;border-bottom:1px solid var(--bdr);font-size:12px;vertical-align:middle;background:#fff;white-space:nowrap;}
+.gr td{padding:6px 7px;height:44px;border-bottom:1px solid var(--bdr);font-size:12px;vertical-align:middle;background:#fff;white-space:nowrap;}
 .gr:nth-child(odd) td{background:#fafbfc;}.gr.sub td{background:var(--sub)!important;}
 .gr.ghid{display:none;}.gr.gl>td:first-child{border-left:4px solid #FFB300!important;}
 .gr td.dc{padding:0!important;border-bottom:1px solid #eee;border-right:1px solid #f0f0f0;}
@@ -378,9 +381,9 @@ body.fs-xl *:not(.gantt-bar):not(.gantt-bar *){font-size:125%!important;}
 .tdl{font-size:13px;color:#ccc;cursor:pointer;flex-shrink:0;background:none;border:none;}
 .tdl:hover{color:var(--red);}
 .tadd{display:flex;gap:4px;padding:7px 13px;border-top:1px solid var(--bdr);background:#fafbfc;align-items:center;flex-wrap:wrap;}
-.tai{flex:1;min-width:80px;border:1.5px solid var(--bdr);border-radius:6px;padding:5px 8px;font-size:13px;font-family:inherit;outline:none;}
+.tai{flex:1;min-width:80px;border:1.5px solid var(--bdr);border-radius:6px;padding:6px 8px;font-size:16px;font-family:inherit;outline:none;}
 .tai:focus{border-color:var(--blue);}
-.tad{border:1.5px solid var(--bdr);border-radius:6px;padding:5px 6px;font-size:12px;font-family:inherit;outline:none;color:var(--tx2);}
+.tad{border:1.5px solid var(--bdr);border-radius:6px;padding:6px 6px;font-size:16px;font-family:inherit;outline:none;color:var(--tx2);}
 .tad:focus{border-color:var(--blue);}
 .mention-drop{position:absolute;background:#fff;border:1.5px solid var(--blue);border-radius:8px;box-shadow:0 4px 20px rgba(0,0,0,.15);z-index:2000;min-width:180px;max-height:180px;overflow-y:auto;font-size:13px;}
 .mention-item{padding:7px 12px;cursor:pointer;display:flex;align-items:center;gap:6px;}
@@ -606,9 +609,11 @@ body.dark-mode .ptm-cell.other-month{background:var(--bg);}
 .user-drop-item.danger:hover{background:#FFEBEE;}
 /* ══ MOBİL RESPONSIVE ══════════════════════════════════════ */
 /* ══ MOBİL HAMBURGER MENÜ ══ */
-#mob-menu-btn{display:none;}
-#mob-drawer{display:none;position:fixed;top:0;left:0;width:280px;height:100vh;background:var(--navy);z-index:2000;flex-direction:column;box-shadow:4px 0 24px rgba(0,0,0,.5);transform:translateX(-100%);transition:transform .25s ease;}
-#mob-drawer.open{transform:translateX(0);}
+#mob-menu-btn{display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:8px;width:36px;height:36px;color:#fff;font-size:20px;cursor:pointer;flex-shrink:0;}
+.ntabs{display:none!important;}
+#more-nav-btn{display:none!important;}
+#mob-drawer{display:flex;position:fixed;top:0;left:0;width:280px;height:100dvh;background:var(--navy);z-index:2000;flex-direction:column;box-shadow:4px 0 24px rgba(0,0,0,.5);transform:translateX(-100%);transition:transform .25s ease;visibility:hidden;}
+#mob-drawer.open{transform:translateX(0);visibility:visible;}
 #mob-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1999;}
 #mob-overlay.open{display:block;}
 .mob-drawer-hd{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid rgba(255,255,255,.1);}
@@ -621,46 +626,116 @@ body.dark-mode .ptm-cell.other-month{background:var(--bg);}
 .mob-nav-sep{height:1px;background:rgba(255,255,255,.1);margin:6px 16px;}
 .mob-nav-sub{padding:6px 20px 2px;font-size:10px;font-weight:700;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:.5px;}
 .mob-drawer-ft{padding:12px 16px;border-top:1px solid rgba(255,255,255,.1);display:flex;gap:8px;flex-wrap:wrap;}
+.mob-nav-list{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;}
 .mob-tool-btn{flex:1;min-width:40px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);border-radius:8px;color:#fff;font-size:16px;padding:8px;cursor:pointer;text-align:center;}
 
-@media(max-width:768px){
-  /* Topbar: sadece logo + arama + hamburger */
-  .topbar{padding:0 12px;gap:6px;}
+/* ═══════════════════════════════════════════════════════
+   TABLET / iPad Pro 11" dikey (834px) + yatay (1194px)
+   1200px'e kadar hamburger aktif
+═══════════════════════════════════════════════════════ */
+@media(max-width:1200px){
   .wl-divider{display:none;}
-  .ntabs{display:none;}  /* Nav tamamen gizle - hamburger ile açılır */
-  #gsearch-wrap{margin-left:auto;}
-  #gsearch-wrap input{width:110px!important;}
   #backup-btns{display:none!important;}
   #undo-btn,#redo-btn{display:none!important;}
   .fbst{display:none!important;}
-  #mob-menu-btn{display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:8px;width:36px;height:36px;color:#fff;font-size:20px;cursor:pointer;flex-shrink:0;}
-  /* Yazı boyutu butonlarını tek düğmeye indir */
   #fs-group{display:none!important;}
-  /* dark mode + mail gizle */
   button[onclick="openMailSummary()"]{display:none!important;}
   button[onclick="toggleDarkMode()"]{display:none!important;}
   .user-btn span:not(.user-av){display:none;}
   .wl-texts{display:none;}
-  /* Sayfa padding */
+  #more-nav-btn{display:none!important;}
+}
+
+/* ── iPad Pro 11" dikey (600–1024px) ─────────────────── */
+@media(max-width:1024px) and (min-width:601px){
+  :root{--topbar-h:52px;}
+  .topbar{height:52px!important;padding:0 14px;gap:6px;}
+  .projbar{height:44px;top:52px;padding:0 10px;}
+  .ptab{height:42px!important;font-size:12px!important;padding:0 10px!important;}
+  .page{height:calc(100dvh - 52px)!important;padding:12px 16px!important;overflow-y:auto!important;}
+  #page-gantt.active{height:calc(100dvh - 96px)!important;}
+  #page-board{height:calc(100dvh - 52px)!important;}
+  .ak-sticky-wrap{max-height:calc(100dvh - 210px)!important;}
+  .krow{grid-template-columns:repeat(4,1fr)!important;}
+  .dgrid{grid-template-columns:1fr 1fr!important;}
+  .ph{flex-wrap:wrap;gap:6px;margin-bottom:8px;}
+  .btn-sm{padding:6px 11px!important;font-size:13px!important;}
+  table{font-size:12px!important;}
+  th,td{padding:7px!important;}
+  .gtbl-right .gh th{top:52px;}
+  .gtbl-left .gh th{top:52px;}
+  .mo .mdlg{max-width:88vw!important;}
+}
+
+/* ── iPhone + küçük ekranlar (≤600px) ────────────────── */
+@media(max-width:600px){
+  .topbar{padding:0 12px;gap:6px;}
+  #gsearch-wrap{margin-left:auto;}
+  #gsearch-wrap input{width:90px!important;}
   .page{padding:10px!important;}
-  /* Grid'ler tek sütun */
   .fr,.tdgrid,.dgrid{grid-template-columns:1fr!important;}
-  .krow{grid-template-columns:repeat(3,1fr)!important;}
+  .krow{grid-template-columns:repeat(2,1fr)!important;}
   #agenda-grid{grid-template-columns:1fr!important;}
   .act-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;}
   table{font-size:11px!important;}
-  th,td{padding:5px 5px!important;}
+  th,td{padding:6px 5px!important;}
   .board-cols{gap:8px;padding:8px;}
-  .board-col{width:240px;min-width:240px;}
-  .ph{flex-wrap:wrap;gap:6px;}
-  .btn-sm{padding:5px 9px!important;font-size:12px!important;}
-  /* KPI kartları 2 sütun */
-  .krow{grid-template-columns:repeat(2,1fr)!important;}
-}
-@media(max-width:480px){
-  .krow{grid-template-columns:repeat(2,1fr)!important;}
   .board-col{width:85vw;min-width:260px;}
-  #gsearch-wrap input{width:80px!important;}
+  .ph{flex-wrap:wrap;gap:6px;}
+  .btn-sm{padding:6px 9px!important;font-size:12px!important;}
+  /* Safe area – Dynamic Island */
+  .topbar{padding-top:env(safe-area-inset-top,0px);height:calc(56px + env(safe-area-inset-top,0px));}
+  #mob-drawer{padding-top:env(safe-area-inset-top,0px);}
+  /* Modal → bottom sheet */
+  .mdlg{max-width:100vw!important;width:100vw!important;border-radius:16px 16px 0 0!important;position:fixed!important;bottom:0!important;top:auto!important;transform:none!important;margin:0!important;max-height:92dvh!important;}
+  .mo{align-items:flex-end!important;}
+}
+
+/* ══════════════════════════════════════════════════════
+   iPhone 14 Pro Max Landscape (932×430) – tam sığdır
+══════════════════════════════════════════════════════ */
+@media(max-width:960px) and (orientation:landscape) and (max-height:500px){
+  :root{--topbar-h:40px;}
+  .topbar{height:40px!important;padding:0 max(10px,env(safe-area-inset-left,0px)) 0 max(10px,env(safe-area-inset-right,0px))!important;gap:5px!important;}
+  .wl-icon{width:24px!important;height:24px!important;font-size:12px!important;}
+  .projbar{height:32px!important;top:40px!important;padding:0 8px!important;}
+  .ptab{height:30px!important;font-size:11px!important;padding:0 8px!important;}
+  .page{height:calc(100dvh - 40px)!important;padding:6px 10px!important;overflow-y:auto!important;}
+  #page-gantt.active{height:calc(100dvh - 72px)!important;padding:4px 8px!important;}
+  #page-board{height:calc(100dvh - 40px)!important;}
+  .ak-sticky-wrap{max-height:calc(100dvh - 160px)!important;}
+  .krow{grid-template-columns:repeat(4,1fr)!important;}
+  .kcard{padding:7px 10px!important;}
+  .kval{font-size:17px!important;}
+  .klbl{font-size:9px!important;}
+  .dgrid{grid-template-columns:1fr 1fr!important;}
+  .fr,.tdgrid{grid-template-columns:1fr!important;}
+  table{font-size:11px!important;}
+  th,td{padding:4px 5px!important;}
+  .ph{padding:4px 0!important;margin-bottom:6px!important;gap:5px!important;flex-wrap:wrap;}
+  .btn-sm{padding:4px 8px!important;font-size:11px!important;}
+  .ak-vbtn{font-size:11px!important;padding:5px 8px!important;min-height:30px!important;}
+  .gtbl-right .gh th{top:40px!important;}
+  .gtbl-left .gh th{top:40px!important;}
+  .board-col{width:220px!important;min-width:220px!important;}
+  #mob-drawer{width:260px!important;}
+  .mob-nav-item{padding:8px 16px!important;font-size:13px!important;}
+  .mob-drawer-hd{padding:10px 14px!important;}
+  .mob-drawer-ft{padding:8px 12px!important;}
+  /* Modal landscape'de ortada */
+  .mdlg{max-width:80vw!important;width:600px!important;max-height:88dvh!important;border-radius:10px!important;bottom:auto!important;top:auto!important;transform:none!important;margin:auto!important;}
+  .mo{align-items:center!important;}
+}
+
+/* ══════════════════════════════════════════════════════
+   iPad Pro 11" Landscape (1194×834) – touch cihaz
+══════════════════════════════════════════════════════ */
+@media(min-width:1025px) and (max-width:1366px) and (orientation:landscape) and (pointer:coarse){
+  .page{height:calc(100dvh - 56px)!important;overflow-y:auto!important;}
+  #page-board{height:calc(100dvh - 56px)!important;}
+  .ak-sticky-wrap{max-height:calc(100dvh - 185px)!important;}
+  .krow{grid-template-columns:repeat(4,1fr)!important;}
+  .mo .mdlg{max-width:75vw!important;}
 }
 
 /* ─── NOTLAR ──────────────────────────────────────────────── */
@@ -668,8 +743,9 @@ body.dark-mode .ptm-cell.other-month{background:var(--bg);}
 
 
 /* ── Aksiyon Görünüm Toggle ─────────────────────────── */
-.ak-vtoggle{display:flex;gap:2px;background:var(--bg);border:1px solid var(--bdr);border-radius:8px;padding:2px;}
-.ak-vbtn{background:none;border:none;color:var(--tx2);padding:5px 12px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:700;font-family:inherit;transition:all .15s;display:flex;align-items:center;gap:5px;white-space:nowrap;}
+.ak-vtoggle{display:flex;gap:2px;background:var(--bg);border:1px solid var(--bdr);border-radius:8px;padding:2px;overflow-x:auto;scrollbar-width:none;width:fit-content;max-width:100%;}
+.ak-vtoggle::-webkit-scrollbar{display:none;}
+.ak-vbtn{background:none;border:none;color:var(--tx2);padding:8px 12px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:700;font-family:inherit;transition:all .15s;display:flex;align-items:center;gap:5px;white-space:nowrap;-webkit-tap-highlight-color:transparent;min-height:36px;}
 .ak-vbtn.active{background:var(--blue);color:#fff;box-shadow:0 1px 4px rgba(25,118,210,.25);}
 .ak-vbtn:not(.active):hover{background:var(--blt);color:var(--blue);}
 
@@ -801,7 +877,7 @@ body.dark-mode .gsearch-hl{background:#5D4037;color:#FFCC80;}
     <div style="display:flex;align-items:center;gap:0;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);border-radius:8px;overflow:hidden;transition:all .2s" id="gsearch-box">
       <span style="padding:0 8px;font-size:14px;color:rgba(255,255,255,.5);flex-shrink:0">🔍</span>
       <input id="gsearch-inp" type="text" placeholder="Ara..." autocomplete="off"
-        style="background:transparent;border:none;outline:none;color:#fff;font-size:13px;font-family:inherit;width:160px;padding:6px 8px 6px 0;transition:width .2s"
+        style="background:transparent;border:none;outline:none;color:#fff;font-size:16px;font-family:inherit;width:160px;padding:6px 8px 6px 0;transition:width .2s"
         oninput="gsearchInput(this.value)"
         onfocus="this.parentNode.style.background='rgba(255,255,255,.18)';this.parentNode.style.borderColor='rgba(255,255,255,.4)';this.style.width='220px'"
         onblur="if(!this.value){this.parentNode.style.background='rgba(255,255,255,.1)';this.parentNode.style.borderColor='rgba(255,255,255,.18)';this.style.width='160px';}"
@@ -904,8 +980,8 @@ body.dark-mode .gsearch-hl{background:#5D4037;color:#FFCC80;}
   </div>
   <div id="pg-owner-fbar" style="background:#fff;border:1px solid var(--bdr);border-radius:9px;padding:8px 12px;margin-bottom:8px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
     <span style="font-size:11px;font-weight:700;color:var(--tx2);text-transform:uppercase;letter-spacing:.4px;flex-shrink:0">🔍 Filtre:</span>
-    <input id="pg-own-f-owner" type="text" placeholder="👤 Sorumlu..." style="font-size:12px;padding:4px 8px;border:1.5px solid var(--bdr);border-radius:6px;font-family:inherit;width:120px;outline:none" oninput="renderPageOwner()">
-    <input id="pg-own-f-tag" type="text" placeholder="🏷️ Etiket..." style="font-size:12px;padding:4px 8px;border:1.5px solid var(--bdr);border-radius:6px;font-family:inherit;width:100px;outline:none" oninput="renderPageOwner()">
+    <input id="pg-own-f-owner" type="text" placeholder="👤 Sorumlu..." style="font-size:16px;padding:6px 8px;border:1.5px solid var(--bdr);border-radius:6px;font-family:inherit;width:120px;outline:none" oninput="renderPageOwner()">
+    <input id="pg-own-f-tag" type="text" placeholder="🏷️ Etiket..." style="font-size:16px;padding:6px 8px;border:1.5px solid var(--bdr);border-radius:6px;font-family:inherit;width:100px;outline:none" oninput="renderPageOwner()">
     <select id="pg-own-f-status" style="font-size:12px;padding:4px 8px;border:1.5px solid var(--bdr);border-radius:6px;font-family:inherit;outline:none;color:var(--tx)" onchange="renderPageOwner()">
       <option value="">📊 Tüm Durumlar</option>
       <option>Taslak</option><option>Beklemede</option><option>Devam Ediyor</option><option>Tamamlandı</option><option>İptal</option>
@@ -925,8 +1001,8 @@ body.dark-mode .gsearch-hl{background:#5D4037;color:#FFCC80;}
   </div>
   <div id="pg-tag-fbar" style="background:#fff;border:1px solid var(--bdr);border-radius:9px;padding:8px 12px;margin-bottom:8px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
     <span style="font-size:11px;font-weight:700;color:var(--tx2);text-transform:uppercase;letter-spacing:.4px;flex-shrink:0">🔍 Filtre:</span>
-    <input id="pg-tag-f-owner" type="text" placeholder="👤 Sorumlu..." style="font-size:12px;padding:4px 8px;border:1.5px solid var(--bdr);border-radius:6px;font-family:inherit;width:120px;outline:none" oninput="renderPageTag()">
-    <input id="pg-tag-f-tag" type="text" placeholder="🏷️ Etiket..." style="font-size:12px;padding:4px 8px;border:1.5px solid var(--bdr);border-radius:6px;font-family:inherit;width:100px;outline:none" oninput="renderPageTag()">
+    <input id="pg-tag-f-owner" type="text" placeholder="👤 Sorumlu..." style="font-size:16px;padding:6px 8px;border:1.5px solid var(--bdr);border-radius:6px;font-family:inherit;width:120px;outline:none" oninput="renderPageTag()">
+    <input id="pg-tag-f-tag" type="text" placeholder="🏷️ Etiket..." style="font-size:16px;padding:6px 8px;border:1.5px solid var(--bdr);border-radius:6px;font-family:inherit;width:100px;outline:none" oninput="renderPageTag()">
     <select id="pg-tag-f-status" style="font-size:12px;padding:4px 8px;border:1.5px solid var(--bdr);border-radius:6px;font-family:inherit;outline:none;color:var(--tx)" onchange="renderPageTag()">
       <option value="">📊 Tüm Durumlar</option>
       <option>Taslak</option><option>Beklemede</option><option>Devam Ediyor</option><option>Tamamlandı</option><option>İptal</option>
@@ -949,7 +1025,7 @@ body.dark-mode .gsearch-hl{background:#5D4037;color:#FFCC80;}
   </div>
   <div id="pg-weekly-fbar" style="background:#fff;border:1px solid var(--bdr);border-radius:9px;padding:8px 12px;margin-bottom:8px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
     <span style="font-size:11px;font-weight:700;color:var(--tx2);text-transform:uppercase;letter-spacing:.4px;flex-shrink:0">🔍 Filtre:</span>
-    <input id="pg-wkl-f-owner" type="text" placeholder="👤 Sorumlu..." style="font-size:12px;padding:4px 8px;border:1.5px solid var(--bdr);border-radius:6px;font-family:inherit;width:120px;outline:none" oninput="renderPageWeekly()">
+    <input id="pg-wkl-f-owner" type="text" placeholder="👤 Sorumlu..." style="font-size:16px;padding:6px 8px;border:1.5px solid var(--bdr);border-radius:6px;font-family:inherit;width:120px;outline:none" oninput="renderPageWeekly()">
     <select id="pg-wkl-f-status" style="font-size:12px;padding:4px 8px;border:1.5px solid var(--bdr);border-radius:6px;font-family:inherit;outline:none;color:var(--tx)" onchange="renderPageWeekly()">
       <option value="">📊 Tüm Durumlar</option>
       <option>Taslak</option><option>Beklemede</option><option>Devam Ediyor</option><option>Tamamlandı</option><option>İptal</option>
@@ -1263,15 +1339,6 @@ body.dark-mode .gsearch-hl{background:#5D4037;color:#FFCC80;}
   <div class="ph">
     <div><div class="ptitle" id="ak-ttl">📋 Aksiyon Planı</div><div class="psub" id="ak-sub">KPI kartına tıklayarak filtreleyin</div><div id="ak-shortcuts" style="display:none;gap:5px;margin-top:6px;flex-wrap:wrap"></div></div>
     <div class="brow">
-      <div class="ak-vtoggle">
-        <button class="ak-vbtn active" id="ak-vbtn-tbl" onclick="setAkView('table')" title="Tablo görünümü">☰ Tablo</button>
-        <button class="ak-vbtn" id="ak-vbtn-brd" onclick="setAkView('board')"  title="Board görünümü">⊞ Board</button>
-        <button class="ak-vbtn" id="ak-vbtn-own" onclick="setAkView('owner')"  title="Sorumlu görünümü">👤 Sorumlu</button>
-        <button class="ak-vbtn" id="ak-vbtn-tsk" onclick="setAkView('task')"   title="Görev görünümü">✅ Görev</button>
-        <button class="ak-vbtn" id="ak-vbtn-wkl" onclick="setAkView('weekly')" title="Haftalık görünüm">📆 Haftalık</button>
-        <button class="ak-vbtn" id="ak-vbtn-tag" onclick="setAkView('tag')"    title="Etiket görünümü">🏷 Etiket</button>
-        <button class="ak-vbtn" id="ak-vbtn-gnt" onclick="setAkView('gantt')"  title="Gantt görünümü">📅 Gantt</button>
-      </div>
       <button class="btn btn-xl btn-sm" onclick="exportXLS('ak')">📥 Excel</button>
       <button class="btn btn-xl btn-sm" onclick="exportPDF('ak')">🖨️ PDF</button>
       <button class="btn btn-g btn-sm" id="cfbtn" style="display:none" data-action="clrFilter">✕ Filtre</button>
@@ -1279,27 +1346,38 @@ body.dark-mode .gsearch-hl{background:#5D4037;color:#FFCC80;}
       <button class="btn btn-p btn-sm" data-action="openWiz">➕ Yeni Aksiyon</button>
     </div>
   </div>
+  <div style="margin-bottom:8px;overflow-x:auto;-webkit-overflow-scrolling:touch;">
+    <div class="ak-vtoggle">
+      <button class="ak-vbtn active" id="ak-vbtn-tbl" onclick="setAkView('table')" title="Tablo görünümü">☰ Tablo</button>
+      <button class="ak-vbtn" id="ak-vbtn-brd" onclick="setAkView('board')"  title="Board görünümü">⊞ Board</button>
+      <button class="ak-vbtn" id="ak-vbtn-own" onclick="setAkView('owner')"  title="Sorumlu görünümü">👤 Sorumlu</button>
+      <button class="ak-vbtn" id="ak-vbtn-tsk" onclick="setAkView('task')"   title="Görev görünümü">✅ Görev</button>
+      <button class="ak-vbtn" id="ak-vbtn-wkl" onclick="setAkView('weekly')" title="Haftalık görünüm">📆 Haftalık</button>
+      <button class="ak-vbtn" id="ak-vbtn-tag" onclick="setAkView('tag')"    title="Etiket görünümü">🏷 Etiket</button>
+      <button class="ak-vbtn" id="ak-vbtn-gnt" onclick="setAkView('gantt')"  title="Gantt görünümü">📅 Gantt</button>
+    </div>
+  </div>
   <div class="krow" id="ak-kpis"></div>
   <!-- Aksiyon Filtre Çubuğu -->
   <div id="ak-fbar" style="background:#fff;border:1px solid var(--bdr);border-radius:9px;padding:8px 12px;margin-bottom:8px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
     <span style="font-size:11px;font-weight:700;color:var(--tx2);text-transform:uppercase;letter-spacing:.4px;flex-shrink:0">🔍 Filtre:</span>
-    <button id="ak-f-mine" onclick="filterMyTasks()" title="Bana atanan aksiyonlar" style="font-size:12px;padding:4px 10px;border:1.5px solid var(--bdr);border-radius:6px;font-family:inherit;background:#fff;color:var(--tx2);cursor:pointer;font-weight:600;white-space:nowrap;transition:all .15s">👤 Bana Atanan</button>
-    <input id="ak-f-owner" type="text" placeholder="👤 Sorumlu..." style="font-size:12px;padding:4px 8px;border:1.5px solid var(--bdr);border-radius:6px;font-family:inherit;width:110px;outline:none" oninput="applyAkFilter();updateMineBtn()">
-    <input id="ak-f-tag" type="text" placeholder="🏷️ Etiket..." style="font-size:12px;padding:4px 8px;border:1.5px solid var(--bdr);border-radius:6px;font-family:inherit;width:100px;outline:none" oninput="applyAkFilter()">
-    <select id="ak-f-status" style="font-size:12px;padding:4px 8px;border:1.5px solid var(--bdr);border-radius:6px;font-family:inherit;outline:none;color:var(--tx)" onchange="applyAkFilter()">
+    <button id="ak-f-mine" onclick="filterMyTasks()" title="Bana atanan aksiyonlar" style="font-size:14px;padding:6px 12px;border:1.5px solid var(--bdr);border-radius:6px;font-family:inherit;background:#fff;color:var(--tx2);cursor:pointer;font-weight:600;white-space:nowrap;transition:all .15s;min-height:36px;-webkit-tap-highlight-color:transparent;">👤 Bana Atanan</button>
+    <input id="ak-f-owner" type="text" placeholder="👤 Sorumlu..." style="font-size:16px;padding:6px 8px;border:1.5px solid var(--bdr);border-radius:6px;font-family:inherit;width:110px;outline:none" oninput="applyAkFilter();updateMineBtn()">
+    <input id="ak-f-tag" type="text" placeholder="🏷️ Etiket..." style="font-size:16px;padding:6px 8px;border:1.5px solid var(--bdr);border-radius:6px;font-family:inherit;width:100px;outline:none" oninput="applyAkFilter()">
+    <select id="ak-f-status" style="font-size:16px;padding:6px 8px;border:1.5px solid var(--bdr);border-radius:6px;font-family:inherit;outline:none;color:var(--tx)" onchange="applyAkFilter()">
       <option value="">📊 Tüm Durumlar</option>
       <option>Taslak</option><option>Beklemede</option><option>Devam Ediyor</option><option>Tamamlandı</option><option>İptal</option>
     </select>
-    <select id="ak-f-cat" style="font-size:12px;padding:4px 8px;border:1.5px solid var(--bdr);border-radius:6px;font-family:inherit;outline:none;color:var(--tx)" onchange="applyAkFilter()">
+    <select id="ak-f-cat" style="font-size:16px;padding:6px 8px;border:1.5px solid var(--bdr);border-radius:6px;font-family:inherit;outline:none;color:var(--tx)" onchange="applyAkFilter()">
       <option value="">📁 Tüm Kategoriler</option>
       <option>ACİL &amp; ÖNEMLİ</option><option>ACİL, ÖNEMLİ DEĞİL</option><option>ÖNEMLİ, ACİL DEĞİL</option><option>NE ACİL NE ÖNEMLİ</option>
     </select>
     <div style="display:flex;align-items:center;gap:4px;flex-shrink:0">
-      <input id="ak-f-start" type="date" style="font-size:12px;padding:4px 8px;border:1.5px solid var(--bdr);border-radius:6px;font-family:inherit;outline:none;color:var(--tx)" onchange="applyAkFilter()" title="Başlangıç tarihi ≥">
+      <input id="ak-f-start" type="date" style="font-size:16px;padding:6px 8px;border:1.5px solid var(--bdr);border-radius:6px;font-family:inherit;outline:none;color:var(--tx)" onchange="applyAkFilter()" title="Başlangıç tarihi ≥">
       <span style="font-size:11px;color:var(--tx2)">—</span>
-      <input id="ak-f-end" type="date" style="font-size:12px;padding:4px 8px;border:1.5px solid var(--bdr);border-radius:6px;font-family:inherit;outline:none;color:var(--tx)" onchange="applyAkFilter()" title="Bitiş tarihi ≤">
+      <input id="ak-f-end" type="date" style="font-size:16px;padding:6px 8px;border:1.5px solid var(--bdr);border-radius:6px;font-family:inherit;outline:none;color:var(--tx)" onchange="applyAkFilter()" title="Bitiş tarihi ≤">
     </div>
-    <button onclick="clearAkFilter()" style="font-size:12px;padding:4px 10px;border:1.5px solid var(--bdr);border-radius:6px;background:none;cursor:pointer;color:var(--tx2);font-family:inherit;flex-shrink:0">✕ Temizle</button>
+    <button onclick="clearAkFilter()" style="font-size:14px;padding:6px 12px;border:1.5px solid var(--bdr);border-radius:6px;background:none;cursor:pointer;color:var(--tx2);font-family:inherit;flex-shrink:0;min-height:36px;-webkit-tap-highlight-color:transparent;">✕ Temizle</button>
     <span id="ak-f-count" style="font-size:11px;color:var(--tx2);margin-left:auto"></span>
   </div>
   <div class="bulkt" id="bulkt">
@@ -1309,7 +1387,7 @@ body.dark-mode .gsearch-hl{background:#5D4037;color:#FFCC80;}
       <option value="">📊 Durum Değiştir...</option>
       <option>Beklemede</option><option>Devam Ediyor</option><option>Tamamlandı</option><option>Taslak</option><option>İptal</option>
     </select>
-    <input type="text" id="bulk-owner-inp" placeholder="👤 Sorumlu ata..." style="font-size:12px;padding:3px 8px;border:1.5px solid var(--bdr);border-radius:6px;font-family:inherit;width:120px;outline:none" onkeydown="if(event.key==='Enter')bulkUpdateOwner(this.value)">
+    <input type="text" id="bulk-owner-inp" placeholder="👤 Sorumlu ata..." style="font-size:16px;padding:5px 8px;border:1.5px solid var(--bdr);border-radius:6px;font-family:inherit;width:140px;outline:none" onkeydown="if(event.key==='Enter')bulkUpdateOwner(this.value)">
     <button class="btn btn-g btn-sm" onclick="bulkUpdateOwner(g('bulk-owner-inp').value)">Ata</button>
     <button class="btn btn-d btn-sm" data-action="delSel">🗑️ Sil</button>
     <select id="bulk-move-proj" class="isel" style="font-size:12px;padding:3px 8px;border:1.5px solid var(--bdr);border-radius:6px;font-family:inherit" onchange="if(this.value)bulkMoveToProject(this.value);this.value=''">
@@ -1544,7 +1622,7 @@ body.dark-mode .gsearch-hl{background:#5D4037;color:#FFCC80;}
 </div>
 
 <!-- TAKVİM -->
-<div id="page-board" class="page" style="padding:0!important;overflow-y:auto;height:calc(100vh - 56px);">
+<div id="page-board" class="page" style="padding:0!important;overflow-y:auto;height:calc(100dvh - 56px);">
   <div id="board-root" style="display:flex;flex-direction:column;min-height:100%;"></div>
 </div>
 
@@ -1748,7 +1826,7 @@ body.dark-mode .gsearch-hl{background:#5D4037;color:#FFCC80;}
               <option value="monthly">Her ay</option>
             </select>
             <span style="font-size:12px;color:var(--tx2)">Her</span>
-            <input type="number" id="ef-recur-interval" class="fi" min="1" max="52" value="1" style="width:50px;font-size:12px">
+            <input type="number" id="ef-recur-interval" class="fi" min="1" max="52" value="1" style="width:60px;font-size:16px">
           </div>
         </div>
         <div class="fg" style="margin-top:6px">
@@ -1766,8 +1844,8 @@ body.dark-mode .gsearch-hl{background:#5D4037;color:#FFCC80;}
           <div style="font-size:11px;font-weight:800;color:var(--tx2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">⏱️ SÜRE TAKİBİ <span id="ef-total-time" style="font-weight:400;color:var(--blue)"></span></div>
           <div id="ef-timelog-list" style="max-height:80px;overflow-y:auto;font-size:12px;margin-bottom:5px"></div>
           <div style="display:flex;gap:4px">
-            <input type="number" id="ef-time-mins" class="fi" placeholder="Dakika" min="1" style="width:80px;font-size:12px">
-            <input type="text" id="ef-time-note" class="fi" placeholder="Açıklama (opsiyonel)" style="flex:1;font-size:12px">
+            <input type="number" id="ef-time-mins" class="fi" placeholder="Dakika" min="1" style="width:90px;font-size:16px">
+            <input type="text" id="ef-time-note" class="fi" placeholder="Açıklama (opsiyonel)" style="flex:1;font-size:16px">
             <button class="btn btn-g btn-sm" onclick="addTimeLog()" style="font-size:11px">➕ Ekle</button>
           </div>
         </div>
@@ -8894,10 +8972,8 @@ function genId(){return crypto.randomUUID?crypto.randomUUID():('ws-'+Date.now()+
 function openMobMenu(){
   var d=g('mob-drawer'), o=g('mob-overlay');
   if(!d||!o) return;
-  d.style.display='flex'; o.style.display='block';
-  // Kısa gecikme sonra class ekle (transition için)
+  o.style.display='block';
   requestAnimationFrame(function(){ d.classList.add('open'); o.classList.add('open'); });
-  // Aktif sayfayı işaretle
   var curPage = document.querySelector('.ntab.active');
   var curId = curPage ? curPage.dataset.page : 'dash';
   document.querySelectorAll('.mob-nav-item').forEach(function(el){
@@ -8908,7 +8984,7 @@ function closeMobMenu(){
   var d=g('mob-drawer'), o=g('mob-overlay');
   if(!d||!o) return;
   d.classList.remove('open'); o.classList.remove('open');
-  setTimeout(function(){ d.style.display='none'; o.style.display='none'; }, 260);
+  setTimeout(function(){ o.style.display='none'; }, 260);
 }
 // Mob nav item click
 document.addEventListener('click', function(e){
@@ -8931,6 +9007,16 @@ document.addEventListener('click', function(e){
     }
   },{passive:true});
 })();
+
+// Ekran döndürme: açık modal ve drawer'ı kapat
+window.addEventListener('orientationchange', function(){
+  closeMobMenu();
+  closeMoreNav();
+  // Açık tüm modal'ları kapat
+  document.querySelectorAll('.mo').forEach(function(m){
+    if(m.style.display==='flex') m.style.display='none';
+  });
+});
 
 // ── DAHA FAZLA NAV MENÜSÜ ────────────────────────────────────
 var _moreNavPages = ['todo','agenda','gantt','deps','owner','tag','weekly'];
@@ -10777,8 +10863,8 @@ document.addEventListener('click', function(e){
 curWk=wkStart(new Date());
 gSelProjs=new Set(Object.keys(projects));
 linkProjToTodo();
-renderDash();renderPBar();_origRenderActs();
-g('projbar').classList.remove('hide');
+renderPBar();_origRenderActs();
+showPage('dash');
 
 (function(){
   try{
@@ -11976,10 +12062,13 @@ document.addEventListener('DOMContentLoaded', function() {
     <div class="mob-nav-item" data-mobpage="plantak">📅 Plan Takvimi</div>
     <div class="mob-nav-item" data-mobpage="deps">🔗 Bağımlılık</div>
     <div class="mob-nav-sep"></div>
-    <div class="mob-nav-sub">Raporlar</div>
+    <div class="mob-nav-sub">Görünümler</div>
     <div class="mob-nav-item" data-mobpage="owner">👤 Sorumlu</div>
     <div class="mob-nav-item" data-mobpage="tag">🏷 Etiket</div>
     <div class="mob-nav-item" data-mobpage="weekly">📆 Haftalık</div>
+    <div class="mob-nav-sep"></div>
+    <div class="mob-nav-sub">Raporlar</div>
+    <div class="mob-nav-item" data-mobpage="report">🔍 Rapor</div>
     <div class="mob-nav-item" data-mobpage="log">📜 Aktivite Logu</div>
   </div>
   <div class="mob-drawer-ft">

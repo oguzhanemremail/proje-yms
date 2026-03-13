@@ -2,7 +2,9 @@
 <html lang="tr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <title>DiagramFlow — Diyagram Editörü</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -644,75 +646,396 @@ body{font-family:'Inter',sans-serif;background:#f0f0f0;color:#1a1a1a;height:100v
 
 /* ══════════════════════════════════════
    MOBILE OPTIMIZATIONS
+   iPhone 14 Pro Max + iPad Pro 11"
+   Portrait & Landscape
 ══════════════════════════════════════ */
-@media (max-width: 768px) {
-  /* Hide panels on mobile by default */
+
+/* Mobile nav hidden on desktop */
+#mobile-nav { display:none; }
+
+/* ── Touch / tap active state for all interactive elements ── */
+@media (hover: none) and (pointer: coarse) {
+  .tb-btn:active, .tb-ico:active, .fb:active, .bb-zb:active,
+  .si:active, .mob-nav-btn:active, .bpage:active {
+    opacity: 0.65;
+    transform: scale(0.96);
+  }
+  /* Prevent double-tap zoom on buttons */
+  button, .si, .bpage { touch-action: manipulation; }
+  /* Larger tap targets for tiny buttons */
+  .fb { min-width:36px; min-height:36px; }
+  .fsel { height:32px; font-size:13px; }
+  /* Prevent text selection on drag */
+  .dnode, .si, #canvas { -webkit-user-select:none; user-select:none; }
+}
+
+/* ══════════════════════════════════════
+   iPhone 14 Pro Max — Portrait
+   393 × 852 logical px  (≤430px wide)
+══════════════════════════════════════ */
+@media (max-width: 430px) {
+  /* Safe area insets for notch/Dynamic Island & home bar */
+  body {
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
+
+  /* Hide desktop-only panels */
   #lpanel { display:none; }
   #rpanel { display:none; }
   #fbar   { display:none; }
-
-  /* Slimmer topbar */
-  #topbar { height:48px; padding:0 10px; gap:4px; }
-  .tb-title { font-size:13px; max-width:130px; }
-  .tb-ico   { width:36px; height:36px; font-size:16px; }
-  /* Hide non-essential topbar items */
   .tb-hide-mobile { display:none !important; }
 
-  /* Bottom bar: bigger touch targets */
-  #bbar { height:52px; padding:0 8px; }
-  .bpage { padding:6px 14px; font-size:13px; min-height:40px; }
+  /* Topbar — taller for Dynamic Island clearance */
+  #topbar {
+    height: 52px;
+    padding: 0 12px;
+    gap: 6px;
+  }
+  .tb-logo-icon { width:32px; height:32px; font-size:14px; }
+  .tb-title { font-size:13px; max-width:120px; }
+  .tb-btn { padding:7px 12px; font-size:13px; }
+  .tb-ico { width:40px; height:40px; font-size:17px; }
+
+  /* Bottom page bar — bigger touch targets */
+  #bbar {
+    height: 56px;
+    padding: 0 10px;
+    padding-bottom: calc(4px + env(safe-area-inset-bottom));
+  }
+  .bpage { padding:8px 14px; font-size:13px; min-height:42px; }
+  .bb-add { width:42px; height:42px; font-size:22px; }
+  .bb-zb  { width:38px; height:38px; font-size:16px; }
+  .bb-zv  { font-size:13px; }
+
+  /* Mobile bottom nav — sits above bbar, respects home bar */
+  #mobile-nav {
+    display: flex;
+    position: fixed;
+    bottom: calc(56px + env(safe-area-inset-bottom));
+    left: 0; right: 0;
+    z-index: 500;
+    background: #fff;
+    border-top: 1px solid #ddd;
+    padding: 4px 0;
+    box-shadow: 0 -4px 16px rgba(0,0,0,.12);
+  }
+  .mob-nav-btn {
+    flex: 1;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 3px; padding: 6px 4px;
+    background: none; border: none;
+    font-size: 10px; font-weight: 600; color: #64748b;
+    font-family: 'Inter', sans-serif;
+    border-radius: 8px; transition: color .15s;
+    min-height: 52px; touch-action: manipulation;
+  }
+  .mob-nav-btn .ico { font-size: 22px; }
+  .mob-nav-btn.active { color:#0066ff; }
+
+  /* Canvas takes remaining space */
+  #main {
+    width: 100vw;
+    /* account for topbar + bbar + mobile-nav */
+    height: calc(100vh - 52px - 56px - 60px
+                 - env(safe-area-inset-top)
+                 - env(safe-area-inset-bottom));
+  }
+
+  /* Bottom sheet panels */
+  #lpanel.mob-open, #rpanel.mob-open {
+    display: flex !important;
+    position: fixed; bottom: 0; left: 0; right: 0;
+    z-index: 800;
+    width: 100% !important;
+    max-height: 72vh;
+    border-radius: 20px 20px 0 0;
+    border-top: 1px solid #ddd;
+    box-shadow: 0 -8px 40px rgba(0,0,0,.22);
+    animation: slideUp .22s cubic-bezier(.4,0,.2,1);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  @keyframes slideUp {
+    from { transform: translateY(40px); opacity:0; }
+    to   { transform: translateY(0);    opacity:1; }
+  }
+
+  /* Larger shape grid items for fat fingers */
+  .sgrid { grid-template-columns: repeat(4,1fr); gap:6px; padding:6px 12px 14px; }
+  .si { border-radius:8px; }
+  .si svg { width:30px; height:30px; }
+
+  /* Modal adjustments */
+  .modal {
+    min-width: unset;
+    width: calc(100vw - 32px);
+    padding: 20px 16px;
+    border-radius: 16px;
+  }
+  .export-grid { grid-template-columns: repeat(2,1fr); }
+  .tpl-gallery { grid-template-columns: repeat(2,1fr); max-height:65vh; }
+
+  /* Notifications above nav */
+  #notif { bottom: calc(128px + env(safe-area-inset-bottom)); }
+
+  /* Conn label popup */
+  #conn-label-popup { min-width: calc(100vw - 40px); }
+
+  /* PM screen */
+  .pm-header { padding: 16px 16px 0; }
+  .pm-content { padding: 0 16px calc(80px + env(safe-area-inset-bottom)); }
+  .pm-hero { padding: 24px 16px 20px; }
+  .pm-hero h1 { font-size: 22px; }
+  .pm-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+  .pm-card-thumb { height: 72px; font-size: 28px; }
+}
+
+/* ══════════════════════════════════════
+   iPhone 14 Pro Max — Landscape
+   ~852 × 393 logical px
+   (max-height: 430px while landscape)
+══════════════════════════════════════ */
+@media (max-height: 430px) and (orientation: landscape) and (pointer: coarse) {
+  body {
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
+
+  #lpanel { display:none; }
+  #rpanel { display:none; }
+  #fbar   { display:none; }
+  .tb-hide-mobile { display:none !important; }
+
+  /* Compact topbar in landscape */
+  #topbar { height: 44px; padding: 0 calc(10px + env(safe-area-inset-left)) 0 calc(10px + env(safe-area-inset-right)); gap:5px; }
+  .tb-title { font-size:13px; max-width:160px; }
+  .tb-ico { width:36px; height:36px; }
+
+  /* Compact bottom bar */
+  #bbar {
+    height: 44px;
+    padding: 0 calc(10px + env(safe-area-inset-right)) 0 10px;
+  }
+  .bpage { padding:5px 12px; font-size:12px; min-height:36px; }
+  .bb-add { width:36px; height:36px; font-size:20px; }
+  .bb-zb  { width:34px; height:34px; }
+
+  /* In landscape, show a compact side-rail instead of bottom nav */
+  #mobile-nav {
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    top: 44px;
+    right: env(safe-area-inset-right, 0);
+    bottom: 44px;
+    width: 60px;
+    z-index: 500;
+    background: #fff;
+    border-left: 1px solid #ddd;
+    box-shadow: -4px 0 16px rgba(0,0,0,.1);
+    padding: 4px 0;
+    justify-content: space-around;
+  }
+  .mob-nav-btn {
+    flex: unset;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 2px; padding: 6px 2px;
+    background: none; border: none;
+    font-size: 8px; font-weight: 600; color: #64748b;
+    font-family: 'Inter',sans-serif;
+    min-height: 52px; touch-action: manipulation;
+    border-radius: 8px; transition: color .15s;
+    width: 56px;
+  }
+  .mob-nav-btn .ico { font-size: 18px; }
+  .mob-nav-btn.active { color:#0066ff; }
+
+  /* Canvas avoids the side rail */
+  #main {
+    margin-right: 60px;
+  }
+
+  .modal {
+    min-width: unset;
+    width: min(520px, calc(100vw - 80px));
+    max-height: 80vh;
+    overflow-y: auto;
+    padding: 16px;
+  }
+  .tpl-gallery { grid-template-columns: repeat(3,1fr); max-height:55vh; }
+  .export-grid { grid-template-columns: repeat(3,1fr); }
+
+  #notif { bottom: calc(52px + 4px); }
+}
+
+/* ══════════════════════════════════════
+   iPad Pro 11" — Portrait
+   834 × 1194 logical px
+══════════════════════════════════════ */
+@media (min-width: 768px) and (max-width: 900px) and (orientation: portrait) {
+  body {
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  /* Show left panel but narrower */
+  #lpanel { width: 240px; display:flex; }
+  #rpanel { width: 200px; display:flex; }
+  #fbar   { display:flex; overflow-x:auto; }
+  .tb-hide-mobile { display:none !important; }
+
+  #topbar { height: 50px; padding: 0 14px; }
+  .tb-title { font-size:14px; max-width:180px; }
+  .tb-ico { width:38px; height:38px; }
+  .tb-btn { padding:7px 14px; font-size:13px; }
+
+  #bbar { height:50px; padding:0 12px; }
+  .bpage { padding:7px 14px; font-size:13px; min-height:40px; }
+  .bb-add { width:38px; height:38px; font-size:20px; }
+  .bb-zb  { width:36px; height:36px; font-size:15px; }
+
+  /* No bottom nav needed — panels visible */
+  #mobile-nav { display:none; }
+
+  .sgrid { grid-template-columns: repeat(4,1fr); gap:5px; padding:5px 12px 12px; }
+  .si svg { width:28px; height:28px; }
+
+  /* Larger right panel inputs */
+  .rp-inp { height:30px; font-size:13px; }
+  .rp-lbl { font-size:12px; min-width:54px; }
+  .rp-btn { padding:8px; font-size:13px; }
+
+  .modal { min-width: 400px; }
+  .tpl-gallery { grid-template-columns: repeat(3,1fr); }
+  .export-grid { grid-template-columns: repeat(3,1fr); }
+}
+
+/* ══════════════════════════════════════
+   iPad Pro 11" — Landscape
+   1194 × 834 logical px
+══════════════════════════════════════ */
+@media (min-width: 900px) and (max-width: 1300px) and (pointer: coarse) {
+  body {
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
+
+  /* Full panels in landscape */
+  #lpanel { width: 260px; display:flex; }
+  #rpanel { width: 220px; display:flex; }
+  #fbar   { display:flex; }
+  .tb-hide-mobile { display:flex !important; }
+
+  #topbar { height: 48px; padding: 0 14px; }
+  .tb-title { font-size:14px; }
+  .tb-ico { width:36px; height:36px; }
+
+  #bbar { height:44px; }
+  .bpage { padding:6px 14px; font-size:13px; min-height:36px; }
+  .bb-add { width:36px; height:36px; font-size:20px; }
+  .bb-zb  { width:34px; height:34px; }
+
+  /* No bottom nav — full desktop-like layout */
+  #mobile-nav { display:none; }
+
+  /* Touch-friendly format bar */
+  .fb { min-height:32px; min-width:32px; }
+  .fsel { height:30px; font-size:13px; }
+
+  /* Better right panel */
+  .rp-inp { height:30px; font-size:13px; }
+  .rp-btn { padding:8px; font-size:13px; }
+
+  .tpl-gallery { grid-template-columns: repeat(4,1fr); }
+}
+
+/* ══════════════════════════════════════
+   Shared: bottom sheet drag handle
+══════════════════════════════════════ */
+#lpanel.mob-open::before, #rpanel.mob-open::before {
+  content: '';
+  display: block;
+  width: 40px; height: 4px;
+  background: #ddd;
+  border-radius: 2px;
+  margin: 8px auto 0;
+  flex-shrink: 0;
+  position: absolute;
+  top: 6px; left: 50%;
+  transform: translateX(-50%);
+}
+
+/* ══════════════════════════════════════
+   Generic small-screen (≤768px fallback)
+══════════════════════════════════════ */
+@media (max-width: 767px) {
+  #lpanel { display:none; }
+  #rpanel { display:none; }
+  #fbar   { display:none; }
+  .tb-hide-mobile { display:none !important; }
+
+  #topbar { height:50px; padding:0 12px; gap:5px; }
+  .tb-title { font-size:13px; max-width:140px; }
+  .tb-ico { width:38px; height:38px; font-size:16px; }
+
+  #bbar { height:52px; padding:0 10px; }
+  .bpage { padding:7px 14px; font-size:13px; min-height:40px; }
   .bb-add { width:40px; height:40px; font-size:22px; }
   .bb-zb  { width:36px; height:36px; font-size:16px; }
   .bb-zv  { font-size:13px; }
 
-  /* Bottom mobile nav overlay */
   #mobile-nav {
-    display:flex;
-    position:fixed; bottom:52px; left:0; right:0; z-index:500;
-    background:#fff; border-top:1px solid #ddd;
-    padding:6px 0; gap:0; box-shadow:0 -4px 16px rgba(0,0,0,.1);
+    display: flex;
+    position: fixed; bottom: 52px; left:0; right:0;
+    z-index: 500;
+    background: #fff; border-top:1px solid #ddd;
+    padding: 6px 0;
+    box-shadow: 0 -4px 16px rgba(0,0,0,.1);
   }
   .mob-nav-btn {
-    flex:1; display:flex; flex-direction:column; align-items:center;
-    justify-content:center; gap:3px; padding:6px 4px;
+    flex:1; display:flex; flex-direction:column;
+    align-items:center; justify-content:center;
+    gap:3px; padding:6px 4px;
     background:none; border:none; cursor:pointer;
-    font-size:9px; font-weight:600; color:#64748b; font-family:'Inter',sans-serif;
-    border-radius:8px; transition:all .15s; min-height:48px;
+    font-size:10px; font-weight:600; color:#64748b;
+    font-family:'Inter',sans-serif;
+    border-radius:8px; transition:all .15s;
+    min-height:50px; touch-action:manipulation;
   }
   .mob-nav-btn .ico { font-size:20px; }
   .mob-nav-btn.active, .mob-nav-btn:active { color:#0066ff; background:#f0f6ff; }
 
-  /* Main canvas full width */
   #main { width:100vw; }
 
-  /* Overlay panels shown as bottom sheets */
   #lpanel.mob-open, #rpanel.mob-open {
-    display:flex !important;
-    position:fixed; bottom:0; left:0; right:0; z-index:800;
-    width:100% !important; max-height:70vh;
-    border-radius:16px 16px 0 0;
-    border-top:1px solid #ddd;
-    box-shadow:0 -8px 40px rgba(0,0,0,.2);
-    animation:slideUp .2s ease;
+    display: flex !important;
+    position: fixed; bottom:0; left:0; right:0;
+    z-index: 800;
+    width: 100% !important; max-height:70vh;
+    border-radius: 16px 16px 0 0;
+    border-top: 1px solid #ddd;
+    box-shadow: 0 -8px 40px rgba(0,0,0,.2);
+    animation: slideUp .2s ease;
   }
-  @keyframes slideUp { from{transform:translateY(30px);opacity:0} to{transform:translateY(0);opacity:1} }
 
-  /* PM screen mobile */
   .pm-header { padding:16px; }
   .pm-content { padding:0 16px 80px; }
   .pm-hero { padding:24px 16px 20px; }
   .pm-hero h1 { font-size:24px; }
   .pm-grid { grid-template-columns:1fr 1fr; gap:12px; }
   .pm-card-thumb { height:72px; font-size:28px; }
+
+  #notif { bottom:110px; }
 }
 
 @media (max-width: 480px) {
   .pm-grid { grid-template-columns:1fr; }
   .pm-hero h1 { font-size:20px; }
 }
-
-/* Mobile nav hidden on desktop */
-#mobile-nav { display:none; }
 
 </style>
 </head>
@@ -1167,7 +1490,7 @@ body{font-family:'Inter',sans-serif;background:#f0f0f0;color:#1a1a1a;height:100v
 <!-- BOTTOM BAR -->
 <div id="bbar">
   <div class="bbp" id="pages-bar">
-    <button class="tb-ico" onclick="toggleLayers()" style="font-size:13px;">☰</button>
+    <button class="tb-ico" onclick="if(window.parent&&window.parent.openApp)window.parent.openApp('pym');else if(window.parent&&window.parent.backToSelect)window.parent.backToSelect();" title="Proje Yönetimi'ne Geç" style="font-size:13px;">📋</button>
     <!-- pages inserted here -->
   </div>
   <button class="bb-add" onclick="openNewPageMenu(event)" title="Yeni sayfa ekle" style="font-size:18px;font-weight:700;">+</button>
@@ -4337,18 +4660,54 @@ function applyTransform() {
 }
 
 // ── TOUCH HANDLERS for mobile pan & pinch-zoom ──
-let _touch = { type:null, startX:0, startY:0, startPanX:0, startPanY:0, dist:0, startZoom:1 };
+let _touch = {
+  type: null,
+  startX: 0, startY: 0,
+  startPanX: 0, startPanY: 0,
+  dist: 0, startZoom: 1,
+  moved: false,
+  nodeId: null,         // node being dragged by touch
+  nodeStartX: 0, nodeStartY: 0,  // node's original position
+  tapTimer: null        // long-press timer
+};
 
 function touchStart(e) {
   if (isGanttPage(currentPage) || isSwimlanePage(currentPage) || isStoryMapPage(currentPage)) return;
+  _touch.moved = false;
+
   if (e.touches.length === 1) {
     const t = e.touches[0];
-    _touch.type = 'pan';
-    _touch.startX = t.clientX;
-    _touch.startY = t.clientY;
-    _touch.startPanX = panX;
-    _touch.startPanY = panY;
+    // Check if touching a node
+    const el = document.elementFromPoint(t.clientX, t.clientY);
+    const nodeEl = el && el.closest('.dnode');
+    if (nodeEl && !connMode) {
+      // Start a node-drag via touch
+      _touch.type = 'node';
+      _touch.nodeId = nodeEl.id;
+      _touch.startX = t.clientX;
+      _touch.startY = t.clientY;
+      const n = getNode(nodeEl.id);
+      if (n) { _touch.nodeStartX = n.x; _touch.nodeStartY = n.y; }
+      // Select node on touch
+      clearSel();
+      selIds.add(nodeEl.id);
+      nodeEl.classList.add('sel');
+      // Long-press to open context menu
+      _touch.tapTimer = setTimeout(() => {
+        if (!_touch.moved) {
+          const node = getNode(nodeEl.id);
+          if (node) showCtxNode(nodeEl.id, t.clientX, t.clientY);
+        }
+      }, 600);
+    } else {
+      _touch.type = 'pan';
+      _touch.startX = t.clientX;
+      _touch.startY = t.clientY;
+      _touch.startPanX = panX;
+      _touch.startPanY = panY;
+    }
   } else if (e.touches.length === 2) {
+    clearTimeout(_touch.tapTimer);
     e.preventDefault();
     _touch.type = 'pinch';
     const dx = e.touches[0].clientX - e.touches[1].clientX;
@@ -4363,10 +4722,32 @@ function touchStart(e) {
 
 function touchMove(e) {
   if (isGanttPage(currentPage) || isSwimlanePage(currentPage) || isStoryMapPage(currentPage)) return;
-  if (_touch.type === 'pan' && e.touches.length === 1) {
+
+  if (_touch.type === 'node' && e.touches.length === 1) {
+    e.preventDefault();
+    const t = e.touches[0];
+    const dxPx = t.clientX - _touch.startX;
+    const dyPx = t.clientY - _touch.startY;
+    if (Math.abs(dxPx) > 4 || Math.abs(dyPx) > 4) {
+      _touch.moved = true;
+      clearTimeout(_touch.tapTimer);
+    }
+    if (_touch.moved) {
+      const n = getNode(_touch.nodeId);
+      if (n) {
+        n.x = _touch.nodeStartX + dxPx / zoom;
+        n.y = _touch.nodeStartY + dyPx / zoom;
+        const el = document.getElementById(_touch.nodeId);
+        if (el) { el.style.left = n.x + 'px'; el.style.top = n.y + 'px'; }
+        renderConnections();
+        asMarkDirty();
+      }
+    }
+  } else if (_touch.type === 'pan' && e.touches.length === 1) {
     e.preventDefault();
     const dx = (e.touches[0].clientX - _touch.startX) / zoom;
     const dy = (e.touches[0].clientY - _touch.startY) / zoom;
+    if (Math.abs(dx) > 2 || Math.abs(dy) > 2) _touch.moved = true;
     panX = _touch.startPanX + dx;
     panY = _touch.startPanY + dy;
     applyTransform();
@@ -4382,7 +4763,9 @@ function touchMove(e) {
 }
 
 function touchEnd(e) {
+  clearTimeout(_touch.tapTimer);
   _touch.type = null;
+  _touch.nodeId = null;
 }
 
 

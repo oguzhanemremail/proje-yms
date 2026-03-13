@@ -2,13 +2,23 @@
 <html lang="tr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <title>TLC Platform</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
-*{margin:0;padding:0;box-sizing:border-box;}
-body{font-family:'Outfit',sans-serif;background:#F0F4F8;min-height:100vh;overflow:hidden;}
+
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+body{
+  font-family:'Outfit',sans-serif;
+  background:#F0F4F8;
+  min-height:100vh;
+  min-height:100dvh;
+  overflow:hidden;
+  -webkit-text-size-adjust:100%;
+}
 
 /* ── SHARED BG ── */
 .page-bg{position:fixed;inset:0;pointer-events:none;overflow:hidden;}
@@ -21,11 +31,20 @@ body{font-family:'Outfit',sans-serif;background:#F0F4F8;min-height:100vh;overflo
 @keyframes bm3{0%,100%{transform:translate(-50%,-50%) scale(1)}50%{transform:translate(-50%,-50%) scale(1.2)}}
 
 /* ── SCREENS ── */
-.screen{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .35s ease,transform .35s ease;transform:translateY(10px);}
+.screen{
+  position:fixed;inset:0;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  opacity:0;pointer-events:none;
+  transition:opacity .35s ease,transform .35s ease;
+  transform:translateY(10px);
+  padding:env(safe-area-inset-top,16px) env(safe-area-inset-right,16px) env(safe-area-inset-bottom,16px) env(safe-area-inset-left,16px);
+  overflow-y:auto;
+  -webkit-overflow-scrolling:touch;
+}
 .screen.active{opacity:1;pointer-events:all;transform:translateY(0);}
 
-/* ── LOGO BLOCK (shared) ── */
-.logo-block{text-align:center;margin-bottom:32px;}
+/* ── LOGO BLOCK ── */
+.logo-block{text-align:center;margin-bottom:28px;flex-shrink:0;}
 .logo-wrap{display:inline-flex;align-items:center;gap:14px;margin-bottom:8px;}
 .logo-icon{width:54px;height:54px;background:linear-gradient(135deg,#1976D2,#3949AB);border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:19px;font-weight:900;color:#fff;box-shadow:0 8px 28px rgba(25,118,210,.32);flex-shrink:0;}
 .logo-brand-top{font-size:9px;color:#90A4AE;text-transform:uppercase;letter-spacing:2.5px;font-weight:700;}
@@ -33,33 +52,74 @@ body{font-family:'Outfit',sans-serif;background:#F0F4F8;min-height:100vh;overflo
 .logo-sub{font-size:13px;color:#90A4AE;margin-top:2px;}
 
 /* ── AUTH CARD ── */
-.auth-card{background:#fff;border-radius:20px;width:400px;max-width:calc(100vw - 32px);box-shadow:0 4px 32px rgba(25,118,210,.1),0 1px 0 rgba(255,255,255,.9) inset;border:1px solid rgba(255,255,255,.8);padding:32px 32px 28px;position:relative;z-index:1;}
+.auth-card{
+  background:#fff;border-radius:20px;
+  width:400px;max-width:calc(100vw - 32px);
+  box-shadow:0 4px 32px rgba(25,118,210,.1),0 1px 0 rgba(255,255,255,.9) inset;
+  border:1px solid rgba(255,255,255,.8);
+  padding:28px 28px 24px;
+  position:relative;z-index:1;
+  flex-shrink:0;
+}
 .auth-card h2{font-size:16px;font-weight:700;color:#0d1b2a;margin-bottom:4px;}
-.auth-card p{font-size:12px;color:#90A4AE;margin-bottom:22px;}
+.auth-card p{font-size:12px;color:#90A4AE;margin-bottom:20px;}
 
-.inp{width:100%;padding:11px 14px;border:1.5px solid #E1E7EF;border-radius:10px;font-family:'Outfit',sans-serif;font-size:14px;color:#0d1b2a;outline:none;margin-bottom:11px;transition:border-color .15s;background:#F8FAFC;}
+/* iOS zoom fix: font-size >= 16px on inputs */
+.inp{
+  width:100%;padding:13px 16px;
+  border:1.5px solid #E1E7EF;border-radius:12px;
+  font-family:'Outfit',sans-serif;font-size:16px;color:#0d1b2a;
+  outline:none;margin-bottom:12px;
+  transition:border-color .15s;background:#F8FAFC;
+  -webkit-appearance:none;appearance:none;
+  touch-action:manipulation;
+}
 .inp:focus{border-color:#1976D2;background:#fff;}
-.btn-primary{width:100%;padding:12px;background:linear-gradient(135deg,#1976D2,#3949AB);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .2s;margin-top:2px;letter-spacing:.2px;}
+
+.btn-primary{
+  width:100%;padding:14px;
+  background:linear-gradient(135deg,#1976D2,#3949AB);
+  color:#fff;border:none;border-radius:12px;
+  font-size:16px;font-weight:700;cursor:pointer;
+  font-family:'Outfit',sans-serif;transition:all .2s;
+  margin-top:2px;letter-spacing:.2px;
+  min-height:48px; /* touch target */
+  touch-action:manipulation;
+}
 .btn-primary:hover{opacity:.91;transform:translateY(-1px);box-shadow:0 6px 20px rgba(25,118,210,.3);}
+.btn-primary:active{transform:translateY(0);opacity:.85;}
 .btn-primary:disabled{background:#BBDEFB;cursor:not-allowed;transform:none;box-shadow:none;}
-.msg-err{background:#FFEBEE;color:#C62828;border:1px solid #FFCDD2;border-radius:8px;padding:9px 12px;font-size:12px;margin-bottom:12px;display:none;}
-.msg-ok{background:#E8F5E9;color:#1B5E20;border:1px solid #C8E6C9;border-radius:8px;padding:9px 12px;font-size:12px;margin-bottom:12px;display:none;}
-.txt-link{font-size:12px;color:#1976D2;cursor:pointer;text-align:center;display:block;margin-top:12px;}
+.msg-err{background:#FFEBEE;color:#C62828;border:1px solid #FFCDD2;border-radius:8px;padding:9px 12px;font-size:13px;margin-bottom:12px;display:none;}
+.msg-ok{background:#E8F5E9;color:#1B5E20;border:1px solid #C8E6C9;border-radius:8px;padding:9px 12px;font-size:13px;margin-bottom:12px;display:none;}
+.txt-link{font-size:13px;color:#1976D2;cursor:pointer;text-align:center;display:block;margin-top:14px;padding:8px;min-height:44px;display:flex;align-items:center;justify-content:center;}
 .txt-link:hover{text-decoration:underline;}
 .sub-form{display:none;}
 .divider{height:1px;background:#F0F4F8;margin:18px 0;}
 
 /* ── APP SELECT ── */
-.app-cards{display:flex;gap:18px;align-items:center;position:relative;z-index:1;}
-.app-card{width:240px;background:#fff;border:1.5px solid #E8EDF2;border-radius:18px;padding:28px 24px;cursor:pointer;transition:all .22s ease;display:flex;flex-direction:column;gap:16px;box-shadow:0 2px 12px rgba(0,0,0,.05);}
+.app-cards{
+  display:flex;gap:18px;align-items:stretch;
+  position:relative;z-index:1;
+  flex-wrap:wrap;justify-content:center;
+  width:100%;max-width:540px;
+}
+.app-card{
+  flex:1;min-width:200px;max-width:240px;
+  background:#fff;border:1.5px solid #E8EDF2;border-radius:18px;
+  padding:24px 20px;cursor:pointer;
+  transition:all .22s ease;
+  display:flex;flex-direction:column;gap:14px;
+  box-shadow:0 2px 12px rgba(0,0,0,.05);
+  touch-action:manipulation;
+}
 .app-card:hover{border-color:#90CAF9;transform:translateY(-5px);box-shadow:0 18px 44px rgba(25,118,210,.13);}
-.app-card:active{transform:translateY(-2px);}
+.app-card:active{transform:scale(.97);box-shadow:0 4px 16px rgba(25,118,210,.1);}
 .card-icon{width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:24px;}
 .pym .card-icon{background:linear-gradient(135deg,#E3F2FD,#BBDEFB);}
 .flow .card-icon{background:linear-gradient(135deg,#E0F7FA,#B2EBF2);}
 .card-title{font-size:16px;font-weight:700;color:#0d1b2a;margin-bottom:5px;}
 .card-desc{font-size:11.5px;color:#90A4AE;line-height:1.65;}
-.card-footer{display:flex;align-items:center;justify-content:space-between;margin-top:2px;}
+.card-footer{display:flex;align-items:center;justify-content:space-between;margin-top:auto;}
 .card-tag{font-size:8.5px;font-weight:700;text-transform:uppercase;letter-spacing:1px;padding:3px 9px;border-radius:20px;}
 .pym .card-tag{background:#E3F2FD;color:#1565C0;}
 .flow .card-tag{background:#E0F7FA;color:#006064;}
@@ -67,13 +127,17 @@ body{font-family:'Outfit',sans-serif;background:#F0F4F8;min-height:100vh;overflo
 .pym .card-arr{background:#E3F2FD;color:#1976D2;}
 .flow .card-arr{background:#E0F7FA;color:#0097A7;}
 .app-card:hover .card-arr{transform:translateX(4px);}
-.or-sep{display:flex;flex-direction:column;align-items:center;gap:8px;color:#CFD8DC;font-size:11px;font-weight:600;}
+.or-sep{
+  display:flex;flex-direction:column;align-items:center;gap:8px;
+  color:#CFD8DC;font-size:11px;font-weight:600;
+  flex-shrink:0;
+}
 .or-sep::before,.or-sep::after{content:'';width:1px;height:32px;background:#E8EDF2;}
 
-/* user row on select screen */
-.user-row{display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:28px;position:relative;z-index:1;}
-.user-chip{font-size:12px;color:#546E7A;background:#fff;border:1px solid #E1E7EF;border-radius:20px;padding:5px 14px;box-shadow:0 1px 4px rgba(0,0,0,.05);}
-.logout-btn{font-size:11px;color:#1976D2;cursor:pointer;padding:5px 10px;border-radius:8px;transition:background .15s;}
+/* user row */
+.user-row{display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:24px;position:relative;z-index:1;flex-wrap:wrap;}
+.user-chip{font-size:12px;color:#546E7A;background:#fff;border:1px solid #E1E7EF;border-radius:20px;padding:6px 14px;box-shadow:0 1px 4px rgba(0,0,0,.05);}
+.logout-btn{font-size:12px;color:#1976D2;cursor:pointer;padding:6px 12px;border-radius:8px;transition:background .15s;min-height:36px;display:flex;align-items:center;}
 .logout-btn:hover{background:#E3F2FD;}
 
 /* ── APPS ── */
@@ -81,10 +145,6 @@ body{font-family:'Outfit',sans-serif;background:#F0F4F8;min-height:100vh;overflo
 #app-pym.active,#app-flow.active{display:flex;}
 #app-pym iframe,#app-flow iframe{width:100%;flex:1;border:none;}
 
-/* ── SWITCH BTN ── */
-#switch-btn{position:fixed;bottom:20px;right:20px;z-index:8000;background:#0d1b2a;color:#fff;border:none;border-radius:12px;padding:10px 16px;font-family:'Outfit',sans-serif;font-size:13px;font-weight:700;cursor:pointer;display:none;align-items:center;gap:8px;box-shadow:0 6px 20px rgba(0,0,0,.22);transition:all .2s;}
-#switch-btn:hover{background:#172840;transform:translateY(-2px);box-shadow:0 10px 28px rgba(0,0,0,.28);}
-#switch-btn.show{display:flex;}
 
 /* ── LOADING ── */
 #loading{position:fixed;inset:0;background:#F0F4F8;z-index:9998;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:14px;opacity:0;pointer-events:none;transition:opacity .25s;}
@@ -92,6 +152,88 @@ body{font-family:'Outfit',sans-serif;background:#F0F4F8;min-height:100vh;overflo
 .ring{width:42px;height:42px;border:3px solid #E1E7EF;border-top-color:#1976D2;border-radius:50%;animation:spin .8s linear infinite;}
 @keyframes spin{to{transform:rotate(360deg);}}
 .ring-txt{font-size:13px;color:#90A4AE;font-weight:500;}
+
+/* ══════════════════════════════════════
+   RESPONSIVE — iPhone 14 Pro Max (430px) dikey
+   ══════════════════════════════════════ */
+@media (max-width: 500px) {
+  .logo-block{margin-bottom:20px;}
+  .logo-icon{width:46px;height:46px;font-size:16px;}
+  .logo-brand-name{font-size:19px;}
+  .logo-sub{font-size:12px;}
+
+  .auth-card{padding:22px 18px 20px;border-radius:16px;}
+
+  .app-cards{flex-direction:column;align-items:stretch;gap:12px;max-width:100%;padding:0 4px;}
+  .app-card{min-width:unset;max-width:unset;flex-direction:row;align-items:center;gap:14px;padding:16px 18px;}
+  .app-card .card-icon{flex-shrink:0;width:46px;height:46px;font-size:20px;}
+  .app-card > div:nth-child(2){flex:1;min-width:0;}
+  .card-title{font-size:15px;margin-bottom:3px;}
+  .card-desc{font-size:11px;}
+  .card-footer{margin-top:0;flex-direction:column;align-items:flex-end;gap:6px;}
+
+  .or-sep{flex-direction:row;gap:10px;}
+  .or-sep::before,.or-sep::after{width:40px;height:1px;}
+
+  .user-row{margin-bottom:18px;}
+}
+
+/* ══════════════════════════════════════
+   RESPONSIVE — Landscape (tüm mobil cihazlar)
+   ══════════════════════════════════════ */
+@media (max-height: 500px) and (orientation: landscape) {
+  .screen{
+    justify-content:flex-start;
+    padding-top:max(8px, env(safe-area-inset-top, 8px));
+    padding-bottom:max(8px, env(safe-area-inset-bottom, 8px));
+  }
+
+  /* Auth ekranı: yatayda logo + kart yan yana */
+  #s-auth{flex-direction:row;gap:24px;align-items:center;justify-content:center;padding:8px 24px;}
+  #s-auth .logo-block{margin-bottom:0;flex-shrink:0;}
+  #s-auth .logo-icon{width:40px;height:40px;font-size:14px;}
+  #s-auth .logo-brand-name{font-size:17px;}
+  #s-auth .logo-sub{font-size:11px;}
+  #s-auth .auth-card{padding:16px 20px 14px;}
+  #s-auth .inp{padding:10px 14px;margin-bottom:9px;}
+  #s-auth .btn-primary{padding:10px;min-height:40px;}
+  #s-auth .auth-card h2{font-size:14px;}
+  #s-auth .auth-card p{margin-bottom:14px;font-size:11px;}
+
+  /* Select ekranı: yatayda kompakt */
+  #s-select{padding:8px 20px;}
+  #s-select .logo-block{margin-bottom:12px;}
+  #s-select .logo-icon{width:36px;height:36px;font-size:13px;border-radius:10px;}
+  #s-select .logo-brand-name{font-size:16px;}
+  #s-select .logo-sub{display:none;}
+  #s-select .user-row{margin-bottom:12px;}
+  #s-select .app-cards{flex-direction:row;flex-wrap:nowrap;gap:12px;max-width:560px;}
+  #s-select .app-card{padding:14px 16px;gap:10px;}
+  #s-select .card-icon{width:40px;height:40px;font-size:18px;}
+  #s-select .card-title{font-size:14px;margin-bottom:3px;}
+  #s-select .card-desc{font-size:10.5px;}
+  #s-select .or-sep{flex-direction:column;}
+  #s-select .or-sep::before,#s-select .or-sep::after{width:1px;height:20px;}
+}
+
+/* ══════════════════════════════════════
+   iPad Pro 11" (834px dikey / 1194px yatay)
+   ══════════════════════════════════════ */
+@media (min-width: 768px) and (max-width: 1024px) {
+  .auth-card{width:420px;}
+  .app-cards{gap:24px;max-width:600px;}
+  .app-card{max-width:260px;padding:30px 26px;}
+  .card-title{font-size:17px;}
+  .card-desc{font-size:12px;}
+}
+
+/* ══════════════════════════════════════
+   iPad Pro 11" Landscape
+   ══════════════════════════════════════ */
+@media (min-width: 1024px) and (max-width: 1366px) and (orientation: landscape) {
+  .app-cards{gap:28px;max-width:640px;}
+  .app-card{max-width:280px;padding:32px 28px;}
+}
 </style>
 </head>
 <body>
@@ -192,10 +334,6 @@ body{font-family:'Outfit',sans-serif;background:#F0F4F8;min-height:100vh;overflo
 <div id="app-pym"><iframe id="iframe-pym"></iframe></div>
 <div id="app-flow"><iframe id="iframe-flow"></iframe></div>
 
-<!-- ══ SWITCH ══ -->
-<button id="switch-btn" onclick="backToSelect()">
-  <span>⇄</span><span id="sw-lbl">Uygulama Değiştir</span>
-</button>
 
 <!-- ══ LOADING ══ -->
 <div id="loading">
@@ -260,7 +398,6 @@ function doLogout() {
   pymReady = false; flowReady = false;
   document.getElementById('app-pym').classList.remove('active');
   document.getElementById('app-flow').classList.remove('active');
-  document.getElementById('switch-btn').classList.remove('show');
   document.getElementById('iframe-pym').removeAttribute('srcdoc');
   document.getElementById('iframe-flow').removeAttribute('srcdoc');
   showScreen('s-auth');
@@ -278,22 +415,18 @@ function openApp(type) {
       if (!pymReady) { document.getElementById('iframe-pym').src = 'proje_yonetimi.html'; pymReady = true; }
       document.getElementById('app-flow').classList.remove('active');
       document.getElementById('app-pym').classList.add('active');
-      document.getElementById('sw-lbl').textContent = "DiagramFlow'a Geç";
     } else {
       if (!flowReady) { document.getElementById('iframe-flow').src = 'diagramflow.html'; flowReady = true; }
       document.getElementById('app-pym').classList.remove('active');
       document.getElementById('app-flow').classList.add('active');
-      document.getElementById('sw-lbl').textContent = "Proje Yönetimi'ne Geç";
     }
     document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});
-    document.getElementById('switch-btn').classList.add('show');
     setLoading(false);
   }, 600);
 }
 function backToSelect() {
   document.getElementById('app-pym').classList.remove('active');
   document.getElementById('app-flow').classList.remove('active');
-  document.getElementById('switch-btn').classList.remove('show');
   showScreen('s-select');
 }
 

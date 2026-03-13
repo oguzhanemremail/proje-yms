@@ -12080,6 +12080,12 @@ document.addEventListener('DOMContentLoaded', function() {
     <button class="mob-tool-btn" onclick="closeMobMenu();toggleDarkMode()" title="Tema">🌙</button>
     <button class="mob-tool-btn" onclick="closeMobMenu();backupHTML()" title="Yedek">💾</button>
   </div>
+  <div style="padding:10px 14px;border-top:1px solid rgba(255,255,255,.1);">
+    <button onclick="closeMobMenu();if(window.parent&&window.parent.openApp)window.parent.openApp('flow');else if(window.parent&&window.parent.backToSelect)window.parent.backToSelect();"
+      style="width:100%;background:rgba(0,151,167,.18);border:1px solid rgba(0,151,167,.4);border-radius:10px;color:#80DEEA;font-family:inherit;font-size:13px;font-weight:700;padding:11px 14px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">
+      <span style="font-size:16px;">🔷</span> DiagramFlow'a Geç
+    </button>
+  </div>
 </div>
 </body>
 </html>

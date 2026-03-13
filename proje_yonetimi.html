@@ -43,7 +43,7 @@ body.dark-mode .gsi:hover{background:#2a2a3e!important;}
 body.dark-mode table tr:hover td{background:#2a2a3a!important;}
 body.dark-mode .ak-sticky-wrap,body.dark-mode .wswrap{border-color:var(--bdr);}
 *{box-sizing:border-box;margin:0;padding:0;}
-html,body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--tx);min-height:100vh;overscroll-behavior:none;}
+html,body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--tx);min-height:100vh;overscroll-behavior:none;overflow-x:hidden;max-width:100vw;}
 /* Yazı boyutu ölçekleme - body'e class eklenerek aktif olur */
 body.fs-sm *:not(.gantt-bar):not(.gantt-bar *){font-size:90%!important;}
 body.fs-lg *:not(.gantt-bar):not(.gantt-bar *){font-size:112%!important;}
@@ -100,7 +100,7 @@ body.fs-xl *:not(.gantt-bar):not(.gantt-bar *){font-size:125%!important;}
 .ptab-color-dot:hover{transform:scale(1.4);}
 .pnew{padding:4px 11px;font-size:12px;font-weight:700;color:rgba(255,255,255,.75);cursor:pointer;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:5px;font-family:inherit;white-space:nowrap;margin-left:6px;flex-shrink:0;}
 .pnew:hover{background:rgba(255,255,255,.18);color:#fff;}
-.page{display:none;padding:18px 20px;overflow-y:auto;height:calc(100dvh - 56px);overscroll-behavior:contain;-webkit-overflow-scrolling:touch;}
+.page{display:none;padding:18px 20px;overflow-y:auto;height:calc(100dvh - 56px);overscroll-behavior:contain;-webkit-overflow-scrolling:touch;max-width:100%;box-sizing:border-box;}
 .page.active{display:block;}
 #page-gantt.active{display:flex!important;flex-direction:column;padding:12px 14px;height:calc(100dvh - 56px);overflow:hidden;}
 #page-plantak.active{display:flex!important;}
@@ -837,6 +837,37 @@ body.dark-mode .alog-to{color:#81C784;}
 /* ── FUZZY ARAMA VURGU ─────────────────────────────── */
 .gsearch-hl{background:#FFF9C4;color:#333;border-radius:2px;padding:0 1px;}
 body.dark-mode .gsearch-hl{background:#5D4037;color:#FFCC80;}
+
+/* ── MOBİL TAŞMA ÖNLEME ── */
+html, body { max-width: 100vw; overflow-x: hidden; }
+* { max-width: 100%; }
+img, table { max-width: 100%; }
+
+/* iPhone 14 Pro Max dikey (430px) */
+@media (max-width: 430px) {
+  .page { padding: 12px 12px; }
+  .card { padding: 12px !important; }
+  .ph { padding: 0 0 12px 0 !important; }
+  .btn-lbl { display: none !important; }
+  .topbar { padding: 0 8px !important; gap: 4px !important; }
+  #gsearch-inp { width: 100px !important; }
+  .wl-name { display: none !important; }
+}
+
+/* iPhone 14 Pro Max yatay + iPad dikey */
+@media (max-width: 932px) and (orientation: landscape) {
+  .page { height: calc(100dvh - 52px); padding: 8px 12px; }
+}
+
+/* iPad Pro 11" dikey (834px) */
+@media (min-width: 768px) and (max-width: 1024px) and (orientation: portrait) {
+  .page { padding: 16px 18px; }
+}
+
+/* iPad Pro 11" yatay (1194px) - hamburger kapanır, normal layout */
+@media (min-width: 1025px) and (max-width: 1366px) and (orientation: landscape) {
+  .page { padding: 16px 20px; }
+}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/docx@8/build/index.umd.min.js"></script>
 </head>
@@ -12081,7 +12112,7 @@ document.addEventListener('DOMContentLoaded', function() {
     <button class="mob-tool-btn" onclick="closeMobMenu();backupHTML()" title="Yedek">💾</button>
   </div>
   <div style="padding:10px 14px;border-top:1px solid rgba(255,255,255,.1);">
-    <button onclick="closeMobMenu();window.parent.postMessage('openApp:flow','*');" style="width:100%;background:rgba(0,151,167,.18);border:1px solid rgba(0,151,167,.4);border-radius:10px;color:#80DEEA;font-family:inherit;font-size:13px;font-weight:700;padding:11px 14px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;"><span style="font-size:16px;">🔷</span> DiagramFlow'a Geç</button>
+    <button onclick="closeMobMenu();try{window.parent.postMessage('openApp:flow','*');}catch(e){}try{localStorage.setItem('tlc_nav','openApp:flow');}catch(e){}" style="width:100%;background:rgba(0,151,167,.18);border:1px solid rgba(0,151,167,.4);border-radius:10px;color:#80DEEA;font-family:inherit;font-size:13px;font-weight:700;padding:11px 14px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;"><span style="font-size:16px;">🔷</span> DiagramFlow'a Geç</button>
   </div>
 </div>
 </body>

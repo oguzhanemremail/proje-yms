@@ -430,11 +430,20 @@ function backToSelect() {
   showScreen('s-select');
 }
 
-// iframe'lerden gelen geçiş mesajlarını dinle
+// iframe'lerden gelen geçiş mesajlarını dinle (postMessage + localStorage - file:// için)
 window.addEventListener('message', function(e) {
   if (e.data === 'openApp:pym')  openApp('pym');
   if (e.data === 'openApp:flow') openApp('flow');
   if (e.data === 'backToSelect') backToSelect();
+});
+window.addEventListener('storage', function(e) {
+  if (e.key === 'tlc_nav' && e.newValue) {
+    var val = e.newValue;
+    localStorage.removeItem('tlc_nav');
+    if (val === 'openApp:pym')  openApp('pym');
+    if (val === 'openApp:flow') openApp('flow');
+    if (val === 'backToSelect') backToSelect();
+  }
 });
 
 document.getElementById('card-pym').addEventListener('click',  function(){ openApp('pym'); });

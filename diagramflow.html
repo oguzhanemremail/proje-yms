@@ -653,6 +653,124 @@ body{font-family:'Inter',sans-serif;background:#f0f0f0;color:#1a1a1a;height:100v
 /* Mobile nav hidden on desktop */
 #mobile-nav { display:none; }
 
+/* ── HAMBURGER BUTTON ── */
+#ham-btn {
+  display: none;
+  width: 40px; height: 40px;
+  border: none; background: none;
+  cursor: pointer; border-radius: 8px;
+  flex-direction: column; align-items: center; justify-content: center;
+  gap: 5px; padding: 8px; flex-shrink: 0;
+  transition: background .15s;
+}
+#ham-btn:hover { background: #f0f0f0; }
+#ham-btn span {
+  display: block; width: 20px; height: 2px;
+  background: #333; border-radius: 2px;
+  transition: all .25s cubic-bezier(.4,0,.2,1);
+}
+#ham-btn.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+#ham-btn.open span:nth-child(2) { opacity: 0; transform: scaleX(0); }
+#ham-btn.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+/* ── HAMBURGER DRAWER OVERLAY ── */
+#ham-overlay {
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.35);
+  z-index: 900;
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+}
+#ham-overlay.open { display: block; }
+
+/* ── HAMBURGER DRAWER ── */
+#ham-drawer {
+  position: fixed;
+  top: 0; right: 0; bottom: 0;
+  width: min(300px, 85vw);
+  background: #fff;
+  z-index: 901;
+  box-shadow: -8px 0 40px rgba(0,0,0,.2);
+  transform: translateX(100%);
+  transition: transform .28s cubic-bezier(.4,0,.2,1);
+  display: flex; flex-direction: column;
+  overflow: hidden;
+}
+#ham-drawer.open {
+  transform: translateX(0);
+}
+
+.ham-drawer-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 18px 14px;
+  border-bottom: 1px solid #eee;
+  flex-shrink: 0;
+}
+.ham-drawer-logo {
+  display: flex; align-items: center; gap: 8px;
+}
+.ham-drawer-logo-icon {
+  width: 32px; height: 32px;
+  background: linear-gradient(135deg,#00b8a9,#0066ff);
+  border-radius: 8px; display: flex; align-items: center;
+  justify-content: center; color: #fff; font-size: 14px; font-weight: 700;
+}
+.ham-drawer-logo-text { font-size: 15px; font-weight: 700; color: #1a1a1a; }
+.ham-close-btn {
+  width: 32px; height: 32px; border: none; background: none;
+  cursor: pointer; border-radius: 6px; font-size: 18px; color: #888;
+  display: flex; align-items: center; justify-content: center;
+  transition: background .12s;
+}
+.ham-close-btn:hover { background: #f0f0f0; color: #333; }
+
+.ham-drawer-body {
+  flex: 1; overflow-y: auto; padding: 10px 8px;
+}
+.ham-drawer-body::-webkit-scrollbar { width: 4px; }
+.ham-drawer-body::-webkit-scrollbar-thumb { background: #ddd; border-radius: 2px; }
+
+.ham-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 13px 14px; border-radius: 10px;
+  cursor: pointer; font-size: 14px; font-weight: 500; color: #222;
+  transition: background .12s; touch-action: manipulation;
+  border: none; background: none; width: 100%;
+  font-family: 'Inter', sans-serif; text-align: left;
+}
+.ham-item:hover, .ham-item:active { background: #f0f6ff; color: #0066ff; }
+.ham-item .ham-ico { font-size: 20px; width: 28px; text-align: center; flex-shrink: 0; }
+.ham-item .ham-lbl { flex: 1; }
+.ham-item .ham-badge {
+  font-size: 10px; font-weight: 700; background: #0066ff; color: #fff;
+  padding: 2px 7px; border-radius: 10px;
+}
+
+.ham-sep {
+  height: 1px; background: #f0f0f0; margin: 6px 8px;
+}
+
+.ham-section-title {
+  font-size: 10px; font-weight: 700; color: #aaa;
+  text-transform: uppercase; letter-spacing: .08em;
+  padding: 10px 14px 4px;
+}
+
+.ham-drawer-footer {
+  padding: 12px 16px;
+  padding-bottom: calc(12px + env(safe-area-inset-bottom));
+  border-top: 1px solid #eee;
+  flex-shrink: 0;
+}
+.ham-export-btn {
+  width: 100%; padding: 12px; border-radius: 10px;
+  background: #0066ff; color: #fff; border: none;
+  font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 600;
+  cursor: pointer; transition: background .15s; touch-action: manipulation;
+}
+.ham-export-btn:hover, .ham-export-btn:active { background: #0052cc; }
+
 /* ── Touch / tap active state for all interactive elements ── */
 @media (hover: none) and (pointer: coarse) {
   .tb-btn:active, .tb-ico:active, .fb:active, .bb-zb:active,
@@ -680,69 +798,60 @@ body{font-family:'Inter',sans-serif;background:#f0f0f0;color:#1a1a1a;height:100v
     padding-bottom: env(safe-area-inset-bottom);
     padding-left: env(safe-area-inset-left);
     padding-right: env(safe-area-inset-right);
+    overflow: hidden;
+    max-width: 100vw;
   }
 
   /* Hide desktop-only panels */
   #lpanel { display:none; }
   #rpanel { display:none; }
   #fbar   { display:none; }
+  #mobile-nav { display:none; }
   .tb-hide-mobile { display:none !important; }
+
+  /* Show hamburger button */
+  #ham-btn { display:flex; }
 
   /* Topbar — taller for Dynamic Island clearance */
   #topbar {
     height: 52px;
-    padding: 0 12px;
-    gap: 6px;
+    padding: 0 10px;
+    gap: 4px;
+    overflow: hidden;
+    max-width: 100vw;
   }
   .tb-logo-icon { width:32px; height:32px; font-size:14px; }
-  .tb-title { font-size:13px; max-width:120px; }
-  .tb-btn { padding:7px 12px; font-size:13px; }
+  .tb-title { font-size:13px; max-width:110px; min-width:0; flex-shrink:1; }
+  .tb-btn { padding:7px 10px; font-size:12px; }
   .tb-ico { width:40px; height:40px; font-size:17px; }
 
   /* Bottom page bar — bigger touch targets */
   #bbar {
-    height: 56px;
+    height: 52px;
     padding: 0 10px;
     padding-bottom: calc(4px + env(safe-area-inset-bottom));
+    overflow-x: auto;
+    max-width: 100vw;
   }
-  .bpage { padding:8px 14px; font-size:13px; min-height:42px; }
-  .bb-add { width:42px; height:42px; font-size:22px; }
-  .bb-zb  { width:38px; height:38px; font-size:16px; }
+  .bpage { padding:8px 12px; font-size:13px; min-height:40px; }
+  .bb-add { width:40px; height:40px; font-size:22px; }
+  .bb-zb  { width:36px; height:36px; font-size:16px; }
   .bb-zv  { font-size:13px; }
 
-  /* Mobile bottom nav — sits above bbar, respects home bar */
-  #mobile-nav {
-    display: flex;
-    position: fixed;
-    bottom: calc(56px + env(safe-area-inset-bottom));
-    left: 0; right: 0;
-    z-index: 500;
-    background: #fff;
-    border-top: 1px solid #ddd;
-    padding: 4px 0;
-    box-shadow: 0 -4px 16px rgba(0,0,0,.12);
-  }
-  .mob-nav-btn {
-    flex: 1;
-    display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
-    gap: 3px; padding: 6px 4px;
-    background: none; border: none;
-    font-size: 10px; font-weight: 600; color: #64748b;
-    font-family: 'Inter', sans-serif;
-    border-radius: 8px; transition: color .15s;
-    min-height: 52px; touch-action: manipulation;
-  }
-  .mob-nav-btn .ico { font-size: 22px; }
-  .mob-nav-btn.active { color:#0066ff; }
-
-  /* Canvas takes remaining space */
+  /* Canvas takes full remaining space */
   #main {
     width: 100vw;
-    /* account for topbar + bbar + mobile-nav */
-    height: calc(100vh - 52px - 56px - 60px
+    max-width: 100vw;
+    overflow: hidden;
+    height: calc(100dvh - 52px - 52px
                  - env(safe-area-inset-top)
                  - env(safe-area-inset-bottom));
+  }
+
+  /* Drawer safe area */
+  #ham-drawer {
+    padding-top: env(safe-area-inset-top);
+    padding-right: env(safe-area-inset-right);
   }
 
   /* Bottom sheet panels */
@@ -751,6 +860,7 @@ body{font-family:'Inter',sans-serif;background:#f0f0f0;color:#1a1a1a;height:100v
     position: fixed; bottom: 0; left: 0; right: 0;
     z-index: 800;
     width: 100% !important;
+    max-width: 100vw;
     max-height: 72vh;
     border-radius: 20px 20px 0 0;
     border-top: 1px solid #ddd;
@@ -772,25 +882,29 @@ body{font-family:'Inter',sans-serif;background:#f0f0f0;color:#1a1a1a;height:100v
   .modal {
     min-width: unset;
     width: calc(100vw - 32px);
+    max-width: calc(100vw - 32px);
     padding: 20px 16px;
     border-radius: 16px;
   }
   .export-grid { grid-template-columns: repeat(2,1fr); }
   .tpl-gallery { grid-template-columns: repeat(2,1fr); max-height:65vh; }
 
-  /* Notifications above nav */
-  #notif { bottom: calc(128px + env(safe-area-inset-bottom)); }
+  /* Notifications */
+  #notif { bottom: calc(60px + env(safe-area-inset-bottom)); }
 
   /* Conn label popup */
-  #conn-label-popup { min-width: calc(100vw - 40px); }
+  #conn-label-popup { min-width: calc(100vw - 40px); max-width: calc(100vw - 40px); }
 
   /* PM screen */
   .pm-header { padding: 16px 16px 0; }
-  .pm-content { padding: 0 16px calc(80px + env(safe-area-inset-bottom)); }
+  .pm-content { padding: 0 16px calc(30px + env(safe-area-inset-bottom)); }
   .pm-hero { padding: 24px 16px 20px; }
   .pm-hero h1 { font-size: 22px; }
   .pm-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
   .pm-card-thumb { height: 72px; font-size: 28px; }
+
+  /* Prevent horizontal overflow everywhere */
+  #topbar, #fbar, #bbar, #main, .modal { box-sizing: border-box; }
 }
 
 /* ══════════════════════════════════════
@@ -802,61 +916,52 @@ body{font-family:'Inter',sans-serif;background:#f0f0f0;color:#1a1a1a;height:100v
   body {
     padding-left: env(safe-area-inset-left);
     padding-right: env(safe-area-inset-right);
+    overflow: hidden;
+    max-width: 100vw;
   }
 
   #lpanel { display:none; }
   #rpanel { display:none; }
   #fbar   { display:none; }
+  #mobile-nav { display:none; }
   .tb-hide-mobile { display:none !important; }
 
+  /* Show hamburger button */
+  #ham-btn { display:flex; }
+
   /* Compact topbar in landscape */
-  #topbar { height: 44px; padding: 0 calc(10px + env(safe-area-inset-left)) 0 calc(10px + env(safe-area-inset-right)); gap:5px; }
-  .tb-title { font-size:13px; max-width:160px; }
+  #topbar {
+    height: 44px;
+    padding: 0 calc(8px + env(safe-area-inset-left)) 0 calc(8px + env(safe-area-inset-right));
+    gap: 4px;
+    max-width: 100vw;
+    overflow: hidden;
+  }
+  .tb-title { font-size:13px; max-width:140px; min-width:0; flex-shrink:1; }
   .tb-ico { width:36px; height:36px; }
+  .tb-btn { padding:5px 10px; font-size:12px; }
 
   /* Compact bottom bar */
   #bbar {
     height: 44px;
-    padding: 0 calc(10px + env(safe-area-inset-right)) 0 10px;
+    padding: 0 calc(8px + env(safe-area-inset-right)) 0 8px;
+    max-width: 100vw;
   }
   .bpage { padding:5px 12px; font-size:12px; min-height:36px; }
   .bb-add { width:36px; height:36px; font-size:20px; }
   .bb-zb  { width:34px; height:34px; }
 
-  /* In landscape, show a compact side-rail instead of bottom nav */
-  #mobile-nav {
-    display: flex;
-    flex-direction: column;
-    position: fixed;
-    top: 44px;
-    right: env(safe-area-inset-right, 0);
-    bottom: 44px;
-    width: 60px;
-    z-index: 500;
-    background: #fff;
-    border-left: 1px solid #ddd;
-    box-shadow: -4px 0 16px rgba(0,0,0,.1);
-    padding: 4px 0;
-    justify-content: space-around;
-  }
-  .mob-nav-btn {
-    flex: unset;
-    display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
-    gap: 2px; padding: 6px 2px;
-    background: none; border: none;
-    font-size: 8px; font-weight: 600; color: #64748b;
-    font-family: 'Inter',sans-serif;
-    min-height: 52px; touch-action: manipulation;
-    border-radius: 8px; transition: color .15s;
-    width: 56px;
-  }
-  .mob-nav-btn .ico { font-size: 18px; }
-  .mob-nav-btn.active { color:#0066ff; }
-
-  /* Canvas avoids the side rail */
+  /* Canvas full width in landscape */
   #main {
-    margin-right: 60px;
+    width: 100vw;
+    max-width: 100vw;
+    overflow: hidden;
+  }
+
+  /* Drawer comes from right */
+  #ham-drawer {
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
   }
 
   .modal {
@@ -880,26 +985,29 @@ body{font-family:'Inter',sans-serif;background:#f0f0f0;color:#1a1a1a;height:100v
   body {
     padding-top: env(safe-area-inset-top);
     padding-bottom: env(safe-area-inset-bottom);
+    overflow: hidden;
+    max-width: 100vw;
   }
 
   /* Show left panel but narrower */
-  #lpanel { width: 240px; display:flex; }
+  #lpanel { width: 200px; display:flex; }
   #rpanel { width: 200px; display:flex; }
   #fbar   { display:flex; overflow-x:auto; }
+  #mobile-nav { display:none; }
   .tb-hide-mobile { display:none !important; }
 
-  #topbar { height: 50px; padding: 0 14px; }
-  .tb-title { font-size:14px; max-width:180px; }
+  /* Show hamburger for extra actions */
+  #ham-btn { display:flex; }
+
+  #topbar { height: 50px; padding: 0 14px; max-width: 100vw; }
+  .tb-title { font-size:14px; max-width:180px; min-width:0; flex-shrink:1; }
   .tb-ico { width:38px; height:38px; }
   .tb-btn { padding:7px 14px; font-size:13px; }
 
-  #bbar { height:50px; padding:0 12px; }
+  #bbar { height:50px; padding:0 12px; max-width: 100vw; }
   .bpage { padding:7px 14px; font-size:13px; min-height:40px; }
   .bb-add { width:38px; height:38px; font-size:20px; }
   .bb-zb  { width:36px; height:36px; font-size:15px; }
-
-  /* No bottom nav needed — panels visible */
-  #mobile-nav { display:none; }
 
   .sgrid { grid-template-columns: repeat(4,1fr); gap:5px; padding:5px 12px 12px; }
   .si svg { width:28px; height:28px; }
@@ -909,7 +1017,7 @@ body{font-family:'Inter',sans-serif;background:#f0f0f0;color:#1a1a1a;height:100v
   .rp-lbl { font-size:12px; min-width:54px; }
   .rp-btn { padding:8px; font-size:13px; }
 
-  .modal { min-width: 400px; }
+  .modal { min-width: unset; width: calc(100vw - 48px); max-width: 520px; }
   .tpl-gallery { grid-template-columns: repeat(3,1fr); }
   .export-grid { grid-template-columns: repeat(3,1fr); }
 }
@@ -922,25 +1030,28 @@ body{font-family:'Inter',sans-serif;background:#f0f0f0;color:#1a1a1a;height:100v
   body {
     padding-left: env(safe-area-inset-left);
     padding-right: env(safe-area-inset-right);
+    overflow: hidden;
+    max-width: 100vw;
   }
 
   /* Full panels in landscape */
   #lpanel { width: 260px; display:flex; }
   #rpanel { width: 220px; display:flex; }
   #fbar   { display:flex; }
+  #mobile-nav { display:none; }
   .tb-hide-mobile { display:flex !important; }
 
-  #topbar { height: 48px; padding: 0 14px; }
-  .tb-title { font-size:14px; }
+  #topbar { height: 48px; padding: 0 14px; max-width: 100vw; }
+  .tb-title { font-size:14px; min-width:0; flex-shrink:1; }
   .tb-ico { width:36px; height:36px; }
 
-  #bbar { height:44px; }
+  #bbar { height:44px; max-width: 100vw; }
   .bpage { padding:6px 14px; font-size:13px; min-height:36px; }
   .bb-add { width:36px; height:36px; font-size:20px; }
   .bb-zb  { width:34px; height:34px; }
 
-  /* No bottom nav — full desktop-like layout */
-  #mobile-nav { display:none; }
+  /* No hamburger needed — full desktop-like layout */
+  #ham-btn { display:none; }
 
   /* Touch-friendly format bar */
   .fb { min-height:32px; min-width:32px; }
@@ -973,49 +1084,38 @@ body{font-family:'Inter',sans-serif;background:#f0f0f0;color:#1a1a1a;height:100v
    Generic small-screen (≤768px fallback)
 ══════════════════════════════════════ */
 @media (max-width: 767px) {
+  body {
+    overflow: hidden;
+    max-width: 100vw;
+  }
+
   #lpanel { display:none; }
   #rpanel { display:none; }
   #fbar   { display:none; }
+  #mobile-nav { display:none; }
   .tb-hide-mobile { display:none !important; }
 
-  #topbar { height:50px; padding:0 12px; gap:5px; }
-  .tb-title { font-size:13px; max-width:140px; }
-  .tb-ico { width:38px; height:38px; font-size:16px; }
+  /* Show hamburger button */
+  #ham-btn { display:flex; }
 
-  #bbar { height:52px; padding:0 10px; }
-  .bpage { padding:7px 14px; font-size:13px; min-height:40px; }
+  #topbar { height:50px; padding:0 10px; gap:4px; max-width:100vw; overflow:hidden; }
+  .tb-title { font-size:13px; max-width:130px; min-width:0; flex-shrink:1; }
+  .tb-ico { width:38px; height:38px; font-size:16px; }
+  .tb-btn { padding:6px 10px; font-size:12px; }
+
+  #bbar { height:52px; padding:0 10px; max-width:100vw; }
+  .bpage { padding:7px 12px; font-size:13px; min-height:40px; }
   .bb-add { width:40px; height:40px; font-size:22px; }
   .bb-zb  { width:36px; height:36px; font-size:16px; }
   .bb-zv  { font-size:13px; }
 
-  #mobile-nav {
-    display: flex;
-    position: fixed; bottom: 52px; left:0; right:0;
-    z-index: 500;
-    background: #fff; border-top:1px solid #ddd;
-    padding: 6px 0;
-    box-shadow: 0 -4px 16px rgba(0,0,0,.1);
-  }
-  .mob-nav-btn {
-    flex:1; display:flex; flex-direction:column;
-    align-items:center; justify-content:center;
-    gap:3px; padding:6px 4px;
-    background:none; border:none; cursor:pointer;
-    font-size:10px; font-weight:600; color:#64748b;
-    font-family:'Inter',sans-serif;
-    border-radius:8px; transition:all .15s;
-    min-height:50px; touch-action:manipulation;
-  }
-  .mob-nav-btn .ico { font-size:20px; }
-  .mob-nav-btn.active, .mob-nav-btn:active { color:#0066ff; background:#f0f6ff; }
-
-  #main { width:100vw; }
+  #main { width:100vw; max-width:100vw; overflow:hidden; }
 
   #lpanel.mob-open, #rpanel.mob-open {
     display: flex !important;
     position: fixed; bottom:0; left:0; right:0;
     z-index: 800;
-    width: 100% !important; max-height:70vh;
+    width: 100% !important; max-width:100vw; max-height:70vh;
     border-radius: 16px 16px 0 0;
     border-top: 1px solid #ddd;
     box-shadow: 0 -8px 40px rgba(0,0,0,.2);
@@ -1023,13 +1123,15 @@ body{font-family:'Inter',sans-serif;background:#f0f0f0;color:#1a1a1a;height:100v
   }
 
   .pm-header { padding:16px; }
-  .pm-content { padding:0 16px 80px; }
+  .pm-content { padding:0 16px 30px; }
   .pm-hero { padding:24px 16px 20px; }
   .pm-hero h1 { font-size:24px; }
   .pm-grid { grid-template-columns:1fr 1fr; gap:12px; }
   .pm-card-thumb { height:72px; font-size:28px; }
 
-  #notif { bottom:110px; }
+  #notif { bottom:70px; }
+
+  .modal { min-width:unset; width:calc(100vw - 32px); max-width:calc(100vw - 32px); }
 }
 
 @media (max-width: 480px) {
@@ -1046,6 +1148,10 @@ body{font-family:'Inter',sans-serif;background:#f0f0f0;color:#1a1a1a;height:100v
   <div class="tb-logo" style="cursor:pointer" onclick="openProjectManager()" title="Projeler">
     <div class="tb-logo-icon">⬡</div>
   </div>
+  <!-- Hamburger button (mobile only) -->
+  <button id="ham-btn" onclick="toggleHamburger()" title="Menü" aria-label="Menü">
+    <span></span><span></span><span></span>
+  </button>
   <!-- Project breadcrumb -->
   <button class="tb-btn tb-ghost tb-hide-mobile" id="proj-btn" onclick="openProjectManager()" style="font-size:12px;padding:4px 10px;color:#64748b;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
     <span id="proj-name-lbl">Proje Seç</span> ▾
@@ -1059,7 +1165,7 @@ body{font-family:'Inter',sans-serif;background:#f0f0f0;color:#1a1a1a;height:100v
   </div>
   <button class="tb-ico tb-hide-mobile" title="Sunum" onclick="togglePresent()">▶</button>
   <button class="tb-btn tb-ghost tb-hide-mobile" onclick="openTplGallery()" style="gap:5px;">📐 Şablonlar</button>
-  <button class="tb-btn tb-ghost" onclick="openExport()">⬇ Dışa Aktar</button>
+  <button class="tb-btn tb-ghost tb-hide-mobile" onclick="openExport()">⬇ Dışa Aktar</button>
   <button class="tb-btn tb-primary tb-hide-mobile" onclick="shareDoc()">⬆ Paylaş</button>
 </div>
 
@@ -1988,7 +2094,10 @@ function mobNavProps() {
   const isOpen = rp.classList.contains('mob-open');
   rp.classList.toggle('mob-open', !isOpen);
   lp.classList.remove('mob-open');
-  if (!isOpen) setTimeout(() => document.addEventListener('click', mobCloseOnOutside, {once:true}), 50);
+  if (!isOpen) {
+    updateRPanelForced();
+    setTimeout(() => document.addEventListener('click', mobCloseOnOutside, {once:true}), 50);
+  }
 }
 
 function mobCloseOnOutside(e) {
@@ -3903,9 +4012,8 @@ function renderNode(n) {
     el.addEventListener('dblclick',  e => { e.stopPropagation(); inlineEdit(n.id); });
     el.addEventListener('contextmenu', e => {
       e.preventDefault(); e.stopPropagation();
-      // Select the node first
-      if (!selIds.has(n.id)) { deselectAll(); selIds.add(n.id); refreshSel(); updateRPanel(); }
-      openShapePicker(n.id, e.clientX, e.clientY);
+      if (!selIds.has(n.id)) { deselectAll(); selIds.add(n.id); refreshSel(); }
+      showNodeCtxMenu(n.id, e.clientX, e.clientY);
     });
   } else {
     el.style.cursor = 'default';
@@ -4309,6 +4417,12 @@ function connCtxDo(a) {
 }
 
 function rebuildCtxMenu() {
+  const isTouchSmall = window.matchMedia('(pointer:coarse) and (max-width:900px)').matches;
+  const mobileItems = isTouchSmall ? `
+    <div class="csep"></div>
+    <div class="ci" onclick="ctx('shape-picker')">🔷 Şekli Değiştir</div>
+    <div class="ci" onclick="ctx('props')">🎨 Özellikler</div>
+  ` : '';
   document.getElementById('ctxm').innerHTML = `
     <div class="ci" onclick="ctx('copy')">Kopyala <span class="ckey">Ctrl+C</span></div>
     <div class="ci" onclick="ctx('paste')">Yapıştır <span class="ckey">Ctrl+V</span></div>
@@ -4318,9 +4432,89 @@ function rebuildCtxMenu() {
     <div class="ci" onclick="ctx('bk')">Arkaya Gönder</div>
     <div class="csep"></div>
     <div class="ci" onclick="ctx('all')">Tümünü Seç <span class="ckey">Ctrl+A</span></div>
+    ${mobileItems}
     <div class="csep"></div>
     <div class="ci d" onclick="ctx('del')">Sil <span class="ckey">Del</span></div>
   `;
+}
+
+// Node-specific context menu (right-click / long-press on a node)
+function showNodeCtxMenu(nodeId, cx, cy) {
+  const isTouchSmall = window.matchMedia('(pointer:coarse) and (max-width:900px)').matches;
+  const m = document.getElementById('ctxm');
+
+  const mobileItems = isTouchSmall ? `
+    <div class="csep"></div>
+    <div class="ci" onclick="ctxNode('shape-picker','${nodeId}')">🔷 Şekli Değiştir</div>
+    <div class="ci" onclick="ctxNode('props','${nodeId}')">🎨 Özellikler</div>
+  ` : `
+    <div class="csep"></div>
+    <div class="ci" onclick="ctxNode('shape-picker','${nodeId}')">🔷 Şekli Değiştir</div>
+  `;
+
+  m.innerHTML = `
+    <div class="ci" onclick="ctx('copy')">Kopyala <span class="ckey">Ctrl+C</span></div>
+    <div class="ci" onclick="ctx('dup')">Çoğalt <span class="ckey">Ctrl+D</span></div>
+    <div class="csep"></div>
+    <div class="ci" onclick="ctx('fwd')">Öne Getir</div>
+    <div class="ci" onclick="ctx('bk')">Arkaya Gönder</div>
+    ${mobileItems}
+    <div class="csep"></div>
+    <div class="ci d" onclick="ctx('del')">Sil <span class="ckey">Del</span></div>
+  `;
+  _posMenu(m, cx, cy);
+  setTimeout(() => document.addEventListener('click', () => { m.style.display='none'; rebuildCtxMenu(); }, {once:true}), 10);
+}
+
+function ctxNode(a, nodeId) {
+  document.getElementById('ctxm').style.display = 'none';
+  rebuildCtxMenu();
+  if (a === 'shape-picker') {
+    const nodeEl = document.getElementById(nodeId);
+    if (nodeEl) {
+      const rect = nodeEl.getBoundingClientRect();
+      openShapePicker(nodeId, rect.left + rect.width / 2, rect.top + rect.height / 2);
+    }
+  } else if (a === 'props') {
+    const rp = document.getElementById('rpanel');
+    const lp = document.getElementById('lpanel');
+    rp.classList.add('mob-open');
+    lp.classList.remove('mob-open');
+    updateRPanelForced();
+    setTimeout(() => document.addEventListener('click', mobCloseOnOutside, {once:true}), 50);
+  }
+}
+
+// updateRPanel without mobile guard — used when user explicitly requests panel
+function updateRPanelForced() {
+  if (!selIds.size) return;
+  const id = [...selIds][0];
+  const n = getNode(id);
+  if (!n) {
+    const c = conns().find(c => c.id === id);
+    if (c) {
+      document.getElementById('no-sel').style.display = 'none';
+      document.getElementById('rp-content').style.display = '';
+      document.getElementById('rp-conn-props').style.display = '';
+      document.getElementById('rp-arrsz').value = (c.arrowSize || 10);
+      document.getElementById('rp-arrcol').value = c.arrowColor || c.color || '#444444';
+    }
+    return;
+  }
+  document.getElementById('no-sel').style.display = 'none';
+  document.getElementById('rp-content').style.display = '';
+  document.getElementById('rp-conn-props').style.display = 'none';
+  document.getElementById('rp-x').value = Math.round(n.x);
+  document.getElementById('rp-y').value = Math.round(n.y);
+  document.getElementById('rp-w').value = Math.round(n.w);
+  document.getElementById('rp-h').value = Math.round(n.h);
+  document.getElementById('rp-lbl').value = n.label || '';
+  document.getElementById('rp-tc').value = n.textColor || '#ffffff';
+  document.getElementById('rp-fs').value = n.fontSize || 12;
+  document.getElementById('rp-fill').value = n.fill && n.fill !== 'transparent' && n.fill !== 'none' ? n.fill : '#4a90d9';
+  document.getElementById('rp-stroke').value = n.stroke && n.stroke !== 'none' ? n.stroke : '#3a7bc8';
+  document.getElementById('rp-lw').value = n.lineWidth || 1.5;
+  document.getElementById('rp-op').value = n.opacity || 100;
 }
 
 function portPt(n,dir) {
@@ -4556,6 +4750,13 @@ function deselectAll() { selIds.clear(); refreshSel(); document.getElementById('
 
 function updateRPanel() {
   if(!selIds.size) return;
+
+  // On small touch screens, don't auto-open the right panel.
+  // It opens only when explicitly requested (context menu "Özellikler").
+  const isTouchSmall = window.matchMedia('(pointer:coarse) and (max-width:900px)').matches;
+  const rp = document.getElementById('rpanel');
+  if (isTouchSmall && !rp.classList.contains('mob-open')) return;
+
   const id=[...selIds][0];
   const n=getNode(id);
 
@@ -4696,7 +4897,7 @@ function touchStart(e) {
       _touch.tapTimer = setTimeout(() => {
         if (!_touch.moved) {
           const node = getNode(nodeEl.id);
-          if (node) showCtxNode(nodeEl.id, t.clientX, t.clientY);
+          if (node) showNodeCtxMenu(nodeEl.id, t.clientX, t.clientY);
         }
       }, 600);
     } else {
@@ -4950,6 +5151,26 @@ function ctx(a) {
   else if(a==='fwd')bringFwd();
   else if(a==='bk')sendBk();
   else if(a==='all'){nodes().forEach(n=>selIds.add(n.id));refreshSel();}
+  else if(a==='props') {
+    // Open right panel as bottom sheet on mobile
+    const rp = document.getElementById('rpanel');
+    const lp = document.getElementById('lpanel');
+    rp.classList.add('mob-open');
+    lp.classList.remove('mob-open');
+    updateRPanel();
+    setTimeout(() => document.addEventListener('click', mobCloseOnOutside, {once:true}), 50);
+  }
+  else if(a==='shape-picker') {
+    // Open shape picker popup centered on screen
+    const selArr = [...selIds];
+    if (selArr.length > 0) {
+      const nodeEl = document.getElementById(selArr[0]);
+      if (nodeEl) {
+        const rect = nodeEl.getBoundingClientRect();
+        openShapePicker(selArr[0], rect.left + rect.width/2, rect.top + rect.height/2);
+      }
+    }
+  }
 }
 
 // ═══════════════════════════════════════════════════
@@ -7311,6 +7532,35 @@ function addNewPageWith(name, loaderFn) {
   notify(`✅ "${name}" şablonu eklendi`);
 }
 
+/* ══════════════════════════════════════
+   HAMBURGER DRAWER
+══════════════════════════════════════ */
+function toggleHamburger() {
+  const btn     = document.getElementById('ham-btn');
+  const drawer  = document.getElementById('ham-drawer');
+  const overlay = document.getElementById('ham-overlay');
+  const isOpen  = drawer.classList.contains('open');
+  if (isOpen) {
+    closeHamburger();
+  } else {
+    btn.classList.add('open');
+    drawer.classList.add('open');
+    overlay.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+}
+
+function closeHamburger() {
+  document.getElementById('ham-btn').classList.remove('open');
+  document.getElementById('ham-drawer').classList.remove('open');
+  document.getElementById('ham-overlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') closeHamburger();
+});
+
 </script>
 
 <!-- NEW PAGE TEMPLATE MENU -->
@@ -7406,24 +7656,67 @@ function addNewPageWith(name, loaderFn) {
 </div>
 
 <!-- ══════════════════════════════════════
-     MOBILE BOTTOM NAV
+     HAMBURGER DRAWER OVERLAY
 ══════════════════════════════════════ -->
-<div id="mobile-nav">
-  <button class="mob-nav-btn" onclick="mobNavShapes()">
-    <span class="ico">🔷</span>Şekiller
-  </button>
-  <button class="mob-nav-btn" onclick="openTplGallery()">
-    <span class="ico">📐</span>Şablonlar
-  </button>
-  <button class="mob-nav-btn" onclick="openProjectManager()">
-    <span class="ico">📂</span>Projeler
-  </button>
-  <button class="mob-nav-btn" onclick="openExport()">
-    <span class="ico">⬇</span>Dışa Aktar
-  </button>
-  <button class="mob-nav-btn" onclick="mobNavProps()">
-    <span class="ico">🎨</span>Özellikler
-  </button>
+<div id="ham-overlay" onclick="closeHamburger()"></div>
+
+<!-- ══════════════════════════════════════
+     HAMBURGER DRAWER
+══════════════════════════════════════ -->
+<div id="ham-drawer">
+  <div class="ham-drawer-header">
+    <div class="ham-drawer-logo">
+      <div class="ham-drawer-logo-icon">⬡</div>
+      <div class="ham-drawer-logo-text">DiagramFlow</div>
+    </div>
+    <button class="ham-close-btn" onclick="closeHamburger()" aria-label="Kapat">✕</button>
+  </div>
+
+  <div class="ham-drawer-body">
+    <div class="ham-section-title">Araçlar</div>
+
+    <button class="ham-item" onclick="closeHamburger(); mobNavShapes();">
+      <span class="ham-ico">🔷</span>
+      <span class="ham-lbl">Şekiller</span>
+    </button>
+
+    <button class="ham-item" onclick="closeHamburger(); openTplGallery();">
+      <span class="ham-ico">📐</span>
+      <span class="ham-lbl">Şablonlar</span>
+    </button>
+
+    <button class="ham-item" onclick="closeHamburger(); mobNavProps();">
+      <span class="ham-ico">🎨</span>
+      <span class="ham-lbl">Özellikler</span>
+    </button>
+
+    <div class="ham-sep"></div>
+    <div class="ham-section-title">Proje</div>
+
+    <button class="ham-item" onclick="closeHamburger(); openProjectManager();">
+      <span class="ham-ico">📂</span>
+      <span class="ham-lbl">Projeler</span>
+    </button>
+
+    <button class="ham-item" onclick="closeHamburger(); togglePresent();">
+      <span class="ham-ico">▶</span>
+      <span class="ham-lbl">Sunum Modu</span>
+    </button>
+
+    <div class="ham-sep"></div>
+    <div class="ham-section-title">Paylaş</div>
+
+    <button class="ham-item" onclick="closeHamburger(); shareDoc();">
+      <span class="ham-ico">⬆</span>
+      <span class="ham-lbl">Paylaş</span>
+    </button>
+  </div>
+
+  <div class="ham-drawer-footer">
+    <button class="ham-export-btn" onclick="closeHamburger(); openExport();">
+      ⬇ Dışa Aktar
+    </button>
+  </div>
 </div>
 
 </body>

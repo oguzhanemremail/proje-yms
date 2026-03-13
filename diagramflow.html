@@ -283,6 +283,17 @@ body{font-family:'Inter',sans-serif;background:#f0f0f0;color:#1a1a1a;height:100v
 .gt-resize-l { border-radius:6px 0 0 6px; }
 .gt-resize-r { border-radius:0 6px 6px 0; }
 .gt-task.sel { outline:2.5px solid #0066ff; outline-offset:1px; }
+/* Dependency arrow styles */
+.gt-dep-svg { position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:9; overflow:visible; }
+.gt-dep-path { fill:none; stroke:#f97316; stroke-width:2; marker-end:url(#gt-dep-arrow); opacity:.85; }
+.gt-dep-path.violated { stroke:#ef4444; stroke-dasharray:6 3; opacity:1; }
+.gt-dep-path.ok { stroke:#22c55e; opacity:.7; }
+/* Dependency link mode: port dots on task hover */
+.gt-dep-port { position:absolute; right:-6px; top:50%; transform:translateY(-50%); width:12px; height:12px; background:#fff; border:2px solid #f97316; border-radius:50%; cursor:crosshair; opacity:0; transition:opacity .15s; z-index:15; }
+.gt-dep-port:hover { background:#f97316; transform:translateY(-50%) scale(1.3); }
+.gt-task:hover .gt-dep-port { opacity:1; }
+/* Dependency violation badge on task */
+.gt-dep-badge { position:absolute; top:-8px; right:4px; background:#ef4444; color:#fff; font-size:9px; font-weight:700; padding:1px 5px; border-radius:8px; pointer-events:none; white-space:nowrap; }
 .gt-title-inp {
   position:absolute; background:transparent; border:none; outline:none;
   font-family:Inter; font-weight:700; color:#1a1a1a; font-size:20px;
@@ -469,6 +480,27 @@ body{font-family:'Inter',sans-serif;background:#f0f0f0;color:#1a1a1a;height:100v
 .sm-add-release-btn:hover { background:#ede9fe; border-color:#7c3aed; }
 .sm-tbtn { padding:5px 12px; border-radius:6px; border:1px solid #e2e8f0; background:#f8fafc; cursor:pointer; font-family:Inter; font-size:12px; font-weight:600; color:#475569; transition:all .15s; }
 .sm-tbtn:hover { background:#e6f0ff; border-color:#0066ff; color:#0066ff; }
+
+/* ── Calendar ── */
+.cal-btn-on { background:#0066ff !important; color:#fff !important; border-color:#0066ff !important; }
+.cal-day-hdr { font-size:11px; font-weight:700; color:#64748b; text-align:center; padding:8px 0; background:#f1f5f9; border-bottom:1px solid #e2e8f0; border-right:1px solid #e2e8f0; }
+.cal-cell { border-right:1px solid #e8ecf0; border-bottom:1px solid #e8ecf0; vertical-align:top; position:relative; padding:4px; cursor:pointer; background:#fff; transition:background .1s; overflow:hidden; }
+.cal-cell:hover { background:#f0f6ff; }
+.cal-cell.today { background:#fffbeb; }
+.cal-cell.other-month { background:#f8fafc; }
+.cal-cell-num { font-size:12px; font-weight:700; color:#64748b; margin-bottom:3px; }
+.cal-cell.today .cal-cell-num { background:#0066ff; color:#fff; width:22px; height:22px; border-radius:50%; display:flex; align-items:center; justify-content:center; }
+.cal-event { font-size:10px; font-weight:600; border-radius:4px; padding:2px 5px; margin-bottom:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; cursor:pointer; }
+.cal-event:hover { opacity:.85; filter:brightness(.95); }
+.cal-event.cat-ziyaret  { background:#dbeafe; color:#1d4ed8; border-left:3px solid #3b82f6; }
+.cal-event.cat-calisma  { background:#d1fae5; color:#065f46; border-left:3px solid #10b981; }
+.cal-event.cat-toplanti { background:#fef3c7; color:#92400e; border-left:3px solid #f59e0b; }
+/* Week view hour rows */
+.cal-hour-row { display:flex; border-bottom:1px solid #f0f0f0; min-height:52px; }
+.cal-hour-lbl { width:52px; flex-shrink:0; font-size:10px; color:#94a3b8; padding:4px 6px 0 0; text-align:right; border-right:1px solid #e8ecf0; }
+.cal-hour-cell { flex:1; border-right:1px solid #f0f0f0; position:relative; cursor:pointer; transition:background .1s; }
+.cal-hour-cell:hover { background:#f0f6ff; }
+.cal-week-event { font-size:10px; font-weight:600; border-radius:4px; padding:2px 5px; margin:1px 2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; cursor:pointer; position:relative; z-index:2; }
 .sm-color-popup { position:fixed; z-index:7000; background:#fff; border:1px solid #e0e0e0; border-radius:12px; box-shadow:0 8px 32px rgba(0,0,0,.18); padding:12px; display:none; width:220px; font-family:Inter; }
 .sm-color-popup .scp-title { font-size:10px; font-weight:700; color:#888; text-transform:uppercase; letter-spacing:.5px; margin-bottom:8px; }
 .sm-color-popup .scp-swatches { display:grid; grid-template-columns:repeat(6,1fr); gap:5px; margin-bottom:10px; }
@@ -932,12 +964,46 @@ body{font-family:'Inter',sans-serif;background:#f0f0f0;color:#1a1a1a;height:100v
       <button onclick="gSetView('week')"  id="gt-btn-week" class="gt-vbtn">Hafta</button>
       <button onclick="gSetView('month')" id="gt-btn-month"class="gt-vbtn">Ay</button>
     </div>
+    <!-- Year navigation -->
+    <div style="display:flex;align-items:center;gap:2px;border-left:1px solid #e2e8f0;padding-left:10px;margin-left:2px;">
+      <button onclick="gChangeYear(-1)" title="Önceki yıl" style="width:22px;height:26px;border-radius:5px;border:1px solid #e2e8f0;background:#f8fafc;cursor:pointer;font-size:13px;color:#475569;display:flex;align-items:center;justify-content:center;padding:0;">◀</button>
+      <span id="gt-year-lbl" style="font-size:12px;font-weight:700;color:#334155;min-width:38px;text-align:center;cursor:pointer;user-select:none;" onclick="gPickYear()" title="Yıl seç"></span>
+      <button onclick="gChangeYear(+1)" title="Sonraki yıl" style="width:22px;height:26px;border-radius:5px;border:1px solid #e2e8f0;background:#f8fafc;cursor:pointer;font-size:13px;color:#475569;display:flex;align-items:center;justify-content:center;padding:0;">▶</button>
+    </div>
+    <!-- Zoom controls -->
+    <div style="display:flex;align-items:center;gap:4px;margin-left:2px;border-left:1px solid #e2e8f0;padding-left:10px;">
+      <button id="gt-zoom-out" onclick="gZoomOut()" title="Uzaklaş (Ctrl+Scroll)" style="width:26px;height:26px;border-radius:6px;border:1px solid #e2e8f0;background:#f8fafc;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;font-family:Inter;color:#475569;padding:0;">−</button>
+      <span id="gt-zoom-lbl" onclick="gZoomReset()" title="Sıfırla" style="font-size:11px;font-weight:600;color:#64748b;min-width:36px;text-align:center;cursor:pointer;user-select:none;">100%</span>
+      <button id="gt-zoom-in"  onclick="gZoomIn()"  title="Yaklaş (Ctrl+Scroll)" style="width:26px;height:26px;border-radius:6px;border:1px solid #e2e8f0;background:#f8fafc;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;font-family:Inter;color:#475569;padding:0;">+</button>
+    </div>
     <div style="flex:1"></div>
+    <!-- Dependency link toggle -->
+    <button id="gt-dep-btn" onclick="gToggleDepMode()" title="Bağımlılık bağlantısı çiz (görev → görev)" style="font-size:12px;padding:4px 10px;border-radius:6px;border:1px solid #e2e8f0;background:#f8fafc;cursor:pointer;font-family:Inter;color:#475569;display:flex;align-items:center;gap:5px;">
+      🔗 Bağımlılık
+    </button>
     <button onclick="gScrollToToday()" style="font-size:12px;padding:4px 10px;border-radius:6px;
       border:1px solid #e2e8f0;background:#f8fafc;cursor:pointer;font-family:Inter;color:#475569;">
       📍 Bugün
     </button>
+    <button onclick="gExport()" title="Gantt'ı PNG veya PDF olarak dışa aktar" style="font-size:12px;padding:4px 10px;border-radius:6px;
+      border:1px solid #e2e8f0;background:#f8fafc;cursor:pointer;font-family:Inter;color:#475569;">
+      ⬇ Dışa Aktar
+    </button>
   </div>
+  <!-- Hidden SVG defs for dep arrows -->
+  <svg width="0" height="0" style="position:absolute">
+    <defs>
+      <marker id="gt-dep-arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+        <polygon points="0 0,8 3,0 6" fill="#f97316"/>
+      </marker>
+      <marker id="gt-dep-arrow-ok" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+        <polygon points="0 0,8 3,0 6" fill="#22c55e"/>
+      </marker>
+      <marker id="gt-dep-arrow-viol" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+        <polygon points="0 0,8 3,0 6" fill="#ef4444"/>
+      </marker>
+    </defs>
+  </svg>
 
   <!-- Two-pane layout -->
   <div style="flex:1;display:flex;flex-direction:column;overflow:hidden;">
@@ -1015,6 +1081,32 @@ body{font-family:'Inter',sans-serif;background:#f0f0f0;color:#1a1a1a;height:100v
 </div>
 <!-- SM CONTEXT MENU -->
 <div id="sm-ctx" class="sm-ctx"><div id="sm-ctx-items"></div></div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- CALENDAR OVERLAY                                   -->
+<!-- ═══════════════════════════════════════════════════ -->
+<div id="cal-overlay" style="display:none;position:absolute;inset:0;flex-direction:column;background:#f8fafc;z-index:5;font-family:Inter;">
+  <!-- Toolbar -->
+  <div id="cal-toolbar" style="height:44px;background:#fff;border-bottom:1px solid #e2e8f0;display:flex;align-items:center;padding:0 16px;gap:10px;flex-shrink:0;">
+    <button onclick="calPrev()" style="width:28px;height:28px;border-radius:7px;border:1px solid #e2e8f0;background:#f8fafc;cursor:pointer;font-size:14px;color:#475569;">◀</button>
+    <span id="cal-title-lbl" style="font-size:14px;font-weight:700;color:#1e293b;min-width:160px;text-align:center;"></span>
+    <button onclick="calNext()" style="width:28px;height:28px;border-radius:7px;border:1px solid #e2e8f0;background:#f8fafc;cursor:pointer;font-size:14px;color:#475569;">▶</button>
+    <button onclick="calGoToday()" style="padding:4px 12px;border-radius:7px;border:1px solid #e2e8f0;background:#f8fafc;cursor:pointer;font-size:12px;color:#475569;font-family:Inter;">📍 Bugün</button>
+    <div style="width:1px;height:22px;background:#e2e8f0;margin:0 4px;"></div>
+    <button id="cal-btn-week"  onclick="calSetView('week')"  style="padding:4px 12px;border-radius:7px;border:1px solid #e2e8f0;background:#f8fafc;cursor:pointer;font-size:12px;font-family:Inter;color:#475569;">Haftalık</button>
+    <button id="cal-btn-month" onclick="calSetView('month')" style="padding:4px 12px;border-radius:7px;border:1px solid #e2e8f0;background:#f8fafc;cursor:pointer;font-size:12px;font-family:Inter;color:#475569;">Aylık</button>
+    <div style="flex:1"></div>
+    <!-- Legend -->
+    <div style="display:flex;align-items:center;gap:10px;font-size:11px;color:#64748b;">
+      <span><span style="display:inline-block;width:10px;height:10px;border-radius:3px;background:#3b82f6;margin-right:4px;vertical-align:middle;"></span>Ziyaret</span>
+      <span><span style="display:inline-block;width:10px;height:10px;border-radius:3px;background:#10b981;margin-right:4px;vertical-align:middle;"></span>Çalışma</span>
+      <span><span style="display:inline-block;width:10px;height:10px;border-radius:3px;background:#f59e0b;margin-right:4px;vertical-align:middle;"></span>Toplantı</span>
+    </div>
+    <button onclick="calAddEvent()" style="padding:4px 14px;border-radius:7px;border:none;background:#0066ff;cursor:pointer;font-size:12px;font-weight:600;color:#fff;font-family:Inter;">+ Etkinlik</button>
+  </div>
+  <!-- Body -->
+  <div id="cal-body" style="flex:1;overflow:auto;"></div>
+</div>
 
 <div id="rpanel">
   <div id="rscroll">
@@ -1140,9 +1232,12 @@ body{font-family:'Inter',sans-serif;background:#f0f0f0;color:#1a1a1a;height:100v
   <div class="modal-bg" onclick="if(event.target===this)closeModal('share-modal')">
     <div class="modal" style="min-width:400px">
       <div class="modal-title">⬆ Paylaş</div>
-      <div style="display:flex;gap:8px;margin-bottom:12px;">
-        <input style="flex:1;padding:7px 10px;border:1px solid #ddd;border-radius:6px;font-family:Inter;font-size:13px;" value="https://diagramflow.app/share/xyz123" readonly>
-        <button class="tb-btn tb-primary" onclick="navigator.clipboard.writeText('https://diagramflow.app/share/xyz123').then(()=>notify('🔗 Kopyalandı'))">Kopyala</button>
+      <div style="padding:12px 0;color:#64748b;font-size:13px;line-height:1.6;">
+        Diyagramı paylaşmak için önce <strong>JSON olarak dışa aktarın</strong> ve dosyayı karşı tarafa gönderin.
+        <br><br>
+        <button class="tb-btn tb-primary" style="width:100%;" onclick="closeModal('share-modal');doExport('json')">
+          📦 JSON Olarak Dışa Aktar
+        </button>
       </div>
       <div class="modal-footer"><button class="tb-btn tb-ghost" onclick="closeModal('share-modal')">Kapat</button></div>
     </div>
@@ -1284,10 +1379,22 @@ let currentProjectId = null;
 const PM_ICONS = ['📊','📋','🗺️','📅','🔀','🧩','🏗️','⚡','🎯','📌','🔬','💡'];
 
 function pmGetAll() {
-  try { return JSON.parse(localStorage.getItem(PM_KEY)) || []; } catch { return []; }
+  try {
+    const raw = JSON.parse(localStorage.getItem(PM_KEY));
+    if (!Array.isArray(raw)) return [];
+    // Filter out malformed entries
+    return raw.filter(p => p && typeof p === 'object' && typeof p.id === 'string' && typeof p.name === 'string');
+  } catch { return []; }
 }
 function pmSaveAll(list) {
-  try { localStorage.setItem(PM_KEY, JSON.stringify(list)); } catch(e) { notify('⚠ Depolama hatası (localStorage dolu olabilir)'); }
+  try {
+    localStorage.setItem(PM_KEY, JSON.stringify(list));
+  } catch(e) {
+    const projName = currentProjectId
+      ? (list.find(p => p.id === currentProjectId)?.name || 'Proje')
+      : 'Proje';
+    notify(`⚠ "${projName}" kaydedilemedi — tarayıcı depolama alanı dolu olabilir`);
+  }
 }
 
 function pmInit() {
@@ -1339,7 +1446,7 @@ function pmRenderGrid() {
         ${active ? '<span style="position:absolute;top:6px;left:8px;font-size:9px;background:#0066ff;color:#fff;padding:2px 6px;border-radius:8px;font-weight:700;">AKTİF</span>' : ''}
       </div>
       <div class="pm-card-body">
-        <div class="pm-card-name" title="${proj.name}">${proj.name}</div>
+        <div class="pm-card-name pm-card-name-el"></div>
         <div class="pm-card-meta">
           <span>🕐 ${dateStr}</span>
           <span>•</span>
@@ -1347,9 +1454,14 @@ function pmRenderGrid() {
         </div>
       </div>
       <div class="pm-card-actions">
-        <button class="pm-card-act" onclick="event.stopPropagation();pmRenameProject('${proj.id}')" title="Yeniden Adlandır">✏️</button>
-        <button class="pm-card-act del" onclick="event.stopPropagation();pmDeleteProject('${proj.id}')" title="Sil">🗑</button>
+        <button class="pm-card-act pm-rename-btn" title="Yeniden Adlandır">✏️</button>
+        <button class="pm-card-act del pm-delete-btn" title="Sil">🗑</button>
       </div>`;
+    // Set name safely via textContent (prevents XSS)
+    card.querySelector('.pm-card-name-el').textContent = proj.name;
+    card.querySelector('.pm-card-name-el').title = proj.name;
+    card.querySelector('.pm-rename-btn').onclick = (ev) => { ev.stopPropagation(); pmRenameProject(proj.id); };
+    card.querySelector('.pm-delete-btn').onclick = (ev) => { ev.stopPropagation(); pmDeleteProject(proj.id); };
     card.addEventListener('click', () => pmOpenProject(proj.id, true));
     grid.appendChild(card);
   });
@@ -1410,6 +1522,16 @@ function pmOpenProject(id, closeScreen) {
   // Restore overlay state maps
   Object.assign(slStateMap, d.slStateMap || {});
   Object.assign(smStateMap, d.smStateMap || {});
+  if (d.ganttState && typeof d.ganttState === 'object') {
+    Object.keys(d.ganttState).forEach(k => { ganttState[k] = d.ganttState[k]; });
+  }
+  // Restore calState with cursor string → Date
+  if (d.calState && typeof d.calState === 'object') {
+    Object.keys(calState).forEach(k => delete calState[k]);
+    Object.entries(d.calState).forEach(([k,v]) => {
+      calState[k] = { ...v, cursor: v.cursor ? new Date(v.cursor) : new Date() };
+    });
+  }
 
   // Set doc title
   document.getElementById('doc-title').value = d.docTitle || proj.name;
@@ -1434,10 +1556,18 @@ function pmSaveCurrentState() {
   if (idx < 0) return;
 
   list[idx].updatedAt = Date.now();
+  // Serialize calState with cursor as ISO string
+  const calSnap = {};
+  Object.keys(calState).forEach(k => {
+    const st = calState[k];
+    calSnap[k] = { ...st, cursor: st.cursor instanceof Date ? st.cursor.toISOString() : st.cursor };
+  });
   list[idx].data = {
     pages: JSON.parse(JSON.stringify(pages)),
     slStateMap: JSON.parse(JSON.stringify(slStateMap)),
     smStateMap: JSON.parse(JSON.stringify(smStateMap)),
+    ganttState: JSON.parse(JSON.stringify(ganttState)),
+    calState:   JSON.parse(JSON.stringify(calSnap)),
     docTitle: document.getElementById('doc-title').value,
   };
   pmSaveAll(list);
@@ -1485,6 +1615,12 @@ function asMarkDirty() {
   asDirty = true;
   const dot = document.getElementById('autosave-dot');
   const lbl = document.getElementById('autosave-lbl');
+  if (!currentProjectId) {
+    // No project open — nothing will be saved, show a hint
+    if (dot) dot.className = 'dirty';
+    if (lbl) lbl.textContent = 'Proje seçilmedi';
+    return;
+  }
   if (dot) dot.className = 'dirty';
   if (lbl) lbl.textContent = 'Kaydediliyor…';
   clearTimeout(asSaveTimer);
@@ -1550,8 +1686,16 @@ function renderPageTabs() {
     const tab = document.createElement('div');
     tab.className = 'bpage' + (i === currentPage ? ' act' : '');
     tab.id = `ptab-${i}`;
-    tab.innerHTML = `<span onclick="switchPage(${i})">${p.name}</span>
-      <button class="bpage-ctx" onclick="openPageCtx(event,${i})">⋯</button>`;
+    // Use textContent for safe name rendering — no innerHTML with p.name
+    const nameSpan = document.createElement('span');
+    nameSpan.textContent = p.name;
+    nameSpan.onclick = () => switchPage(i);
+    const ctxBtn = document.createElement('button');
+    ctxBtn.className = 'bpage-ctx';
+    ctxBtn.textContent = '⋯';
+    ctxBtn.onclick = (ev) => openPageCtx(ev, i);
+    tab.appendChild(nameSpan);
+    tab.appendChild(ctxBtn);
     bar.appendChild(tab);
   });
 }
@@ -1590,9 +1734,18 @@ function switchPage(i) {
     ganttOv.style.cssText = 'display:none;';
     slOv.style.cssText    = 'display:none;';
     smOv.style.cssText    = 'display:none;';
+    const calOv = document.getElementById('cal-overlay');
+    if(calOv) calOv.style.cssText = 'display:none;';
   };
 
-  if (isGanttPage(i)) {
+  if (isCalendarPage(i)) {
+    hideAll();
+    carea.style.display  = 'none';
+    rpanel.style.display = 'none';
+    const calOv = document.getElementById('cal-overlay');
+    if(calOv) calOv.style.cssText='display:flex;flex-direction:column;position:absolute;inset:0;background:#f8fafc;z-index:5;font-family:Inter;';
+    calRender();
+  } else if (isGanttPage(i)) {
     hideAll();
     carea.style.display   = 'none';
     ganttOv.style.cssText = 'display:flex;flex-direction:column;position:absolute;inset:0;background:#f8f9fc;z-index:5;';
@@ -1779,17 +1932,26 @@ const G = {
   LW: 190,        // left label width
   MONTHS: ['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran',
            'Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'],
-  DIM: [31,28,31,30,31,30,31,31,30,31,30,31],
-  YEAR: 2025,
+  YEAR: new Date().getFullYear(),   // default to current year, overridden per-page
+  DIM: [],        // filled by gSetYear()
+  TOTAL: 0,       // filled by gSetYear()
 };
-G.TOTAL = G.DIM.reduce((a,b)=>a+b,0);      // 365
+
+function gIsLeap(y){ return (y%4===0&&y%100!==0)||(y%400===0); }
+function gSetYear(y){
+  G.YEAR = y;
+  G.DIM = [31, gIsLeap(y)?29:28, 31,30,31,30,31,31,30,31,30,31];
+  G.TOTAL = G.DIM.reduce((a,b)=>a+b, 0);
+}
+gSetYear(G.YEAR);  // initialise with current year
 
 // ── helpers ──────────────────────────────────────────
 function gDayOff(m,d){ let o=0; for(let i=0;i<m;i++) o+=G.DIM[i]; return o+(d-1); }
 function gDayToX(d)  { return G.LW + d*G.DW; }
 function gXToDay(x)  { return Math.max(0, Math.min(G.TOTAL-1, Math.round((x-G.LW)/G.DW))); }
-function gRowToY(i)  { return i*G.RH; }  // header is now separate
-function gYToRow(y,n){ return Math.max(0,Math.min(n-1, Math.floor(y/G.RH))); }
+function gRH() { return G.RH; }  // row height is always fixed; zoom only affects horizontal axis
+function gRowToY(i)  { return i*gRH(); }  // header is now separate
+function gYToRow(y,n){ return Math.max(0,Math.min(n-1, Math.floor(y/gRH()))); }
 function gDayLabel(d){
   let r=d;
   for(let m=0;m<12;m++){ if(r<G.DIM[m]) return G.MONTHS[m]+' '+(r+1); r-=G.DIM[m]; }
@@ -1802,26 +1964,62 @@ const ganttState = {};  // pageIdx → {title, rows, tasks}
 
 function gGetState(){
   const idx = currentPage;
+  const curYear = new Date().getFullYear();
   if(!ganttState[idx]){
+    gSetYear(curYear);
     ganttState[idx] = {
       title: 'Proje Adı',
+      year: curYear,
       rows: [
         {id:'r1', name:'Takım 1', fill:'#a78bfa', stroke:'#7c3aed'},
         {id:'r2', name:'Takım 2', fill:'#60a5fa', stroke:'#2563eb'},
         {id:'r3', name:'Takım 3', fill:'#f472b6', stroke:'#db2777'},
       ],
       tasks: [
-        {id:'t1',rowId:'r1', s:gDayOff(1,1),  e:gDayOff(2,28), name:'Görev A', status:'Tamamlandı', fill:'#ede9fe', stroke:'#7c3aed'},
-        {id:'t2',rowId:'r2', s:gDayOff(2,15), e:gDayOff(5,20), name:'Görev B', status:'Devam',      fill:'#dbeafe', stroke:'#3b82f6'},
-        {id:'t3',rowId:'r3', s:gDayOff(4,1),  e:gDayOff(7,31), name:'Görev C', status:'Yeni',       fill:'#fce7f3', stroke:'#db2777'},
+        {id:'t1',rowId:'r1', s:gDayOff(1,1),  e:gDayOff(2,28), name:'Görev A', status:'Tamamlandı', pct:100, fill:'#ede9fe', stroke:'#7c3aed'},
+        {id:'t2',rowId:'r2', s:gDayOff(2,15), e:gDayOff(5,20), name:'Görev B', status:'Devam',      pct:45,  fill:'#dbeafe', stroke:'#3b82f6'},
+        {id:'t3',rowId:'r3', s:gDayOff(4,1),  e:gDayOff(7,31), name:'Görev C', status:'Yeni',       pct:0,   fill:'#fce7f3', stroke:'#db2777'},
       ],
+      deps: [],
+      zoom: 1.0,
     };
   }
+  // Ensure fields always exist (backward compat)
+  if(!ganttState[idx].deps)  ganttState[idx].deps  = [];
+  if(!ganttState[idx].zoom)  ganttState[idx].zoom  = 1.0;
+  if(!ganttState[idx].year)  ganttState[idx].year  = curYear;
+  // Apply this page's year to G so all coordinate helpers use correct DIM/TOTAL
+  gSetYear(ganttState[idx].year);
+  // Sync global gZoom from this page's saved zoom
+  gZoom = ganttState[idx].zoom;
   return ganttState[idx];
 }
 
 // ── View mode (day / week / month) ───────────────────
 let gView = 'day';
+let gZoom = 1.0;   // zoom multiplier (0.25 – 4.0)
+const G_ZOOM_STEPS = [0.25, 0.33, 0.5, 0.67, 0.75, 1.0, 1.25, 1.5, 2.0, 2.5, 3.0, 4.0];
+
+function gZoomIn()  { const i = G_ZOOM_STEPS.findIndex(z=>z>gZoom);  gZoom = G_ZOOM_STEPS[Math.min(i<0?G_ZOOM_STEPS.length-1:i, G_ZOOM_STEPS.length-1)]; gApplyZoom(); }
+function gZoomOut() { const i = [...G_ZOOM_STEPS].reverse().findIndex(z=>z<gZoom); gZoom = G_ZOOM_STEPS[Math.max(G_ZOOM_STEPS.length-1-i, 0)]; if(i<0) gZoom=G_ZOOM_STEPS[0]; gApplyZoom(); }
+function gZoomReset(){ gZoom = 1.0; gApplyZoom(); }
+function gApplyZoom(){
+  // Clamp
+  gZoom = Math.max(G_ZOOM_STEPS[0], Math.min(G_ZOOM_STEPS[G_ZOOM_STEPS.length-1], gZoom));
+  // Persist to current page state
+  const st = ganttState[currentPage];
+  if(st) st.zoom = gZoom;
+  gUpdateZoomLabel();
+  ganttRender();
+}
+function gUpdateZoomLabel(){
+  const el = document.getElementById('gt-zoom-lbl');
+  if(el) el.textContent = Math.round(gZoom*100) + '%';
+  const zi = document.getElementById('gt-zoom-in');
+  const zo = document.getElementById('gt-zoom-out');
+  if(zi) zi.disabled = gZoom >= G_ZOOM_STEPS[G_ZOOM_STEPS.length-1];
+  if(zo) zo.disabled = gZoom <= G_ZOOM_STEPS[0];
+}
 
 function gSetView(v) {
   gView = v;
@@ -1832,35 +2030,123 @@ function gSetView(v) {
   ganttRender();
 }
 
+function gUpdateYearLabel(){
+  const el = document.getElementById('gt-year-lbl');
+  if(el) el.textContent = G.YEAR;
+}
+
+function gChangeYear(delta){
+  const st = gGetState();
+  const newYear = G.YEAR + delta;
+  if(newYear < 2000 || newYear > 2100) return;
+  // Clamp all tasks to valid day offsets for the new year
+  gSetYear(newYear);
+  st.year = newYear;
+  st.tasks.forEach(t => {
+    t.s = Math.min(t.s, G.TOTAL - 1);
+    t.e = Math.min(t.e, G.TOTAL);
+    if(t.e <= t.s) t.e = t.s + 1;
+  });
+  saveHistory();
+  gUpdateYearLabel();
+  ganttRender();
+  notify(`📅 Yıl ${newYear} olarak ayarlandı`);
+}
+
+function gPickYear(){
+  const st = gGetState();
+  const input = prompt('Yıl girin (2000–2100):', G.YEAR);
+  if(!input) return;
+  const y = parseInt(input, 10);
+  if(isNaN(y) || y < 2000 || y > 2100){ notify('⚠ Geçersiz yıl'); return; }
+  const delta = y - G.YEAR;
+  gChangeYear(delta);
+}
+
 function gUnitW() {
-  if (gView==='week')  return 56;
-  if (gView==='month') return 8;
-  return G.DW;
+  const base = gView==='week' ? 56 : (gView==='month' ? 8 : G.DW);
+  return base * gZoom;
 }
 function gGridW() {
   if (gView==='week')  return Math.ceil(G.TOTAL/7) * gUnitW();
-  return G.TOTAL * G.DW;
+  return G.TOTAL * G.DW * gZoom;
 }
 function gDayToGridX(d) {
   if (gView==='week') return Math.floor(d/7)*gUnitW() + (d%7)*(gUnitW()/7);
-  return d * G.DW;
+  return d * G.DW * gZoom;
 }
 function gGridXToDay(gx) {
   if (gView==='week') return Math.max(0, Math.min(G.TOTAL-1, Math.round(gx/gUnitW()*7)));
-  return Math.max(0, Math.min(G.TOTAL-1, Math.round(gx/G.DW)));
+  return Math.max(0, Math.min(G.TOTAL-1, Math.round(gx/(G.DW*gZoom))));
 }
 function gTaskBarX(s)    { return gDayToGridX(s); }
 function gTaskBarW(s, e) { return Math.max(gUnitW()*0.5, gDayToGridX(e) - gDayToGridX(s)); }
 
 function gScrollToToday() {
-  const d   = gDayOff(new Date().getMonth(), new Date().getDate());
+  const now = new Date();
+  if(now.getFullYear() !== G.YEAR){
+    notify(`⚠ Bugün ${now.getFullYear()} yılında — Gantt ${G.YEAR} görüntüleniyor`);
+    return;
+  }
+  const d   = gDayOff(now.getMonth(), now.getDate());
   const scr = document.getElementById('gantt-scroll');
   if (scr) scr.scrollLeft = Math.max(0, gDayToGridX(d) - scr.clientWidth/2);
 }
 
-// ── Main render ───────────────────────────────────────
+// ── Export Gantt as PNG / PDF ─────────────────────────
+async function gExport(){
+  const fmt = confirm('PDF olarak dışa aktar?\n(İptal → PNG olarak kaydeder)') ? 'pdf' : 'png';
+  notify('⏳ Dışa aktarılıyor…');
+
+  const ganttEl = document.getElementById('gantt-wrap');
+  if(!ganttEl){ notify('⚠ Gantt bulunamadı'); return; }
+
+  // Temporarily expand gantt-scroll so html2canvas captures full width
+  const scrollEl = document.getElementById('gantt-scroll');
+  const origOF   = scrollEl.style.overflow;
+  const origW    = scrollEl.style.width;
+  const origH    = scrollEl.style.height;
+  const inner    = document.getElementById('gantt-inner');
+  const header   = document.getElementById('gantt-header-inner');
+  scrollEl.style.overflow = 'visible';
+  scrollEl.style.width    = (inner ? inner.scrollWidth + 200 : 1200) + 'px';
+  scrollEl.style.height   = (inner ? inner.scrollHeight + 80 : 600) + 'px';
+
+  try {
+    const canvas = await html2canvas(ganttEl, {
+      scale: 2,
+      useCORS: true,
+      backgroundColor: '#f8fafc',
+      scrollX: 0, scrollY: 0,
+      windowWidth: ganttEl.scrollWidth,
+      windowHeight: ganttEl.scrollHeight,
+    });
+
+    const st = gGetState();
+    const title = (st.title || 'gantt') + '_' + G.YEAR;
+
+    if(fmt === 'png'){
+      const a = document.createElement('a');
+      a.download = title + '.png';
+      a.href = canvas.toDataURL('image/png');
+      a.click();
+      notify('🖼 PNG kaydedildi');
+    } else {
+      await exportPDF(canvas, title);
+    }
+  } catch(err){
+    console.error('Gantt export error:', err);
+    notify('⚠ Dışa aktarma başarısız');
+  } finally {
+    scrollEl.style.overflow = origOF;
+    scrollEl.style.width    = origW;
+    scrollEl.style.height   = origH;
+  }
+}
 function ganttRender(){
   const st = gGetState();
+  gUpdateYearLabel();
+  gUpdateZoomLabel();
 
   const headerInner = document.getElementById('gantt-header-inner');
   const corner      = document.getElementById('gantt-corner');
@@ -1874,7 +2160,7 @@ function ganttRender(){
 
   const gridW  = gGridW() + 60;
   const headerH = G.MH + G.DH;   // month row + tick row
-  const bodyH   = st.rows.length * G.RH;
+  const bodyH   = st.rows.length * gRH();
   const totalH  = bodyH + 60;
 
   // Dimensions
@@ -1894,6 +2180,21 @@ function ganttRender(){
       hdrScroll.scrollLeft = scroll.scrollLeft;
       labelsInner.style.top = (-scroll.scrollTop) + 'px';
     });
+    // Ctrl+Wheel → zoom in/out, anchored to cursor position
+    scroll.addEventListener('wheel', ev => {
+      if (!ev.ctrlKey && !ev.metaKey) return;
+      ev.preventDefault();
+      const rect = scroll.getBoundingClientRect();
+      const cursorDay = gGridXToDay(scroll.scrollLeft + (ev.clientX - rect.left));
+      const oldZoom = gZoom;
+      if (ev.deltaY < 0) gZoomIn(); else gZoomOut();
+      if (gZoom !== oldZoom) {
+        // Re-anchor scroll so the day under cursor stays in place
+        requestAnimationFrame(() => {
+          scroll.scrollLeft = Math.max(0, gDayToGridX(cursorDay) - (ev.clientX - rect.left));
+        });
+      }
+    }, { passive: false });
   }
 
   // ── Title input ──
@@ -1982,22 +2283,46 @@ function ganttRender(){
 
   // ── Row stripes (grid body) + labels (left panel) ──
   st.rows.forEach((row, ri) => {
-    const y = ri * G.RH;
+    const y = ri * gRH();
 
     // Grid stripe
     const bg = document.createElement('div');
-    bg.style.cssText = `position:absolute;left:0;top:${y}px;width:${gridW}px;height:${G.RH}px;`+
+    bg.style.cssText = `position:absolute;left:0;top:${y}px;width:${gridW}px;height:${gRH()}px;`+
       `background:${ri%2===0?'#fafafe':'#f3f4ff'};border-bottom:1px solid #e8ecf0;box-sizing:border-box;`;
     inner.appendChild(bg);
 
     // Left label
     const lbl = document.createElement('div');
-    lbl.style.cssText = `position:absolute;left:0;top:${y}px;width:190px;height:${G.RH}px;`+
+    lbl.style.cssText = `position:absolute;left:0;top:${y}px;width:190px;height:${gRH()}px;`+
       `background:${row.fill};border-right:4px solid ${row.stroke};border-bottom:1px solid rgba(0,0,0,.07);`+
       'box-sizing:border-box;display:flex;align-items:center;gap:8px;padding:0 10px;cursor:grab;'+
-      'font-family:Inter;font-size:13px;font-weight:700;color:#fff;overflow:hidden;';
-    lbl.innerHTML = `<span style="font-size:16px;opacity:.7;flex-shrink:0;cursor:grab">⠿</span>`+
+      'font-family:Inter;font-size:13px;font-weight:700;color:#fff;overflow:hidden;flex-direction:column;justify-content:center;';
+
+    // Row name
+    const rowNameEl = document.createElement('div');
+    rowNameEl.style.cssText = 'display:flex;align-items:center;gap:6px;width:100%;overflow:hidden;';
+    rowNameEl.innerHTML = `<span style="font-size:16px;opacity:.7;flex-shrink:0;cursor:grab">⠿</span>`+
       `<span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${row.name}</span>`;
+    lbl.appendChild(rowNameEl);
+
+    // Row progress mini-bar
+    const rowTasks = st.tasks.filter(t=>t.rowId===row.id && !t.milestone);
+    if(rowTasks.length > 0){
+      const avgPct = Math.round(rowTasks.reduce((s,t)=>s+(t.pct||0),0)/rowTasks.length);
+      const totalDays = rowTasks.reduce((s,t)=>s+(t.e-t.s),0);
+      const miniBar = document.createElement('div');
+      miniBar.style.cssText = 'width:100%;padding:0 2px;';
+      miniBar.innerHTML =
+        `<div style="display:flex;align-items:center;gap:5px;">` +
+          `<div style="flex:1;height:4px;background:rgba(255,255,255,.25);border-radius:2px;overflow:hidden;">` +
+            `<div style="width:${avgPct}%;height:100%;background:#fff;border-radius:2px;transition:width .3s;"></div>` +
+          `</div>` +
+          `<span style="font-size:9px;font-weight:700;color:rgba(255,255,255,.9);flex-shrink:0;">${avgPct}%</span>` +
+          `<span style="font-size:9px;color:rgba(255,255,255,.6);flex-shrink:0;">·${totalDays}g</span>` +
+        `</div>`;
+      lbl.appendChild(miniBar);
+    }
+
     lbl.title = 'Sürükle → sıra değiştir | Çift tık → yeniden adlandır | Sağ tık → seçenekler';
     lbl.dataset.rowLabel = ri;
     lbl.addEventListener('mousedown', e=>{ if(e.button===0){e.stopPropagation(); gStartRowDrag(ri,e,st);} });
@@ -2007,7 +2332,7 @@ function ganttRender(){
   });
 
   // ── + Add Row button ──
-  const addY = st.rows.length * G.RH + 10;
+  const addY = st.rows.length * gRH() + 10;
   const addBtn = document.createElement('div');
   addBtn.style.cssText = `position:absolute;left:4px;top:${addY}px;width:182px;height:34px;`+
     'background:#f0fdf4;border:1.5px dashed #86efac;border-radius:8px;cursor:pointer;'+
@@ -2026,19 +2351,22 @@ function ganttRender(){
     'border-radius:2px;z-index:50;pointer-events:none;display:none;';
   labelsInner.appendChild(dropLine);
 
-  // ── Today line (in body grid) ──
-  const d = gDayOff(new Date().getMonth(), new Date().getDate());
-  const tx = gDayToGridX(d);
-  const tLine = document.createElement('div');
-  tLine.style.cssText = `position:absolute;left:${tx}px;top:0;width:2px;height:${totalH}px;`+
-    'background:#ef4444;z-index:10;pointer-events:none;';
-  inner.appendChild(tLine);
-  const tLbl = document.createElement('div');
-  tLbl.style.cssText = `position:absolute;left:${tx-18}px;top:4px;`+
-    'background:#ef4444;color:#fff;font-size:9px;font-weight:700;font-family:Inter;'+
-    'padding:2px 6px;border-radius:8px;z-index:11;pointer-events:none;';
-  tLbl.textContent = 'Bugün';
-  inner.appendChild(tLbl);
+  // ── Today line (in body grid) — only when viewing current year ──
+  const now = new Date();
+  if(now.getFullYear() === G.YEAR){
+    const d = gDayOff(now.getMonth(), now.getDate());
+    const tx = gDayToGridX(d);
+    const tLine = document.createElement('div');
+    tLine.style.cssText = `position:absolute;left:${tx}px;top:0;width:2px;height:${totalH}px;`+
+      'background:#ef4444;z-index:10;pointer-events:none;';
+    inner.appendChild(tLine);
+    const tLbl = document.createElement('div');
+    tLbl.style.cssText = `position:absolute;left:${tx-18}px;top:4px;`+
+      'background:#ef4444;color:#fff;font-size:9px;font-weight:700;font-family:Inter;'+
+      'padding:2px 6px;border-radius:8px;z-index:11;pointer-events:none;';
+    tLbl.textContent = 'Bugün';
+    inner.appendChild(tLbl);
+  }
 
   // ── Tasks ──
   st.tasks.forEach(task => {
@@ -2046,16 +2374,83 @@ function ganttRender(){
     if (ri < 0) return;
     gBuildTaskEl(task, ri, inner, st);
   });
+
+  // ── Dependency arrows SVG overlay ──
+  gRenderDeps(st, inner);
 }
 
 
 // ── Build one task DOM element ────────────────────────
 function gBuildTaskEl(task, ri, inner, st){
   document.getElementById('gt-task-'+task.id)?.remove();
+
+  // ── MILESTONE rendering (diamond shape) ──────────────
+  if(task.milestone){
+    const x = gTaskBarX(task.s);
+    const cy = ri*gRH() + gRH()/2;
+    const size = 11;  // half-size of diamond
+    const now = new Date();
+    const isPast = (G.YEAR < now.getFullYear()) ||
+                   (G.YEAR === now.getFullYear() && task.s < gDayOff(now.getMonth(), now.getDate()));
+    const color = isPast ? '#ef4444' : '#1e293b';
+    const accentColor = isPast ? '#fef2f2' : '#f8fafc';
+
+    const wrap = document.createElement('div');
+    wrap.id = 'gt-task-'+task.id;
+    wrap.style.cssText = `position:absolute;left:${x - size - 2}px;top:${cy - size - 4}px;`+
+      `width:${size*2+4}px;height:${size*2+8}px;z-index:9;cursor:pointer;`;
+    wrap.title = `${task.name}\n${gDayLabel(task.s)}${task.note ? '\n'+task.note : ''}`;
+
+    // SVG diamond
+    const svg = document.createElementNS('http://www.w3.org/2000/svg','svg');
+    svg.setAttribute('width', size*2+4);
+    svg.setAttribute('height', size*2+4);
+    svg.style.overflow = 'visible';
+    const diamond = document.createElementNS('http://www.w3.org/2000/svg','polygon');
+    const cx = size+2, cy2 = size+2;
+    diamond.setAttribute('points',`${cx},${cy2-size} ${cx+size},${cy2} ${cx},${cy2+size} ${cx-size},${cy2}`);
+    diamond.setAttribute('fill', accentColor);
+    diamond.setAttribute('stroke', color);
+    diamond.setAttribute('stroke-width', '2');
+    svg.appendChild(diamond);
+    wrap.appendChild(svg);
+
+    // Label below diamond
+    const lbl = document.createElement('div');
+    lbl.style.cssText = `position:absolute;left:50%;transform:translateX(-50%);top:${size*2+6}px;`+
+      `white-space:nowrap;font-size:10px;font-weight:700;color:${color};font-family:Inter;`+
+      `background:${accentColor};padding:1px 5px;border-radius:4px;border:1px solid ${color}33;`+
+      `pointer-events:none;`;
+    lbl.textContent = task.name;
+    wrap.appendChild(lbl);
+
+    // Vertical dashed line from diamond to row top
+    const vline = document.createElement('div');
+    vline.style.cssText = `position:absolute;left:${size+1}px;top:-${cy - ri*gRH()}px;`+
+      `width:1px;height:${cy - ri*gRH()}px;`+
+      `background:repeating-linear-gradient(to bottom,${color} 0,${color} 4px,transparent 4px,transparent 8px);`+
+      `pointer-events:none;opacity:.4;`;
+    wrap.appendChild(vline);
+
+    // Events
+    wrap.addEventListener('dblclick', e=>{ e.stopPropagation(); gEditMilestone(task, wrap, st); });
+    wrap.addEventListener('contextmenu', e=>{ e.preventDefault(); gMilestoneCtxMenu(task, e, st); });
+    wrap.addEventListener('mousedown', e=>{
+      if(e.button!==0) return;
+      e.stopPropagation();
+      gDragMilestone(task, wrap, e, st);
+    });
+
+    inner.appendChild(wrap);
+    return;
+  }
+
+  // ── Regular task bar ──────────────────────────────────
   const x = gTaskBarX(task.s);
-  const y = ri*G.RH + 8;
+  const y = ri*gRH() + 8;
   const w = gTaskBarW(task.s, task.e);
-  const h = G.RH-16;
+  const h = gRH()-16;
+  const pct = typeof task.pct === 'number' ? Math.max(0, Math.min(100, task.pct)) : 0;
 
   const el = document.createElement('div');
   el.id = 'gt-task-'+task.id;
@@ -2063,23 +2458,80 @@ function gBuildTaskEl(task, ri, inner, st){
     `background:${task.fill};border:2px solid ${task.stroke};border-radius:7px;`+
     'cursor:grab;z-index:8;display:flex;align-items:stretch;box-sizing:border-box;overflow:hidden;'+
     'box-shadow:0 1px 4px rgba(0,0,0,.1);transition:box-shadow .12s;';
-  el.title = 'Sürükle → taşı  |  Kenardan sürükle → uzat/kıs  |  Çift tık → yeniden adlandır';
+  el.title = 'Sürükle → taşı  |  Kenardan sürükle → uzat/kıs  |  Çift tık → düzenle';
+
+  // ── Progress fill (behind everything, absolutely positioned) ──
+  const progFill = document.createElement('div');
+  progFill.className = 'gt-prog-fill';
+  progFill.style.cssText = `position:absolute;left:0;top:0;height:100%;width:${pct}%;`+
+    `background:${task.stroke};opacity:0.22;border-radius:5px 0 0 5px;pointer-events:none;transition:width .2s;`;
+  el.appendChild(progFill);
 
   // Left resize handle
   const rl = document.createElement('div');
   rl.style.cssText = 'width:8px;flex-shrink:0;cursor:ew-resize;background:rgba(0,0,0,.08);'+
     'display:flex;align-items:center;justify-content:center;font-size:9px;color:rgba(0,0,0,.3);'+
-    'opacity:0;transition:opacity .15s;';
+    'opacity:0;transition:opacity .15s;position:relative;z-index:2;';
   rl.textContent='⋮';
   el.appendChild(rl);
 
   // Content
   const content = document.createElement('div');
-  content.style.cssText = 'flex:1;padding:4px 6px;overflow:hidden;display:flex;flex-direction:column;justify-content:center;min-width:0;';
-  content.innerHTML =
-    `<div style="font-size:11px;font-weight:700;color:#1e293b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${task.name}</div>`+
-    `<div class="gt-dates-${task.id}" style="font-size:9px;color:#64748b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px">${gDayLabel(task.s)} → ${gDayLabel(task.e-1)}</div>`+
-    `<div style="font-size:9px;font-weight:600;margin-top:2px;padding:1px 5px;border-radius:6px;width:fit-content;background:rgba(255,255,255,.7);color:${task.stroke}">${task.status}</div>`;
+  content.style.cssText = 'flex:1;padding:4px 6px;overflow:hidden;display:flex;flex-direction:column;justify-content:center;min-width:0;position:relative;z-index:2;';
+
+  // Name row (with note icon if has note)
+  const nameRow = document.createElement('div');
+  nameRow.style.cssText = 'display:flex;align-items:center;gap:3px;overflow:hidden;';
+  const nameDiv = document.createElement('div');
+  nameDiv.style.cssText = 'font-size:11px;font-weight:700;color:#1e293b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;';
+  nameDiv.textContent = task.name;
+  nameRow.appendChild(nameDiv);
+  if(task.note && task.note.trim()){
+    const noteIcon = document.createElement('span');
+    noteIcon.title = task.note;
+    noteIcon.style.cssText = 'font-size:10px;flex-shrink:0;opacity:.7;cursor:help;';
+    noteIcon.textContent = '📝';
+    nameRow.appendChild(noteIcon);
+  }
+  content.appendChild(nameRow);
+
+  // Dates
+  const datesDiv = document.createElement('div');
+  datesDiv.className = 'gt-dates-'+task.id;
+  datesDiv.style.cssText = 'font-size:9px;color:#64748b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px;';
+  datesDiv.textContent = gDayLabel(task.s)+' → '+gDayLabel(task.e-1);
+  content.appendChild(datesDiv);
+
+  // Status + pct + assignee avatars
+  const metaRow = document.createElement('div');
+  metaRow.style.cssText = 'display:flex;align-items:center;gap:4px;margin-top:3px;overflow:hidden;';
+  metaRow.innerHTML =
+    `<div style="font-size:9px;font-weight:600;padding:1px 5px;border-radius:6px;flex-shrink:0;background:rgba(255,255,255,.7);color:${task.stroke}">${task.status}</div>`+
+    `<div class="gt-pct-lbl-${task.id}" style="font-size:9px;font-weight:700;color:${task.stroke};flex-shrink:0;">${pct > 0 ? pct+'%' : ''}</div>`;
+  // Assignee avatars
+  if(task.assignees && task.assignees.length){
+    const avatarWrap = document.createElement('div');
+    avatarWrap.style.cssText = 'display:flex;align-items:center;margin-left:2px;flex-shrink:0;';
+    const colors = ['#7c3aed','#2563eb','#db2777','#d97706','#059669','#dc2626','#0891b2','#65a30d'];
+    task.assignees.slice(0,3).forEach((name,i)=>{
+      const av = document.createElement('div');
+      av.title = name;
+      av.style.cssText = `width:16px;height:16px;border-radius:50%;background:${colors[name.charCodeAt(0)%colors.length]};`+
+        `border:1.5px solid #fff;display:flex;align-items:center;justify-content:center;`+
+        `font-size:8px;font-weight:700;color:#fff;margin-left:${i>0?'-4px':'0'};flex-shrink:0;`;
+      av.textContent = name.trim().charAt(0).toUpperCase();
+      avatarWrap.appendChild(av);
+    });
+    if(task.assignees.length > 3){
+      const more = document.createElement('div');
+      more.style.cssText = 'width:16px;height:16px;border-radius:50%;background:#94a3b8;border:1.5px solid #fff;'+
+        'display:flex;align-items:center;justify-content:center;font-size:7px;font-weight:700;color:#fff;margin-left:-4px;flex-shrink:0;';
+      more.textContent = '+' + (task.assignees.length - 3);
+      avatarWrap.appendChild(more);
+    }
+    metaRow.appendChild(avatarWrap);
+  }
+  content.appendChild(metaRow);
   el.appendChild(content);
 
   // Right resize handle
@@ -2096,8 +2548,25 @@ function gBuildTaskEl(task, ri, inner, st){
   rl.addEventListener('mousedown', e=>{ e.stopPropagation(); gResizeTask(task,'l',e,st); });
   rr.addEventListener('mousedown', e=>{ e.stopPropagation(); gResizeTask(task,'r',e,st); });
   content.addEventListener('mousedown', e=>{ if(e.button===0){ e.stopPropagation(); gDragTask(task,el,e,st); } });
-  content.addEventListener('dblclick',  e=>{ e.stopPropagation(); gRenameTask(task,el,st); });
+  content.addEventListener('dblclick',  e=>{ e.stopPropagation(); gEditTask(task,el,st); });
   el.addEventListener('contextmenu', e=>{ e.preventDefault(); gTaskCtxMenu(task,e,st); });
+
+  // Dependency port (right side — drag from here to another task)
+  const port = document.createElement('div');
+  port.className = 'gt-dep-port';
+  port.title = 'Sürükle → bağımlılık bağla';
+  port.addEventListener('mousedown', e=>{ e.stopPropagation(); e.preventDefault(); gStartDepDraw(task.id, e, st); });
+  el.appendChild(port);
+
+  // Violation badge if task starts before its predecessors end
+  const viols = (st.deps||[]).filter(d=>d.to===task.id).map(d=>st.tasks.find(t=>t.id===d.from)).filter(p=>p&&p.e>task.s);
+  if(viols.length){
+    const badge = document.createElement('div');
+    badge.className = 'gt-dep-badge';
+    badge.textContent = '⚠ Bağımlılık ihlali';
+    el.appendChild(badge);
+    el.style.border = '2px solid #ef4444';
+  }
 
   inner.appendChild(el);
 }
@@ -2112,8 +2581,11 @@ function gDragTask(task, el, e, st){
   const scrollEl=document.getElementById('gantt-scroll');
 
   const onMove=ev=>{
-    const unitPx = gView==='week' ? gUnitW()/7 : (gView==='month' ? gUnitW()/30 : G.DW);
-    const dDay = Math.round((ev.clientX-sx)/unitPx);
+    const dPx = ev.clientX - sx;
+    // Convert pixel delta to day delta using the grid coordinate system
+    // gGridXToDay(gDayToGridX(origS) + dPx) gives the day at cursor position
+    const curDay = gGridXToDay(gDayToGridX(origS) + dPx);
+    const dDay = curDay - origS;
     const newS = Math.max(0, Math.min(G.TOTAL-span, origS+dDay));
     task.s=newS; task.e=newS+span;
 
@@ -2124,10 +2596,13 @@ function gDragTask(task, el, e, st){
 
     // Live update position
     el.style.left=gTaskBarX(task.s)+'px';
-    el.style.top=(newRi*G.RH+8)+'px';
+    el.style.top=(newRi*gRH()+8)+'px';
     el.style.width=gTaskBarW(task.s,task.e)+'px';
     const dEl=el.querySelector('.gt-dates-'+task.id);
     if(dEl) dEl.textContent=gDayLabel(task.s)+' → '+gDayLabel(task.e-1);
+
+    // Live update dependency arrows
+    gUpdateDepPaths(st);
 
     // Tooltip
     gShowTip(gDayLabel(task.s)+' → '+gDayLabel(task.e-1), st.rows[newRi]?.name||'', ev.clientX, ev.clientY);
@@ -2135,6 +2610,14 @@ function gDragTask(task, el, e, st){
   const onUp=()=>{
     el.style.cursor='grab'; el.style.zIndex='8'; el.style.opacity='1';
     gHideTip();
+    saveHistory();
+    // Check if any milestones in the same row are now outside this task's range
+    const rowMilestones = st.tasks.filter(t=>t.milestone && t.rowId===task.rowId);
+    const outside = rowMilestones.filter(m=> m.s < task.s || m.s >= task.e);
+    if(outside.length){
+      const names = outside.map(m=>`"${m.name}"`).join(', ');
+      notify(`⚠ ${names} milestone${outside.length>1?'\'ları':'\'ı'} görev aralığı dışında kaldı`);
+    }
     document.removeEventListener('mousemove',onMove);
     document.removeEventListener('mouseup',onUp);
   };
@@ -2149,12 +2632,13 @@ function gResizeTask(task, edge, e, st){
   const el=document.getElementById('gt-task-'+task.id);
 
   const onMove=ev=>{
-    const unitPx2 = gView==='week' ? gUnitW()/7 : (gView==='month' ? gUnitW()/30 : G.DW);
-    const dDay=Math.round((ev.clientX-sx)/unitPx2);
+    const dPx = ev.clientX - sx;
+    const origDay = edge==='l' ? origS : origE;
+    const newDay = gGridXToDay(gDayToGridX(origDay) + dPx);
     if(edge==='l'){
-      task.s=Math.max(0, Math.min(task.e-1, origS+dDay));
+      task.s=Math.max(0, Math.min(task.e-1, newDay));
     } else {
-      task.e=Math.min(G.TOTAL, Math.max(task.s+1, origE+dDay));
+      task.e=Math.min(G.TOTAL, Math.max(task.s+1, newDay));
     }
     if(el){
       el.style.left=gTaskBarX(task.s)+'px';
@@ -2162,10 +2646,19 @@ function gResizeTask(task, edge, e, st){
       const dEl=el.querySelector('.gt-dates-'+task.id);
       if(dEl) dEl.textContent=gDayLabel(task.s)+' → '+gDayLabel(task.e-1);
     }
+    // Live update dependency arrows
+    gUpdateDepPaths(st);
     gShowTip(gDayLabel(task.s)+' → '+gDayLabel(task.e-1), '', ev.clientX, ev.clientY);
   };
   const onUp=()=>{
     gHideTip();
+    saveHistory();
+    const rowMilestones = st.tasks.filter(t=>t.milestone && t.rowId===task.rowId);
+    const outside = rowMilestones.filter(m=> m.s < task.s || m.s >= task.e);
+    if(outside.length){
+      const names = outside.map(m=>`"${m.name}"`).join(', ');
+      notify(`⚠ ${names} milestone${outside.length>1?'\'ları':'\'ı'} görev aralığı dışında kaldı`);
+    }
     document.removeEventListener('mousemove',onMove);
     document.removeEventListener('mouseup',onUp);
   };
@@ -2183,8 +2676,8 @@ function gStartRowDrag(fromRi, e, st){
   // Ghost pill follows cursor
   const ghost = document.createElement('div');
   ghost.style.cssText = `position:fixed;z-index:5000;pointer-events:none;`+
-    `left:${labelsRect.left}px;top:${e.clientY-G.RH/2}px;`+
-    `width:180px;height:${G.RH-6}px;background:${row.fill};`+
+    `left:${labelsRect.left}px;top:${e.clientY-gRH()/2}px;`+
+    `width:180px;height:${gRH()-6}px;background:${row.fill};`+
     `border-radius:10px;display:flex;align-items:center;justify-content:center;padding:0 12px;`+
     `color:#fff;font-weight:700;font-family:Inter;font-size:13px;`+
     `box-shadow:0 8px 28px rgba(0,0,0,.35);opacity:.88;`;
@@ -2196,7 +2689,7 @@ function gStartRowDrag(fromRi, e, st){
   let toRi = fromRi;
 
   const onMove = ev => {
-    ghost.style.top = (ev.clientY - G.RH/2) + 'px';
+    ghost.style.top = (ev.clientY - gRH()/2) + 'px';
 
     // Calculate which row the cursor is over
     const relY = ev.clientY - labelsRect.top + scrollEl.scrollTop;
@@ -2207,7 +2700,7 @@ function gStartRowDrag(fromRi, e, st){
     if (dropLine) {
       dropLine.style.display = 'block';
       // Show line at top or bottom of target row
-      const midY = labelsRect.top - scrollEl.scrollTop + toRi * G.RH + G.RH/2;
+      const midY = labelsRect.top - scrollEl.scrollTop + toRi * gRH() + gRH()/2;
       const lineY = ev.clientY > midY ? gRowToY(toRi + 1) : gRowToY(toRi);
       dropLine.style.top = lineY + 'px';
     }
@@ -2250,10 +2743,11 @@ function gRenameRowById(ri, st) {
 function gAddRow(st){
   const name=prompt('Satır adı:', 'Takım '+(st.rows.length+1));
   if(!name) return;
+  saveHistory();
   const palettes=[['#fde68a','#d97706'],['#6ee7b7','#059669'],['#fca5a5','#dc2626'],
                   ['#c7d2fe','#4338ca'],['#fed7aa','#c2410c'],['#a5f3fc','#0284c7']];
   const [fill,stroke]=palettes[st.rows.length%palettes.length];
-  st.rows.push({id:'r'+Date.now(), name, fill, stroke});
+  st.rows.push({id:'r'+Date.now()+'_'+Math.random().toString(36).slice(2,7), name, fill, stroke});
   ganttRender();
   notify('✅ Satır eklendi: '+name);
 }
@@ -2282,6 +2776,7 @@ function gRowCtxMenu(ri, e, st){
     'box-shadow:0 4px 20px rgba(0,0,0,.15);min-width:180px;font-family:Inter;';
   menu.innerHTML=`
     <div class="gtci" onclick="gAddTaskToRow('${st.rows[ri].id}', gGetState())">➕ Görev Ekle</div>
+    <div class="gtci" onclick="gAddMilestone('${st.rows[ri].id}', gGetState())">🏁 Milestone Ekle</div>
     <div class="gtci" onclick="gCloseCtx();gRenameRowById(${ri}, gGetState())">✏️ Yeniden Adlandır</div>
     <hr style="border:none;border-top:1px solid #eee;margin:4px 0">
     <div class="gtci gtci-del" onclick="gDeleteRow(${ri}, gGetState())">🗑 Satırı Sil</div>`;
@@ -2309,8 +2804,9 @@ function gTaskCtxMenu(task, e, st){
     'background:#fff;border:1px solid #ddd;border-radius:10px;padding:6px;'+
     'box-shadow:0 4px 20px rgba(0,0,0,.15);min-width:180px;font-family:Inter;';
   menu.innerHTML=`
-    <div class="gtci" onclick="gRenameTask(gGetState().tasks.find(t=>t.id==='${task.id}'), document.getElementById('gt-task-${task.id}'), gGetState())">✏️ Yeniden Adlandır</div>
+    <div class="gtci" onclick="gEditTask(gGetState().tasks.find(t=>t.id==='${task.id}'), document.getElementById('gt-task-${task.id}'), gGetState())">✏️ Düzenle / İlerleme</div>
     <div class="gtci" onclick="gCycleStatus('${task.id}', gGetState())">🏷 Durum → ${next}</div>
+    <div class="gtci" onclick="gPickTaskColor('${task.id}', gGetState())">🎨 Renk Seç</div>
     <hr style="border:none;border-top:1px solid #eee;margin:4px 0">
     <div class="gtci gtci-del" onclick="gDeleteTask('${task.id}', gGetState())">🗑 Görevi Sil</div>`;
   document.body.appendChild(menu);
@@ -2322,32 +2818,114 @@ function gTaskCtxMenu(task, e, st){
   setTimeout(()=>document.addEventListener('click',gCloseCtx,{once:true}),50);
 }
 
-// ── Rename task (inline) ──────────────────────────────
-function gRenameTask(task, el, st){
+// ── Edit task (inline popup: name + progress slider) ──
+function gEditTask(task, el, st){
   if(!task||!el) return;
-  const nameEl=el.querySelector('div[style*="font-weight:700"]');
-  if(!nameEl) return;
-  const inp=document.createElement('input');
-  inp.value=task.name;
-  inp.style.cssText='position:absolute;inset:0;width:100%;height:100%;box-sizing:border-box;'+
-    'border:none;border-radius:7px;background:rgba(255,255,255,.92);color:#1e293b;'+
-    'font-family:Inter;font-size:11px;font-weight:700;padding:0 8px;'+
-    'outline:2px solid #0066ff;z-index:30;';
-  el.style.position='relative';
-  el.appendChild(inp); inp.focus(); inp.select();
-  const done=()=>{ const v=inp.value.trim(); if(v){task.name=v; if(nameEl) nameEl.textContent=v;} inp.remove(); };
-  inp.addEventListener('blur',done);
-  inp.addEventListener('keydown',ev=>{ if(ev.key==='Enter') inp.blur(); if(ev.key==='Escape'){inp.value=task.name;inp.blur();} });
+  document.getElementById('gt-edit-popup')?.remove();
+
+  const rect = el.getBoundingClientRect();
+  const pct = typeof task.pct === 'number' ? task.pct : 0;
+  const note = task.note || '';
+  const assignees = (task.assignees || []).join(', ');
+
+  const popup = document.createElement('div');
+  popup.id = 'gt-edit-popup';
+  popup.style.cssText = `position:fixed;left:${rect.left}px;top:${rect.bottom+6}px;z-index:6000;`+
+    'background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:14px 16px;'+
+    'box-shadow:0 8px 32px rgba(0,0,0,.18);width:300px;font-family:Inter;';
+
+  popup.innerHTML = `
+    <div style="font-size:11px;font-weight:700;color:#94a3b8;letter-spacing:.05em;margin-bottom:10px;">GÖREVI DÜZENLE</div>
+
+    <div style="font-size:10px;font-weight:700;color:#94a3b8;margin-bottom:4px;">AD</div>
+    <input id="gt-edit-name" style="width:100%;box-sizing:border-box;border:1px solid #e2e8f0;border-radius:7px;
+      padding:6px 10px;font-family:Inter;font-size:13px;font-weight:600;color:#1e293b;outline:none;margin-bottom:10px;">
+
+    <div style="font-size:10px;font-weight:700;color:#94a3b8;margin-bottom:4px;">SORUMLULAR <span style="font-weight:400;color:#cbd5e1;">(virgülle ayır)</span></div>
+    <input id="gt-edit-assignees" placeholder="Ali, Ayşe, Mehmet…" style="width:100%;box-sizing:border-box;border:1px solid #e2e8f0;border-radius:7px;
+      padding:6px 10px;font-family:Inter;font-size:12px;color:#1e293b;outline:none;margin-bottom:10px;">
+
+    <div style="font-size:10px;font-weight:700;color:#94a3b8;margin-bottom:4px;">NOT / AÇIKLAMA</div>
+    <textarea id="gt-edit-note" rows="3" placeholder="Bağlantılar, kararlar, notlar…" style="width:100%;box-sizing:border-box;border:1px solid #e2e8f0;border-radius:7px;
+      padding:6px 10px;font-family:Inter;font-size:12px;color:#1e293b;outline:none;resize:vertical;margin-bottom:10px;"></textarea>
+
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px;">
+      <span style="font-size:10px;font-weight:700;color:#94a3b8;">İLERLEME</span>
+      <span id="gt-edit-pct-lbl" style="font-size:13px;font-weight:800;color:#0066ff;">${pct}%</span>
+    </div>
+    <input id="gt-edit-slider" type="range" min="0" max="100" value="${pct}"
+      style="width:100%;accent-color:#0066ff;cursor:pointer;margin-bottom:12px;">
+
+    <div style="display:flex;gap:6px;justify-content:flex-end;">
+      <button id="gt-edit-cancel" style="padding:6px 14px;border-radius:7px;border:1px solid #e2e8f0;
+        background:#f8fafc;font-family:Inter;font-size:12px;cursor:pointer;color:#64748b;">İptal</button>
+      <button id="gt-edit-save" style="padding:6px 14px;border-radius:7px;border:none;
+        background:#0066ff;font-family:Inter;font-size:12px;cursor:pointer;color:#fff;font-weight:600;">Kaydet</button>
+    </div>`;
+
+  document.body.appendChild(popup);
+
+  const nameInp     = document.getElementById('gt-edit-name');
+  const assigneeInp = document.getElementById('gt-edit-assignees');
+  const noteInp     = document.getElementById('gt-edit-note');
+  const slider      = document.getElementById('gt-edit-slider');
+  const pctLbl      = document.getElementById('gt-edit-pct-lbl');
+
+  nameInp.value     = task.name;
+  assigneeInp.value = assignees;
+  noteInp.value     = note;
+  nameInp.focus(); nameInp.select();
+
+  slider.addEventListener('input', () => { pctLbl.textContent = slider.value + '%'; });
+
+  requestAnimationFrame(() => {
+    const pr = popup.getBoundingClientRect();
+    if(pr.right > window.innerWidth - 8)  popup.style.left = (window.innerWidth - pr.width - 8) + 'px';
+    if(pr.bottom > window.innerHeight - 8) popup.style.top  = (rect.top - pr.height - 6) + 'px';
+  });
+
+  const save = () => {
+    const newName = nameInp.value.trim();
+    const newPct  = parseInt(slider.value, 10);
+    const newNote = noteInp.value.trim();
+    const newAssignees = assigneeInp.value.split(',').map(s=>s.trim()).filter(Boolean);
+
+    if(newName) task.name = newName;
+    task.pct       = newPct;
+    task.note      = newNote;
+    task.assignees = newAssignees;
+    popup.remove();
+    saveHistory();
+    // Full re-render of this task bar to reflect all changes
+    const inner = document.getElementById('gantt-inner');
+    const ri = st.rows.findIndex(r=>r.id===task.rowId);
+    if(inner && ri>=0) gBuildTaskEl(task, ri, inner, st);
+    gUpdateDepPaths(st);
+  };
+  const cancel = () => popup.remove();
+
+  document.getElementById('gt-edit-save').addEventListener('click', save);
+  document.getElementById('gt-edit-cancel').addEventListener('click', cancel);
+  nameInp.addEventListener('keydown', ev => { if(ev.key==='Escape') cancel(); });
+
+  setTimeout(() => {
+    const outside = ev => { if(!popup.contains(ev.target)){ popup.remove(); document.removeEventListener('mousedown', outside); } };
+    document.addEventListener('mousedown', outside);
+  }, 50);
 }
+
+// ── Rename task (kept for back-compat, delegates to gEditTask) ──
+function gRenameTask(task, el, st){ gEditTask(task, el, st); }
 
 // ── Add task to row ───────────────────────────────────
 function gAddTaskToRow(rowId, st){
   gCloseCtx();
+  saveHistory();
   const palettes=[['#ede9fe','#7c3aed'],['#dbeafe','#3b82f6'],['#fce7f3','#db2777'],
                   ['#fef3c7','#d97706'],['#d1fae5','#059669'],['#fee2e2','#dc2626']];
   const [fill,stroke]=palettes[st.tasks.length%palettes.length];
-  const id='t'+Date.now();
-  st.tasks.push({id, rowId, s:gDayOff(0,1), e:gDayOff(1,28), name:'Yeni Görev', status:'Yeni', fill, stroke});
+  const id='t'+Date.now()+'_'+Math.random().toString(36).slice(2,7);
+  st.tasks.push({id, rowId, s:gDayOff(0,1), e:gDayOff(1,28), name:'Yeni Görev', status:'Yeni', pct:0, fill, stroke});
   ganttRender();
   setTimeout(()=>{
     const task=st.tasks.find(t=>t.id===id);
@@ -2357,29 +2935,506 @@ function gAddTaskToRow(rowId, st){
   notify('✅ Görev eklendi');
 }
 
-// ── Cycle status ──────────────────────────────────────
+// ── Add milestone to row ──────────────────────────────
+function gAddMilestone(rowId, st){
+  gCloseCtx();
+  saveHistory();
+  const id = 't'+Date.now()+'_'+Math.random().toString(36).slice(2,7);
+  const day = gDayOff(new Date().getMonth(), new Date().getDate());
+  st.tasks.push({id, rowId, s:day, e:day+1, name:'Kilometre Taşı', status:'Yeni', pct:0,
+    milestone:true, fill:'#f8fafc', stroke:'#1e293b'});
+  ganttRender();
+  setTimeout(()=>{
+    const task = st.tasks.find(t=>t.id===id);
+    const el   = document.getElementById('gt-task-'+id);
+    if(task && el) gEditMilestone(task, el, st);
+  }, 60);
+  notify('🏁 Milestone eklendi');
+}
+
+// ── Edit milestone popup ──────────────────────────────
+function gEditMilestone(task, el, st){
+  document.getElementById('gt-edit-popup')?.remove();
+  const rect = el.getBoundingClientRect();
+  const popup = document.createElement('div');
+  popup.id = 'gt-edit-popup';
+  popup.style.cssText = `position:fixed;left:${rect.left}px;top:${rect.bottom+6}px;z-index:6000;`+
+    'background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:14px 16px;'+
+    'box-shadow:0 8px 32px rgba(0,0,0,.18);width:280px;font-family:Inter;';
+
+  // Build a date string from day offset
+  const dayToDateStr = d => {
+    let r = d;
+    for(let m=0;m<12;m++){ if(r<G.DIM[m]){ return `${G.YEAR}-${String(m+1).padStart(2,'0')}-${String(r+1).padStart(2,'0')}`; } r-=G.DIM[m]; }
+    return `${G.YEAR}-12-31`;
+  };
+  const dateStrToDay = s => {
+    const [y,m,d] = s.split('-').map(Number);
+    if(y !== G.YEAR) return task.s;
+    let off = 0;
+    for(let i=0;i<m-1;i++) off+=G.DIM[i];
+    return Math.max(0, Math.min(G.TOTAL-1, off+(d-1)));
+  };
+
+  popup.innerHTML = `
+    <div style="font-size:11px;font-weight:700;color:#94a3b8;letter-spacing:.05em;margin-bottom:10px;">🏁 MİLESTONE DÜZENLE</div>
+    <div style="font-size:10px;font-weight:700;color:#94a3b8;margin-bottom:4px;">AD</div>
+    <input id="gt-ms-name" style="width:100%;box-sizing:border-box;border:1px solid #e2e8f0;border-radius:7px;
+      padding:6px 10px;font-family:Inter;font-size:13px;font-weight:600;color:#1e293b;outline:none;margin-bottom:10px;">
+    <div style="font-size:10px;font-weight:700;color:#94a3b8;margin-bottom:4px;">TARİH</div>
+    <input id="gt-ms-date" type="date" style="width:100%;box-sizing:border-box;border:1px solid #e2e8f0;border-radius:7px;
+      padding:6px 10px;font-family:Inter;font-size:12px;color:#1e293b;outline:none;margin-bottom:10px;">
+    <div style="font-size:10px;font-weight:700;color:#94a3b8;margin-bottom:4px;">NOT</div>
+    <textarea id="gt-ms-note" rows="2" placeholder="Açıklama…" style="width:100%;box-sizing:border-box;border:1px solid #e2e8f0;border-radius:7px;
+      padding:6px 10px;font-family:Inter;font-size:12px;color:#1e293b;outline:none;resize:vertical;margin-bottom:12px;"></textarea>
+    <div style="display:flex;gap:6px;justify-content:flex-end;">
+      <button id="gt-ms-cancel" style="padding:6px 14px;border-radius:7px;border:1px solid #e2e8f0;
+        background:#f8fafc;font-family:Inter;font-size:12px;cursor:pointer;color:#64748b;">İptal</button>
+      <button id="gt-ms-save" style="padding:6px 14px;border-radius:7px;border:none;
+        background:#1e293b;font-family:Inter;font-size:12px;cursor:pointer;color:#fff;font-weight:600;">Kaydet</button>
+    </div>`;
+  document.body.appendChild(popup);
+
+  const nameInp = document.getElementById('gt-ms-name');
+  const dateInp = document.getElementById('gt-ms-date');
+  const noteInp = document.getElementById('gt-ms-note');
+  nameInp.value = task.name;
+  dateInp.value = dayToDateStr(task.s);
+  noteInp.value = task.note || '';
+  nameInp.focus(); nameInp.select();
+
+  requestAnimationFrame(()=>{
+    const pr = popup.getBoundingClientRect();
+    if(pr.right > window.innerWidth-8) popup.style.left=(window.innerWidth-pr.width-8)+'px';
+    if(pr.bottom > window.innerHeight-8) popup.style.top=(rect.top-pr.height-6)+'px';
+  });
+
+  const save = () => {
+    const newName = nameInp.value.trim();
+    if(newName) task.name = newName;
+    task.note = noteInp.value.trim();
+    const newDay = dateStrToDay(dateInp.value);
+    task.s = newDay; task.e = newDay + 1;
+    popup.remove();
+    saveHistory();
+    ganttRender();
+  };
+  const cancel = () => popup.remove();
+  document.getElementById('gt-ms-save').addEventListener('click', save);
+  document.getElementById('gt-ms-cancel').addEventListener('click', cancel);
+  nameInp.addEventListener('keydown', ev=>{ if(ev.key==='Enter') save(); if(ev.key==='Escape') cancel(); });
+  setTimeout(()=>{
+    const outside = ev=>{ if(!popup.contains(ev.target)){ popup.remove(); document.removeEventListener('mousedown',outside); } };
+    document.addEventListener('mousedown', outside);
+  }, 50);
+}
+
+// ── Milestone context menu ────────────────────────────
+function gMilestoneCtxMenu(task, e, st){
+  gCloseCtx();
+  const menu = document.createElement('div');
+  menu.id = 'gt-ctx';
+  menu.style.cssText = `position:fixed;left:${e.clientX}px;top:${e.clientY}px;z-index:4000;`+
+    'background:#fff;border:1px solid #ddd;border-radius:10px;padding:6px;'+
+    'box-shadow:0 4px 20px rgba(0,0,0,.15);min-width:180px;font-family:Inter;';
+  menu.innerHTML = `
+    <div class="gtci" onclick="gEditMilestone(gGetState().tasks.find(t=>t.id==='${task.id}'), document.getElementById('gt-task-${task.id}'), gGetState())">✏️ Düzenle</div>
+    <hr style="border:none;border-top:1px solid #eee;margin:4px 0">
+    <div class="gtci gtci-del" onclick="gDeleteTask('${task.id}', gGetState())">🗑 Milestone Sil</div>`;
+  document.body.appendChild(menu);
+  menu.querySelectorAll('.gtci').forEach(el=>{
+    el.style.cssText='padding:8px 12px;font-size:13px;cursor:pointer;border-radius:6px;color:#333;';
+    el.onmouseenter=()=>{ el.style.background=el.classList.contains('gtci-del')?'#fff0f0':'#f0f6ff'; el.style.color=el.classList.contains('gtci-del')?'#e53e3e':'#0066ff'; };
+    el.onmouseleave=()=>{ el.style.background=''; el.style.color='#333'; };
+  });
+  setTimeout(()=>document.addEventListener('click',gCloseCtx,{once:true}),50);
+}
+
+// ── Drag milestone (horizontal only) ─────────────────
+function gDragMilestone(task, el, e, st){
+  const origS = task.s;
+  const sx = e.clientX;
+  const onMove = ev => {
+    const dPx = ev.clientX - sx;
+    const newDay = gGridXToDay(gDayToGridX(origS) + dPx);
+    task.s = Math.max(0, Math.min(G.TOTAL-1, newDay));
+    task.e = task.s + 1;
+    el.style.left = (gTaskBarX(task.s) - 13) + 'px';
+    gShowTip('🏁 '+task.name+' — '+gDayLabel(task.s), '', ev.clientX, ev.clientY);
+  };
+  const onUp = () => {
+    gHideTip();
+    saveHistory();
+    ganttRender();
+    document.removeEventListener('mousemove', onMove);
+    document.removeEventListener('mouseup', onUp);
+  };
+  document.addEventListener('mousemove', onMove);
+  document.addEventListener('mouseup', onUp);
+}
 function gCycleStatus(taskId, st){
   gCloseCtx();
   const task=st.tasks.find(t=>t.id===taskId); if(!task) return;
+  saveHistory();
   const S=['Yeni','Devam','Tamamlandı','Beklemede','İptal'];
   task.status=S[(S.indexOf(task.status)+1)%S.length];
   ganttRender();
+}
+
+// ── Pick task color ───────────────────────────────────
+function gPickTaskColor(taskId, st){
+  gCloseCtx();
+  const task = st.tasks.find(t=>t.id===taskId); if(!task) return;
+  const PALETTES = [
+    ['#ede9fe','#7c3aed'], ['#dbeafe','#3b82f6'], ['#fce7f3','#db2777'],
+    ['#fef3c7','#d97706'], ['#d1fae5','#059669'], ['#fee2e2','#dc2626'],
+    ['#e0f2fe','#0284c7'], ['#f0fdf4','#16a34a'], ['#fdf4ff','#a21caf'],
+    ['#fff7ed','#ea580c'], ['#f1f5f9','#475569'], ['#fefce8','#ca8a04'],
+  ];
+  const popup = document.createElement('div');
+  popup.id = 'gt-color-popup';
+  popup.style.cssText = 'position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:7000;'+
+    'background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:14px 16px;'+
+    'box-shadow:0 8px 32px rgba(0,0,0,.18);font-family:Inter;width:260px;';
+  const title = document.createElement('div');
+  title.style.cssText='font-size:11px;font-weight:700;color:#94a3b8;margin-bottom:10px;';
+  title.textContent='RENK SEÇ';
+  popup.appendChild(title);
+  const grid = document.createElement('div');
+  grid.style.cssText='display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-bottom:12px;';
+  PALETTES.forEach(([fill,stroke])=>{
+    const swatch = document.createElement('div');
+    swatch.style.cssText=`width:32px;height:32px;border-radius:8px;background:${fill};border:2px solid ${stroke};cursor:pointer;transition:transform .1s;`;
+    swatch.title = stroke;
+    swatch.onmouseenter=()=>swatch.style.transform='scale(1.15)';
+    swatch.onmouseleave=()=>swatch.style.transform='';
+    swatch.addEventListener('click',()=>{
+      task.fill=fill; task.stroke=stroke;
+      saveHistory(); ganttRender(); popup.remove(); notify('🎨 Renk güncellendi');
+    });
+    grid.appendChild(swatch);
+  });
+  popup.appendChild(grid);
+  // Custom color row
+  const customRow = document.createElement('div');
+  customRow.style.cssText='display:flex;align-items:center;gap:8px;';
+  customRow.innerHTML='<span style="font-size:11px;color:#64748b;flex:1;">Özel renk:</span>';
+  const colorInp = document.createElement('input');
+  colorInp.type='color'; colorInp.value=task.stroke;
+  colorInp.style.cssText='width:36px;height:28px;border:none;cursor:pointer;border-radius:5px;';
+  colorInp.addEventListener('input',()=>{
+    const hex = colorInp.value;
+    task.stroke = hex;
+    task.fill   = hex+'22';
+  });
+  colorInp.addEventListener('change',()=>{ saveHistory(); ganttRender(); popup.remove(); notify('🎨 Renk güncellendi'); });
+  customRow.appendChild(colorInp);
+  popup.appendChild(customRow);
+  document.body.appendChild(popup);
+  setTimeout(()=>{
+    const outside=e=>{ if(!popup.contains(e.target)){ popup.remove(); document.removeEventListener('mousedown',outside); } };
+    document.addEventListener('mousedown',outside);
+  },50);
 }
 
 // ── Delete helpers ────────────────────────────────────
 function gDeleteRow(ri, st){
   gCloseCtx();
   if(st.rows.length<=1){ notify('⚠️ Son satır silinemez'); return; }
+  saveHistory();
   const rowId=st.rows[ri].id;
   st.tasks=st.tasks.filter(t=>t.rowId!==rowId);
+  if(st.deps) st.deps=st.deps.filter(d=>{
+    const ft=st.tasks.find(t=>t.id===d.from); const tt=st.tasks.find(t=>t.id===d.to);
+    return ft&&tt;
+  });
   st.rows.splice(ri,1);
   ganttRender(); notify('🗑 Satır silindi');
 }
 function gDeleteTask(taskId, st){
   gCloseCtx();
-  st.tasks=st.tasks.filter(t=>t.id!==taskId);
+  saveHistory();
+  st.tasks = st.tasks.filter(t=>t.id!==taskId);
+  // Remove deps that reference this task
+  if(st.deps) st.deps = st.deps.filter(d=>d.from!==taskId && d.to!==taskId);
   document.getElementById('gt-task-'+taskId)?.remove();
+  gRenderDeps(st, document.getElementById('gantt-inner'));
   notify('🗑 Görev silindi');
+}
+
+// ── Dependency mode state ─────────────────────────────
+let _depMode = false;        // is link-drawing mode active?
+let _depFromId = null;       // task id we started dragging from
+
+function gToggleDepMode(){
+  _depMode = !_depMode;
+  _depFromId = null;
+  const btn = document.getElementById('gt-dep-btn');
+  if(btn){
+    btn.style.background = _depMode ? '#fff7ed' : '#f8fafc';
+    btn.style.borderColor = _depMode ? '#f97316' : '#e2e8f0';
+    btn.style.color = _depMode ? '#f97316' : '#475569';
+    btn.textContent = _depMode ? '🔗 Bağlanıyor… (İptal: Esc)' : '🔗 Bağımlılık';
+  }
+  if(_depMode) notify('🔗 Bağımlılık modu açık — bir görevin ▶ noktasından diğerine sürükle');
+  else notify('🔗 Bağımlılık modu kapalı');
+}
+
+// ── Draw a temporary line while dragging from dep port ─
+function gStartDepDraw(fromTaskId, e, st){
+  if(!_depMode) return;
+  _depFromId = fromTaskId;
+  const fromEl = document.getElementById('gt-task-'+fromTaskId);
+  if(!fromEl) return;
+
+  // Ghost line SVG
+  let ghost = document.getElementById('gt-dep-ghost');
+  if(!ghost){
+    ghost = document.createElementNS('http://www.w3.org/2000/svg','svg');
+    ghost.id = 'gt-dep-ghost';
+    ghost.style.cssText = 'position:fixed;top:0;left:0;width:100vw;height:100vh;pointer-events:none;z-index:5000;';
+    document.body.appendChild(ghost);
+  }
+  ghost.innerHTML = '<defs><marker id="ghost-arr" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#f97316"/></marker></defs>';
+  const line = document.createElementNS('http://www.w3.org/2000/svg','path');
+  line.setAttribute('stroke','#f97316');
+  line.setAttribute('stroke-width','2');
+  line.setAttribute('fill','none');
+  line.setAttribute('stroke-dasharray','6 3');
+  line.setAttribute('marker-end','url(#ghost-arr)');
+  ghost.appendChild(line);
+
+  const fromRect = fromEl.getBoundingClientRect();
+  const x0 = fromRect.right;
+  const y0 = fromRect.top + fromRect.height/2;
+
+  const onMove = ev => {
+    const x1=ev.clientX, y1=ev.clientY;
+    const mx=(x0+x1)/2;
+    line.setAttribute('d',`M${x0},${y0} C${mx},${y0} ${mx},${y1} ${x1},${y1}`);
+  };
+  const onUp = ev => {
+    ghost.remove();
+    document.removeEventListener('mousemove',onMove);
+    document.removeEventListener('mouseup',onUp);
+
+    // Find target task element under cursor
+    const els = document.elementsFromPoint(ev.clientX, ev.clientY);
+    const toEl = els.find(el=>el.id&&el.id.startsWith('gt-task-')&&el.id!=='gt-task-'+fromTaskId);
+    if(toEl){
+      const toId = toEl.id.replace('gt-task-','');
+      gAddDep(fromTaskId, toId, st);
+    } else {
+      notify('⚠ Hedef görev bulunamadı — bir görevin üzerine bırak');
+    }
+    _depFromId = null;
+  };
+  document.addEventListener('mousemove',onMove);
+  document.addEventListener('mouseup',onUp);
+
+  // Esc cancels
+  const onKey = ev => {
+    if(ev.key==='Escape'){
+      ghost.remove();
+      document.removeEventListener('mousemove',onMove);
+      document.removeEventListener('mouseup',onUp);
+      document.removeEventListener('keydown',onKey);
+      _depFromId = null;
+    }
+  };
+  document.addEventListener('keydown',onKey);
+}
+
+// ── Add a dependency (from → to) with cycle & dupe check ─
+function gAddDep(fromId, toId, st){
+  if(fromId===toId){ notify('⚠ Görev kendine bağlanamaz'); return; }
+  if(!st.deps) st.deps=[];
+  if(st.deps.find(d=>d.from===fromId&&d.to===toId)){ notify('⚠ Bu bağımlılık zaten var'); return; }
+  // Cycle check (DFS)
+  if(gHasCycle(st.deps, toId, fromId)){ notify('⛔ Döngüsel bağımlılık oluşturur — izin verilmedi'); return; }
+  st.deps.push({from:fromId, to:toId});
+  ganttRender();
+  const fromT = st.tasks.find(t=>t.id===fromId);
+  const toT   = st.tasks.find(t=>t.id===toId);
+  const ok = fromT && toT && fromT.e <= toT.s;
+  notify(ok ? `✅ Bağlandı: "${fromT?.name}" → "${toT?.name}"` : `⚠ Bağlandı ama "${toT?.name}" erken başlıyor — tarihi güncelle`);
+}
+
+function gHasCycle(deps, startId, targetId){
+  // BFS: can we reach targetId from startId following deps?
+  const visited = new Set();
+  const queue = [startId];
+  while(queue.length){
+    const cur = queue.shift();
+    if(cur===targetId) return true;
+    if(visited.has(cur)) continue;
+    visited.add(cur);
+    deps.filter(d=>d.from===cur).forEach(d=>queue.push(d.to));
+  }
+  return false;
+}
+
+// ── Live-update dep paths during drag (no full re-render) ─
+function gUpdateDepPaths(st){
+  if(!st.deps || st.deps.length===0) return;
+  const inner = document.getElementById('gantt-inner');
+  const svg = inner?.querySelector('.gt-dep-svg');
+  if(!svg) return;
+
+  // Keep SVG sized to current inner content
+  const totalW = inner.scrollWidth || inner.offsetWidth;
+  const totalH = inner.scrollHeight || inner.offsetHeight;
+  svg.style.width  = totalW + 'px';
+  svg.style.height = totalH + 'px';
+  svg.setAttribute('width',  totalW);
+  svg.setAttribute('height', totalH);
+
+  const paths = svg.querySelectorAll('path[data-dep]');
+  paths.forEach(path=>{
+    const [fromId, toId] = path.getAttribute('data-dep').split('->');
+    const fromT = st.tasks.find(t=>t.id===fromId);
+    const toT   = st.tasks.find(t=>t.id===toId);
+    if(!fromT||!toT) return;
+    const fromRi = st.rows.findIndex(r=>r.id===fromT.rowId);
+    const toRi   = st.rows.findIndex(r=>r.id===toT.rowId);
+    if(fromRi<0||toRi<0) return;
+
+    const x0 = gTaskBarX(fromT.e);
+    const y0 = fromRi * gRH() + gRH()/2;
+    const x1 = gTaskBarX(toT.s);
+    const y1 = toRi   * G.RH + gRH()/2;
+    const mx = (x0+x1)/2;
+    path.setAttribute('d', `M${x0},${y0} C${mx},${y0} ${mx},${y1} ${x1},${y1}`);
+
+    const violated = fromT.e > toT.s;
+    path.setAttribute('stroke', violated ? '#ef4444' : '#22c55e');
+    path.setAttribute('stroke-dasharray', violated ? '6 3' : 'none');
+    path.setAttribute('marker-end', violated ? 'url(#da-viol)' : 'url(#da-ok)');
+  });
+
+  // Also update violation badges on task elements
+  st.tasks.forEach(task=>{
+    const el = document.getElementById('gt-task-'+task.id);
+    if(!el) return;
+    const hasDep = st.deps.some(d=>d.to===task.id);
+    if(!hasDep) return;
+    const violated = st.deps.filter(d=>d.to===task.id)
+      .some(d=>{ const p=st.tasks.find(t=>t.id===d.from); return p&&p.e>task.s; });
+    let badge = el.querySelector('.gt-dep-badge');
+    if(violated && !badge){
+      badge = document.createElement('div');
+      badge.className='gt-dep-badge';
+      badge.textContent='⚠ Bağımlılık ihlali';
+      el.appendChild(badge);
+      el.style.border='2px solid #ef4444';
+    } else if(!violated && badge){
+      badge.remove();
+      el.style.border=`2px solid ${task.stroke}`;
+    }
+  });
+}
+
+// ── Render dependency arrows SVG overlay ───
+function gRenderDeps(st, inner){
+  if(!inner) return;
+  // Remove old SVG layer
+  inner.querySelector('.gt-dep-svg')?.remove();
+  if(!st.deps || st.deps.length===0) return;
+
+  const totalW = inner.scrollWidth || inner.offsetWidth;
+  const totalH = inner.scrollHeight || inner.offsetHeight;
+
+  const svg = document.createElementNS('http://www.w3.org/2000/svg','svg');
+  svg.classList.add('gt-dep-svg');
+  // Use explicit pixel size so the SVG never clips regardless of scroll container
+  svg.style.cssText=`position:absolute;top:0;left:0;width:${totalW}px;height:${totalH}px;pointer-events:none;z-index:9;overflow:visible;`;
+  svg.setAttribute('width', totalW);
+  svg.setAttribute('height', totalH);
+  svg.innerHTML=`<defs>
+    <marker id="da-ok"   markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#22c55e"/></marker>
+    <marker id="da-viol" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#ef4444"/></marker>
+    <marker id="da-norm" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#f97316"/></marker>
+  </defs>`;
+
+  st.deps.forEach(dep=>{
+    const fromT = st.tasks.find(t=>t.id===dep.from);
+    const toT   = st.tasks.find(t=>t.id===dep.to);
+    if(!fromT||!toT) return;
+    const fromRi = st.rows.findIndex(r=>r.id===fromT.rowId);
+    const toRi   = st.rows.findIndex(r=>r.id===toT.rowId);
+    if(fromRi<0||toRi<0) return;
+
+    const violated = fromT.e > toT.s;
+    const color  = violated ? '#ef4444' : '#22c55e';
+    const marker = violated ? 'url(#da-viol)' : 'url(#da-ok)';
+
+    // Coordinates: right-edge of fromT → left-edge of toT
+    const x0 = gTaskBarX(fromT.e);
+    const y0 = fromRi * gRH() + gRH()/2;
+    const x1 = gTaskBarX(toT.s);
+    const y1 = toRi * gRH() + gRH()/2;
+    const mx = (x0+x1)/2;
+
+    const path = document.createElementNS('http://www.w3.org/2000/svg','path');
+    path.setAttribute('data-dep', `${dep.from}->${dep.to}`);
+    path.setAttribute('d', `M${x0},${y0} C${mx},${y0} ${mx},${y1} ${x1},${y1}`);
+    path.setAttribute('stroke', color);
+    path.setAttribute('stroke-width', violated?'2.5':'2');
+    path.setAttribute('fill','none');
+    path.setAttribute('marker-end', marker);
+    path.setAttribute('opacity', violated?'1':'0.75');
+    if(violated) path.setAttribute('stroke-dasharray','6 3');
+
+    // Tooltip on hover
+    path.style.pointerEvents='stroke';
+    path.style.cursor='pointer';
+    path.setAttribute('stroke-width-hover','6');
+    path.title=`${fromT.name} → ${toT.name}${violated?' ⚠ İhlal':''}`;
+    path.addEventListener('mouseenter', ()=>{ path.setAttribute('stroke-width','4'); });
+    path.addEventListener('mouseleave', ()=>{ path.setAttribute('stroke-width', violated?'2.5':'2'); });
+    path.addEventListener('contextmenu', ev=>{
+      ev.preventDefault(); ev.stopPropagation();
+      gDepCtxMenu(dep, ev, st);
+    });
+
+    svg.appendChild(path);
+  });
+
+  inner.appendChild(svg);
+}
+
+// ── Dep context menu (right-click on arrow) ────────────
+function gDepCtxMenu(dep, e, st){
+  gCloseCtx();
+  const fromT = st.tasks.find(t=>t.id===dep.from);
+  const toT   = st.tasks.find(t=>t.id===dep.to);
+  const menu = document.createElement('div');
+  menu.id='gt-ctx';
+  menu.style.cssText=`position:fixed;left:${e.clientX}px;top:${e.clientY}px;z-index:4000;`+
+    'background:#fff;border:1px solid #ddd;border-radius:10px;padding:6px;'+
+    'box-shadow:0 4px 20px rgba(0,0,0,.15);min-width:200px;font-family:Inter;';
+  menu.innerHTML=`
+    <div style="padding:6px 12px 4px;font-size:11px;color:#94a3b8;font-weight:600;">BAĞIMLILIK</div>
+    <div style="padding:4px 12px 8px;font-size:12px;color:#334155;">
+      ${fromT?.name||'?'} <span style="color:#f97316">→</span> ${toT?.name||'?'}
+    </div>
+    <hr style="border:none;border-top:1px solid #eee;margin:4px 0">
+    <div class="gtci gtci-del" onclick="gRemoveDep('${dep.from}','${dep.to}',gGetState())">🗑 Bağımlılığı Sil</div>`;
+  document.body.appendChild(menu);
+  menu.querySelectorAll('.gtci').forEach(el=>{
+    el.style.cssText='padding:8px 12px;font-size:13px;cursor:pointer;border-radius:6px;color:#333;';
+    el.onmouseenter=()=>{ el.style.background='#fff0f0'; el.style.color='#e53e3e'; };
+    el.onmouseleave=()=>{ el.style.background=''; el.style.color='#333'; };
+  });
+  setTimeout(()=>document.addEventListener('click',gCloseCtx,{once:true}),50);
+}
+
+function gRemoveDep(fromId, toId, st){
+  gCloseCtx();
+  if(!st.deps) return;
+  st.deps = st.deps.filter(d=>!(d.from===fromId&&d.to===toId));
+  ganttRender();
+  notify('🗑 Bağımlılık kaldırıldı');
 }
 
 // ── Date tooltip ──────────────────────────────────────
@@ -2907,7 +3962,7 @@ function openConnCtx(connId, e) {
     <div class="csep"></div>
     <div class="ci d" onclick="connCtxDo('delete')">🗑 Bağlantıyı Sil</div>
   `;
-  m.style.cssText=`display:block;left:${e.clientX}px;top:${e.clientY}px;`;
+  _posMenu(m, e.clientX, e.clientY);
   document.addEventListener('click', ()=>{ m.style.display='none'; rebuildCtxMenu(); }, {once:true});
 }
 
@@ -3298,7 +4353,7 @@ function touchStart(e) {
     _touch.type = 'pinch';
     const dx = e.touches[0].clientX - e.touches[1].clientX;
     const dy = e.touches[0].clientY - e.touches[1].clientY;
-    _touch.dist = Math.hypot(dx, dy);
+    _touch.dist = Math.hypot(dx, dy) || 1;
     _touch.startZoom = zoom;
     _touch.startX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
     _touch.startY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
@@ -3348,16 +4403,8 @@ function setZoom(z) {
   else { zoom=Math.max(.1,Math.min(4,z)); applyTransform(); }
 }
 
-// Gantt zoom helpers
-let gBaseDay = 28; // default DW
-function gZoomIn()    { G.DW = Math.min(80, Math.round(G.DW * 1.3)); gUpdateZoomLabel(); ganttRender(); }
-function gZoomOut()   { G.DW = Math.max(4,  Math.round(G.DW / 1.3)); gUpdateZoomLabel(); ganttRender(); }
-function gZoomReset() { G.DW = gBaseDay; gUpdateZoomLabel(); ganttRender(); }
-function gUpdateZoomLabel() {
-  const pct = Math.round(G.DW / gBaseDay * 100);
-  const el  = document.getElementById('zlbl');
-  if (el) el.textContent = pct + '%';
-}
+
+
 
 function zoomFit() {
   if (isGanttPage(currentPage)) { gScrollToToday(); return; }
@@ -3402,24 +4449,63 @@ function deleteConn(id) {
 // ═══════════════════════════════════════════════════
 // HISTORY
 // ═══════════════════════════════════════════════════
+function _serializeAll() {
+  // Serialize calState with cursor as ISO string (Date → string)
+  const calSnap = {};
+  Object.keys(calState).forEach(k => {
+    const st = calState[k];
+    calSnap[k] = { ...st, cursor: st.cursor instanceof Date ? st.cursor.toISOString() : st.cursor };
+  });
+  return JSON.stringify({
+    pages,
+    sl: slStateMap,
+    sm: smStateMap,
+    gt: ganttState,
+    cal: calSnap,
+  });
+}
+function _deserializeAll(snap) {
+  const s = JSON.parse(snap);
+  pages = s.pages;
+  Object.keys(slStateMap).forEach(k => delete slStateMap[k]);
+  Object.assign(slStateMap, s.sl || {});
+  Object.keys(smStateMap).forEach(k => delete smStateMap[k]);
+  Object.assign(smStateMap, s.sm || {});
+  Object.keys(ganttState).forEach(k => delete ganttState[k]);
+  Object.assign(ganttState, s.gt || {});
+  // Restore calState, converting cursor strings back to Date
+  Object.keys(calState).forEach(k => delete calState[k]);
+  Object.entries(s.cal || {}).forEach(([k,v]) => {
+    calState[k] = { ...v, cursor: v.cursor ? new Date(v.cursor) : new Date() };
+  });
+}
 function saveHistory() {
-  history.push(JSON.stringify(pages));
+  history.push(_serializeAll());
   if(history.length>60)history.shift();
   future=[];
   asMarkDirty(); // trigger autosave
 }
 function undoA() {
   if(!history.length)return;
-  future.push(JSON.stringify(pages));
-  pages=JSON.parse(history.pop());
+  future.push(_serializeAll());
+  _deserializeAll(history.pop());
   renderAll(); deselectAll(); renderPageTabs();
+  // Re-render current overlay if needed
+  if(isGanttPage(currentPage)) ganttRender();
+  else if(isSwimlanePage(currentPage)) slRender();
+  else if(isStoryMapPage(currentPage)) smRender();
+  else if(isCalendarPage(currentPage)) calRender();
   notify('↩ Geri alındı');
 }
 function redoA() {
   if(!future.length)return;
-  history.push(JSON.stringify(pages));
-  pages=JSON.parse(future.pop());
+  history.push(_serializeAll());
+  _deserializeAll(future.pop());
   renderAll(); deselectAll(); renderPageTabs();
+  if(isGanttPage(currentPage)) ganttRender();
+  else if(isSwimlanePage(currentPage)) slRender();
+  else if(isStoryMapPage(currentPage)) smRender();
+  else if(isCalendarPage(currentPage)) calRender();
   notify('↪ Yinelendi');
 }
 
@@ -3456,10 +4542,20 @@ function onDrop(e) {
 // ═══════════════════════════════════════════════════
 // CONTEXT MENU
 // ═══════════════════════════════════════════════════
+function _posMenu(m, cx, cy) {
+  m.style.cssText='display:block;left:-9999px;top:-9999px;';
+  const mh=m.offsetHeight, mw=m.offsetWidth;
+  const vw=window.innerWidth, vh=window.innerHeight;
+  let left=cx, top=cy;
+  if(top+mh>vh-8)  top  = cy-mh;
+  if(left+mw>vw-8) left = vw-mw-8;
+  if(top<4) top=4;
+  m.style.cssText=`display:block;left:${left}px;top:${top}px;`;
+}
 function showCtx(e) {
   e.preventDefault();
   const m=document.getElementById('ctxm');
-  m.style.cssText=`display:block;left:${e.clientX}px;top:${e.clientY}px;`;
+  _posMenu(m, e.clientX, e.clientY);
   document.addEventListener('click',()=>m.style.display='none',{once:true});
 }
 function ctx(a) {
@@ -3480,7 +4576,7 @@ function openPageCtx(e,idx) {
   e.stopPropagation();
   ctxPageId=idx;
   const m=document.getElementById('pgctx');
-  m.style.cssText=`display:block;left:${e.clientX}px;top:${e.clientY}px;`;
+  _posMenu(m, e.clientX, e.clientY);
   document.addEventListener('click',()=>m.style.display='none',{once:true});
 }
 function pgCtx(a) {
@@ -3494,8 +4590,9 @@ function pgCtx(a) {
 // KEYBOARD
 // ═══════════════════════════════════════════════════
 function onKey(e) {
-  const tag=document.activeElement.tagName;
-  if(tag==='INPUT'||tag==='TEXTAREA'||document.activeElement.contentEditable==='true')return;
+  const tag = document.activeElement.tagName;
+  const ce  = document.activeElement.contentEditable;
+  if (tag==='INPUT' || tag==='TEXTAREA' || ce==='true') return;
   if(e.key==='Delete'||e.key==='Backspace'){e.preventDefault();deleteSel();}
   else if(e.ctrlKey&&e.key==='z'){e.preventDefault();undoA();}
   else if(e.ctrlKey&&(e.key==='y'||e.key==='Y')){e.preventDefault();redoA();}
@@ -3503,12 +4600,16 @@ function onKey(e) {
   else if(e.ctrlKey&&e.key==='v'){e.preventDefault();pasteCB();}
   else if(e.ctrlKey&&e.key==='d'){e.preventDefault();duplicateSel();}
   else if(e.ctrlKey&&e.key==='a'){e.preventDefault();nodes().forEach(n=>selIds.add(n.id));refreshSel();}
-  else if(e.key==='Escape')deselectAll();
-  else if(e.key==='c'&&!e.ctrlKey)setConnTool();
-  else if(e.key==='ArrowLeft')nudge(-1,0);
-  else if(e.key==='ArrowRight')nudge(1,0);
-  else if(e.key==='ArrowUp')nudge(0,-1);
-  else if(e.key==='ArrowDown')nudge(0,1);
+  else if(e.key==='Escape'){
+    deselectAll();
+    if(_depMode){ _depMode=false; _depFromId=null; const btn=document.getElementById('gt-dep-btn'); if(btn){btn.style.background='#f8fafc';btn.style.borderColor='#e2e8f0';btn.style.color='#475569';btn.textContent='🔗 Bağımlılık';} }
+  }
+  // 'c' shortcut — only on flowchart canvas pages
+  else if(e.key==='c' && !e.ctrlKey && getPageType()==='canvas') setConnTool();
+  else if(e.key==='ArrowLeft') nudge(-1,0);
+  else if(e.key==='ArrowRight') nudge(1,0);
+  else if(e.key==='ArrowUp') nudge(0,-1);
+  else if(e.key==='ArrowDown') nudge(0,1);
 }
 function nudge(dx,dy){selIds.forEach(id=>{const n=getNode(id);if(!n)return;n.x+=dx;n.y+=dy;const el=document.getElementById(id);if(el){el.style.left=n.x+'px';el.style.top=n.y+'px';}});renderConns();}
 
@@ -3538,6 +4639,7 @@ function expShowProgress(show) {
 
 function getPageType() {
   const i = currentPage;
+  if (isCalendarPage(i)) return 'calendar';
   if (isGanttPage(i))    return 'gantt';
   if (isSwimlanePage(i)) return 'swimlane';
   if (isStoryMapPage(i)) return 'storymap';
@@ -3557,6 +4659,8 @@ async function doExport(fmt) {
     const data = { title, pages };
     try { data.slStateMap = slStateMap; } catch(e) {}
     try { data.smStateMap = smStateMap; } catch(e) {}
+    try { data.ganttState = ganttState; } catch(e) {}
+    try { data.calState   = calState;   } catch(e) {}
     dlBlob(new Blob([JSON.stringify(data, null, 2)], {type:'application/json'}), title + '.json');
     notify('📦 JSON kaydedildi');
     return;
@@ -3979,9 +5083,29 @@ function importJSON() {
     reader.onload=ev=>{
       try{
         const data=JSON.parse(ev.target.result);
-        if(data.pages){saveHistory();pages=data.pages;document.getElementById('doc-title').value=data.title||'Diyagram';renderPageTabs();switchPage(0);asMarkDirty();notify('📂 Yüklendi');}
-        else notify('❌ Geçersiz dosya formatı');
-      }catch{notify('❌ JSON ayrıştırma hatası');}
+        if(!data || typeof data !== 'object') { notify('❌ Geçersiz dosya formatı'); return; }
+        if(!Array.isArray(data.pages) || data.pages.length === 0) { notify('❌ Geçersiz sayfa verisi'); return; }
+        // Sanitize pages — only allow known safe keys
+        const safePages = data.pages.map(p => ({
+          id: typeof p.id === 'number' ? p.id : ++pageCounter,
+          name: typeof p.name === 'string' ? p.name.slice(0,80) : 'Sayfa',
+          nodes: Array.isArray(p.nodes) ? p.nodes : [],
+          conns: Array.isArray(p.conns) ? p.conns : [],
+          isSwimlane:  !!p.isSwimlane,
+          isStoryMap:  !!p.isStoryMap,
+          isGanttPage: !!p.isGanttPage,
+        }));
+        saveHistory();
+        pages = safePages;
+        if(data.title && typeof data.title === 'string') document.getElementById('doc-title').value=data.title.slice(0,120);
+        else document.getElementById('doc-title').value='Diyagram';
+        // Restore overlay states if present
+        if(data.slStateMap && typeof data.slStateMap === 'object') Object.assign(slStateMap, data.slStateMap);
+        if(data.smStateMap && typeof data.smStateMap === 'object') Object.assign(smStateMap, data.smStateMap);
+        if(data.ganttState && typeof data.ganttState === 'object') Object.assign(ganttState, data.ganttState);
+        if(data.calState   && typeof data.calState   === 'object') Object.assign(calState,   data.calState);
+        renderPageTabs(); switchPage(0); asMarkDirty(); notify('📂 Yüklendi');
+      }catch(e){ console.error(e); notify('❌ JSON ayrıştırma hatası'); }
     };
     reader.readAsText(file);
   };
@@ -3996,11 +5120,22 @@ function togglePresent() { notify('▶ Sunum modu yakında!'); }
 function toggleLayers()  { notify('☰ Katmanlar yakında!'); }
 function getNode(id)     { for(const p of pages){ const n=p.nodes.find(n=>n.id===id); if(n)return n; } return null; }
 
-let nt;
+let _ntQueue = [], _ntTimer = null, _ntVisible = false;
 function notify(msg) {
-  const el=document.getElementById('notif');
-  el.textContent=msg; el.classList.add('show');
-  clearTimeout(nt); nt=setTimeout(()=>el.classList.remove('show'),2400);
+  _ntQueue.push(msg);
+  if (!_ntVisible) _ntFlush();
+}
+function _ntFlush() {
+  if (!_ntQueue.length) { _ntVisible = false; return; }
+  _ntVisible = true;
+  const el = document.getElementById('notif');
+  el.textContent = _ntQueue.shift();
+  el.classList.add('show');
+  clearTimeout(_ntTimer);
+  _ntTimer = setTimeout(() => {
+    el.classList.remove('show');
+    setTimeout(_ntFlush, 200); // brief gap between messages
+  }, 2200);
 }
 
 applyTransform();
@@ -4024,9 +5159,13 @@ function resetSelBend() {
 // ─── Transparent fill toggle ────────────────────────
 function toggleTransparentFill() {
   selIds.forEach(id => {
-    const n=getNode(id); if(!n) return;
-    n.fill=(n.fill==='transparent'||n.fill==='none')?'#4a90d9':'transparent';
-    renderNode(n);
+    const n=getNode(id);
+    if (n) {
+      n.fill=(n.fill==='transparent'||n.fill==='none')?'#4a90d9':'transparent';
+      renderNode(n);
+    } else {
+      // It's a connection — toggle fill (connections don't have fill, skip gracefully)
+    }
   });
   saveHistory(); updateRPanel();
 }
@@ -4044,26 +5183,450 @@ function openNewPageMenu(e) {
   setTimeout(()=>document.addEventListener('click',()=>m.style.display='none',{once:true}),50);
 }
 
+// ═══════════════════════════════════════════════════════
+// CALENDAR ENGINE
+// ═══════════════════════════════════════════════════════
+const calState = {};        // pageIdx → { events:[], view:'month', cursor: Date }
+let calDragSrc = null;      // drag state
+
+const CAL_CATS = {
+  ziyaret:  { label:'Ziyaret',  color:'#3b82f6', bg:'#dbeafe', text:'#1d4ed8', cls:'cat-ziyaret'  },
+  calisma:  { label:'Çalışma',  color:'#10b981', bg:'#d1fae5', text:'#065f46', cls:'cat-calisma'  },
+  toplanti: { label:'Toplantı', color:'#f59e0b', bg:'#fef3c7', text:'#92400e', cls:'cat-toplanti' },
+};
+const CAL_DAYS = ['Pzt','Sal','Çar','Per','Cum','Cts','Paz'];
+const CAL_MONTHS = ['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
+
+function calGetState(){
+  const idx = currentPage;
+  const now = new Date();
+  if(!calState[idx]){
+    calState[idx] = { events:[], view:'month', cursor: new Date(now.getFullYear(), now.getMonth(), 1) };
+  }
+  // Fix: cursor may be a string after JSON round-trip
+  if(!calState[idx].cursor || typeof calState[idx].cursor === 'string'){
+    const c = calState[idx].cursor ? new Date(calState[idx].cursor) : new Date(now.getFullYear(), now.getMonth(), 1);
+    calState[idx].cursor = isNaN(c.getTime()) ? new Date(now.getFullYear(), now.getMonth(), 1) : c;
+  }
+  if(!calState[idx].events) calState[idx].events = [];
+  return calState[idx];
+}
+
+function isCalendarPage(i){ return !!pages[i]?.isCalendarPage; }
+
+function calSetView(v){
+  const st = calGetState();
+  st.view = v;
+  ['week','month'].forEach(k=>{
+    const b = document.getElementById('cal-btn-'+k);
+    if(b) b.className = k===v ? 'cal-btn-on' : '';
+    if(b) b.style.cssText = k===v
+      ? 'padding:4px 12px;border-radius:7px;border:1px solid #0066ff;background:#0066ff;cursor:pointer;font-size:12px;font-weight:600;color:#fff;font-family:Inter;'
+      : 'padding:4px 12px;border-radius:7px;border:1px solid #e2e8f0;background:#f8fafc;cursor:pointer;font-size:12px;font-family:Inter;color:#475569;';
+  });
+  calRender();
+}
+
+function calPrev(){
+  const st = calGetState();
+  const c = new Date(st.cursor);
+  if(st.view==='month') c.setMonth(c.getMonth()-1);
+  else c.setDate(c.getDate()-7);
+  st.cursor = c;
+  calRender();
+}
+function calNext(){
+  const st = calGetState();
+  const c = new Date(st.cursor);
+  if(st.view==='month') c.setMonth(c.getMonth()+1);
+  else c.setDate(c.getDate()+7);
+  st.cursor = c;
+  calRender();
+}
+function calGoToday(){
+  const st = calGetState();
+  const now = new Date();
+  if(st.view==='week'){
+    st.cursor = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  } else {
+    st.cursor = new Date(now.getFullYear(), now.getMonth(), 1);
+  }
+  calRender();
+}
+
+// ── Date helpers ──────────────────────────────────────
+function calDateKey(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function calParseKey(k){ const [y,m,d]=k.split('-').map(Number); return new Date(y,m-1,d); }
+function calSameDay(a,b){ return a.getFullYear()===b.getFullYear()&&a.getMonth()===b.getMonth()&&a.getDate()===b.getDate(); }
+function calMondayOfWeek(d){ const dt=new Date(d); const day=dt.getDay()||7; dt.setDate(dt.getDate()-day+1); return dt; }
+
+// ── Main render ───────────────────────────────────────
+function calRender(){
+  const st = calGetState();
+  const body = document.getElementById('cal-body');
+  const titleLbl = document.getElementById('cal-title-lbl');
+  if(!body) return;
+
+  // Update toolbar active state
+  calSetViewLabels(st.view);
+
+  if(st.view==='month') calRenderMonth(st, body, titleLbl);
+  else calRenderWeek(st, body, titleLbl);
+}
+
+function calSetViewLabels(v){
+  ['week','month'].forEach(k=>{
+    const b = document.getElementById('cal-btn-'+k);
+    if(!b) return;
+    if(k===v){
+      b.style.cssText='padding:4px 12px;border-radius:7px;border:1px solid #0066ff;background:#0066ff;cursor:pointer;font-size:12px;font-weight:600;color:#fff;font-family:Inter;';
+    } else {
+      b.style.cssText='padding:4px 12px;border-radius:7px;border:1px solid #e2e8f0;background:#f8fafc;cursor:pointer;font-size:12px;font-family:Inter;color:#475569;';
+    }
+  });
+}
+
+// ── Monthly view ──────────────────────────────────────
+function calRenderMonth(st, body, titleLbl){
+  const cursor = new Date(st.cursor);
+  titleLbl.textContent = CAL_MONTHS[cursor.getMonth()] + ' ' + cursor.getFullYear();
+
+  const firstDay = new Date(cursor.getFullYear(), cursor.getMonth(), 1);
+  let startDow = firstDay.getDay() || 7;
+  const gridStart = new Date(firstDay);
+  gridStart.setDate(gridStart.getDate() - (startDow-1));
+
+  const today = new Date();
+
+  // Wrapper fills body height
+  const wrap = document.createElement('div');
+  wrap.style.cssText = 'display:flex;flex-direction:column;height:100%;';
+
+  // Day header row (fixed height)
+  const hdrRow = document.createElement('div');
+  hdrRow.style.cssText = 'display:grid;grid-template-columns:repeat(7,1fr);flex-shrink:0;border-bottom:2px solid #e2e8f0;';
+  CAL_DAYS.forEach(d=>{
+    const th = document.createElement('div');
+    th.className = 'cal-day-hdr';
+    th.textContent = d;
+    hdrRow.appendChild(th);
+  });
+  wrap.appendChild(hdrRow);
+
+  // Grid (6 weeks) fills remaining space
+  const grid = document.createElement('div');
+  grid.style.cssText = 'display:grid;grid-template-columns:repeat(7,1fr);grid-template-rows:repeat(6,1fr);flex:1;';
+
+  let cur = new Date(gridStart);
+  for(let w=0;w<6;w++){
+    for(let d=0;d<7;d++){
+      const td = document.createElement('div');
+      td.className='cal-cell';
+      td.style.cssText = 'min-height:0;'; // override CSS min-height so row can stretch
+      const isToday = calSameDay(cur, today);
+      const isOther = cur.getMonth() !== cursor.getMonth();
+      if(isToday) td.classList.add('today');
+      if(isOther) td.classList.add('other-month');
+
+      const numDiv = document.createElement('div');
+      numDiv.className='cal-cell-num';
+      numDiv.textContent = cur.getDate();
+      td.appendChild(numDiv);
+
+      const dk = calDateKey(cur);
+      const dayEvs = (st.events||[]).filter(ev=>{
+        if(ev.date === dk) return true;
+        if(ev.dateEnd && ev.date <= dk && ev.dateEnd >= dk) return true;
+        return false;
+      }).sort((a,b)=>(a.hour??-1)-(b.hour??-1));
+      dayEvs.forEach(ev=>{ td.appendChild(calEventChip(ev, st)); });
+
+      const dateSnap = new Date(cur);
+      td.addEventListener('click', e=>{
+        if(e.target.classList.contains('cal-event') || e.target.closest('.cal-event')) return;
+        calAddEvent(calDateKey(dateSnap));
+      });
+      td.addEventListener('dragover', e=>{ e.preventDefault(); td.style.background='#e0f2fe'; });
+      td.addEventListener('dragleave', ()=>{ td.style.background=''; });
+      td.addEventListener('drop', e=>{ e.preventDefault(); td.style.background=''; calDropEvent(dk, st); });
+
+      grid.appendChild(td);
+      cur.setDate(cur.getDate()+1);
+    }
+  }
+
+  wrap.appendChild(grid);
+  body.style.overflow = 'hidden';
+  body.innerHTML='';
+  body.appendChild(wrap);
+}
+
+// ── Weekly view ───────────────────────────────────────
+function calRenderWeek(st, body, titleLbl){
+  const monday = calMondayOfWeek(st.cursor);
+  const sunday = new Date(monday); sunday.setDate(monday.getDate()+6);
+  titleLbl.textContent = calFmtDate(monday) + ' – ' + calFmtDate(sunday);
+
+  const today = new Date();
+  const days = Array.from({length:7},(_,i)=>{ const d=new Date(monday); d.setDate(monday.getDate()+i); return d; });
+
+  const wrap = document.createElement('div');
+  wrap.style.cssText='display:flex;flex-direction:column;height:100%;';
+
+  // Day header
+  const dayHdr = document.createElement('div');
+  dayHdr.style.cssText='display:flex;border-bottom:2px solid #e2e8f0;flex-shrink:0;';
+  const corner = document.createElement('div');
+  corner.style.cssText='width:52px;flex-shrink:0;border-right:1px solid #e8ecf0;background:#f1f5f9;';
+  dayHdr.appendChild(corner);
+  days.forEach(d=>{
+    const cell = document.createElement('div');
+    const isToday = calSameDay(d,today);
+    cell.style.cssText=`flex:1;text-align:center;padding:8px 4px;border-right:1px solid #e8ecf0;`+
+      `background:${isToday?'#fffbeb':'#f1f5f9'};font-family:Inter;`;
+    cell.innerHTML=`<div style="font-size:11px;font-weight:700;color:#64748b;">${CAL_DAYS[(d.getDay()||7)-1]}</div>`+
+      `<div style="font-size:18px;font-weight:800;color:${isToday?'#0066ff':'#1e293b'};">${d.getDate()}</div>`;
+    dayHdr.appendChild(cell);
+  });
+  wrap.appendChild(dayHdr);
+
+  // Scrollable hours
+  const scroll = document.createElement('div');
+  scroll.style.cssText='flex:1;overflow-y:auto;';
+
+  for(let h=0;h<24;h++){
+    const row = document.createElement('div');
+    row.className='cal-hour-row';
+    const lbl = document.createElement('div');
+    lbl.className='cal-hour-lbl';
+    lbl.textContent = h===0?'':String(h).padStart(2,'0')+':00';
+    row.appendChild(lbl);
+
+    days.forEach(d=>{
+      const cell = document.createElement('div');
+      cell.className='cal-hour-cell';
+      const dk = calDateKey(d);
+      // Events in this hour
+      (st.events||[]).filter(ev=>ev.date===dk&&(ev.hour||0)===h).forEach(ev=>{
+        const chip = document.createElement('div');
+        chip.className='cal-week-event '+( CAL_CATS[ev.cat]?.cls||'cat-ziyaret' );
+        chip.style.cssText=`background:${CAL_CATS[ev.cat]?.bg||'#dbeafe'};color:${CAL_CATS[ev.cat]?.text||'#1d4ed8'};`+
+          `border-left:3px solid ${CAL_CATS[ev.cat]?.color||'#3b82f6'};`;
+        chip.textContent = ev.title;
+        chip.draggable=true;
+        chip.addEventListener('dragstart',()=>{ calDragSrc=ev; });
+        chip.addEventListener('click',e=>{ e.stopPropagation(); calEditEvent(ev,st); });
+        cell.appendChild(chip);
+      });
+
+      const dateSnap=new Date(d);
+      cell.addEventListener('click',()=>calAddEvent(calDateKey(dateSnap),h));
+      cell.addEventListener('dragover',e=>{ e.preventDefault(); cell.style.background='#e0f2fe'; });
+      cell.addEventListener('dragleave',()=>{ cell.style.background=''; });
+      cell.addEventListener('drop',e=>{ e.preventDefault(); cell.style.background=''; calDropEvent(dk,st,h); });
+      row.appendChild(cell);
+    });
+    scroll.appendChild(row);
+  }
+
+  // Scroll to 8am
+  wrap.appendChild(scroll);
+  body.innerHTML='';
+  body.appendChild(wrap);
+  requestAnimationFrame(()=>{ scroll.scrollTop = 8*52; });
+}
+
+function calFmtDate(d){ return d.getDate()+' '+CAL_MONTHS[d.getMonth()]; }
+
+// ── Event chip (month view) ───────────────────────────
+function calEventChip(ev, st){
+  const chip = document.createElement('div');
+  chip.className='cal-event '+(CAL_CATS[ev.cat]?.cls||'cat-ziyaret');
+  let label = '';
+  if(ev.hour != null) label += String(ev.hour).padStart(2,'0')+':00 ';
+  label += ev.title;
+  if(ev.dateEnd){
+    const d1 = calParseKey(ev.date), d2 = calParseKey(ev.dateEnd);
+    const days = Math.round((d2-d1)/(1000*60*60*24))+1;
+    if(days>1) label += ` (${days}g)`;
+  }
+  chip.textContent = label;
+  chip.draggable = true;
+  chip.addEventListener('dragstart',()=>{ calDragSrc=ev; });
+  chip.addEventListener('click',e=>{ e.stopPropagation(); calEditEvent(ev,st); });
+  return chip;
+}
+
+// ── Drop event ────────────────────────────────────────
+function calDropEvent(targetDk, st, hour){
+  if(!calDragSrc) return;
+  const ev = (st.events||[]).find(e=>e.id===calDragSrc.id);
+  if(ev){
+    ev.date = targetDk;
+    if(hour!=null) ev.hour = hour;
+  }
+  calDragSrc = null;
+  calRender();
+}
+
+// ── Add event popup ───────────────────────────────────
+function calAddEvent(dateKey, hour){
+  const st = calGetState();
+  if(!dateKey){
+    const now = new Date();
+    dateKey = calDateKey(now);
+  }
+  calShowEventPopup(null, st, dateKey, hour);
+}
+
+function calEditEvent(ev, st){
+  calShowEventPopup(ev, st, ev.date, ev.hour);
+}
+
+function calShowEventPopup(ev, st, dateKey, hour){
+  document.getElementById('cal-ev-popup')?.remove();
+
+  const popup = document.createElement('div');
+  popup.id = 'cal-ev-popup';
+  popup.style.cssText='position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:7000;'+
+    'background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:18px 20px;'+
+    'box-shadow:0 12px 40px rgba(0,0,0,.2);width:340px;font-family:Inter;max-height:90vh;overflow-y:auto;';
+
+  const isEdit = !!ev;
+  const curCat = ev?.cat || 'ziyaret';
+  const curHour = ev?.hour ?? hour ?? null;
+
+  popup.innerHTML=`
+    <div style="font-size:12px;font-weight:700;color:#94a3b8;letter-spacing:.05em;margin-bottom:12px;">${isEdit?'ETKİNLİĞİ DÜZENLE':'YENİ ETKİNLİK'}</div>
+
+    <div style="font-size:10px;font-weight:700;color:#94a3b8;margin-bottom:4px;">BAŞLIK</div>
+    <input id="cal-ev-title" placeholder="Etkinlik adı…" style="width:100%;box-sizing:border-box;border:1px solid #e2e8f0;border-radius:7px;
+      padding:7px 10px;font-family:Inter;font-size:13px;font-weight:600;color:#1e293b;outline:none;margin-bottom:10px;">
+
+    <div style="display:flex;gap:8px;margin-bottom:10px;">
+      <div style="flex:1;">
+        <div style="font-size:10px;font-weight:700;color:#94a3b8;margin-bottom:4px;">BAŞLANGIÇ</div>
+        <input id="cal-ev-date" type="date" style="width:100%;box-sizing:border-box;border:1px solid #e2e8f0;border-radius:7px;
+          padding:7px 8px;font-family:Inter;font-size:12px;color:#1e293b;outline:none;">
+      </div>
+      <div style="flex:1;">
+        <div style="font-size:10px;font-weight:700;color:#94a3b8;margin-bottom:4px;">BİTİŞ <span style="font-weight:400;color:#cbd5e1;">(opsiyonel)</span></div>
+        <input id="cal-ev-dateend" type="date" style="width:100%;box-sizing:border-box;border:1px solid #e2e8f0;border-radius:7px;
+          padding:7px 8px;font-family:Inter;font-size:12px;color:#1e293b;outline:none;">
+      </div>
+    </div>
+
+    <div style="font-size:10px;font-weight:700;color:#94a3b8;margin-bottom:4px;">SAAT <span style="font-weight:400;color:#cbd5e1;">(opsiyonel)</span></div>
+    <input id="cal-ev-hour" type="number" min="0" max="23" placeholder="örn. 9" style="width:100%;box-sizing:border-box;border:1px solid #e2e8f0;border-radius:7px;
+      padding:7px 10px;font-family:Inter;font-size:12px;color:#1e293b;outline:none;margin-bottom:10px;">
+
+    <div style="font-size:10px;font-weight:700;color:#94a3b8;margin-bottom:6px;">KATEGORİ</div>
+    <div style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap;">
+      ${Object.entries(CAL_CATS).map(([k,v])=>`
+        <label style="display:flex;align-items:center;gap:5px;cursor:pointer;font-size:12px;padding:5px 10px;border-radius:7px;border:1.5px solid ${k===curCat?v.color:'#e2e8f0'};background:${k===curCat?v.bg:'#fff'};color:${k===curCat?v.text:'#475569'};">
+          <input type="radio" name="cal-cat" value="${k}" ${k===curCat?'checked':''} style="display:none;">
+          ${v.label}
+        </label>`).join('')}
+    </div>
+
+    <div style="font-size:10px;font-weight:700;color:#94a3b8;margin-bottom:4px;">NOT</div>
+    <textarea id="cal-ev-note" rows="2" placeholder="Açıklama…" style="width:100%;box-sizing:border-box;border:1px solid #e2e8f0;border-radius:7px;
+      padding:7px 10px;font-family:Inter;font-size:12px;color:#1e293b;outline:none;resize:vertical;margin-bottom:12px;"></textarea>
+
+    <div style="display:flex;gap:6px;justify-content:flex-end;align-items:center;">
+      ${isEdit?'<button id="cal-ev-del" style="padding:6px 12px;border-radius:7px;border:1px solid #fca5a5;background:#fff0f0;font-family:Inter;font-size:12px;cursor:pointer;color:#ef4444;margin-right:auto;">Sil</button>':''}
+      <button id="cal-ev-cancel" style="padding:6px 14px;border-radius:7px;border:1px solid #e2e8f0;background:#f8fafc;font-family:Inter;font-size:12px;cursor:pointer;color:#64748b;">İptal</button>
+      <button id="cal-ev-save" style="padding:6px 14px;border-radius:7px;border:none;background:#0066ff;font-family:Inter;font-size:12px;cursor:pointer;color:#fff;font-weight:600;">Kaydet</button>
+    </div>`;
+
+  document.body.appendChild(popup);
+
+  const titleInp   = document.getElementById('cal-ev-title');
+  const dateInp    = document.getElementById('cal-ev-date');
+  const dateEndInp = document.getElementById('cal-ev-dateend');
+  const hourInp    = document.getElementById('cal-ev-hour');
+  const noteInp    = document.getElementById('cal-ev-note');
+  titleInp.value   = ev?.title   || '';
+  dateInp.value    = dateKey     || '';
+  dateEndInp.value = ev?.dateEnd || '';
+  hourInp.value    = curHour != null ? curHour : '';
+  noteInp.value    = ev?.note    || '';
+  titleInp.focus(); titleInp.select();
+
+  // Auto-set dateEnd ≥ dateStart
+  dateInp.addEventListener('change',()=>{
+    if(dateEndInp.value && dateEndInp.value < dateInp.value) dateEndInp.value = dateInp.value;
+  });
+
+  // Radio label styling on change
+  popup.querySelectorAll('input[name="cal-cat"]').forEach(inp=>{
+    inp.addEventListener('change',()=>{
+      popup.querySelectorAll('label').forEach(lbl=>{
+        const v = CAL_CATS[lbl.querySelector('input')?.value];
+        if(!v) return;
+        const checked = lbl.querySelector('input').checked;
+        lbl.style.borderColor = checked ? v.color : '#e2e8f0';
+        lbl.style.background  = checked ? v.bg    : '#fff';
+        lbl.style.color       = checked ? v.text  : '#475569';
+      });
+    });
+  });
+
+  const save = () => {
+    const title = titleInp.value.trim();
+    if(!title){ titleInp.style.border='1.5px solid #ef4444'; titleInp.focus(); return; }
+    const cat     = popup.querySelector('input[name="cal-cat"]:checked')?.value || 'ziyaret';
+    const date    = dateInp.value;
+    const dateEnd = dateEndInp.value && dateEndInp.value > date ? dateEndInp.value : null;
+    const hour    = hourInp.value !== '' ? parseInt(hourInp.value,10) : null;
+    const note    = noteInp.value.trim();
+    if(!st.events) st.events=[];
+    if(isEdit){
+      const idx = st.events.findIndex(e=>e.id===ev.id);
+      if(idx>=0) st.events[idx]={ ...st.events[idx], title, cat, date, dateEnd, hour, note };
+    } else {
+      st.events.push({ id:'ev'+Date.now()+'_'+Math.random().toString(36).slice(2,5), title, cat, date, dateEnd, hour, note });
+    }
+    popup.remove();
+    saveHistory();
+    calRender();
+    notify(isEdit?'✅ Etkinlik güncellendi':'✅ Etkinlik eklendi');
+  };
+  const cancel = ()=>popup.remove();
+  document.getElementById('cal-ev-save').addEventListener('click',save);
+  document.getElementById('cal-ev-cancel').addEventListener('click',cancel);
+  if(isEdit) document.getElementById('cal-ev-del').addEventListener('click',()=>{
+    st.events = st.events.filter(e=>e.id!==ev.id);
+    popup.remove(); saveHistory(); calRender(); notify('🗑 Etkinlik silindi');
+  });
+  titleInp.addEventListener('keydown',e=>{ if(e.key==='Escape') cancel(); });
+  setTimeout(()=>{
+    const outside=e=>{ if(!popup.contains(e.target)){ popup.remove(); document.removeEventListener('mousedown',outside); } };
+    document.addEventListener('mousedown',outside);
+  },50);
+}
+
 function newPageWith(tpl) {
   document.getElementById('new-page-menu').style.display='none';
   saveHistory();
   const names={blank:'Sayfa',flowchart:'Flowchart',swimlane:'Swimlane',
-               venn:'Venn',storymap:'Story Map',mindmap:'Mind Map',gantt:'Gantt Chart'};
+               venn:'Venn',storymap:'Story Map',mindmap:'Mind Map',gantt:'Gantt Chart',calendar:'Takvim'};
   const baseName=names[tpl]||'Sayfa';
   addPageData(baseName+' '+(pages.length+1));
   const idx=pages.length-1;
-  if(tpl==='gantt') pages[idx].isGanttPage=true;
-  if(tpl==='swimlane') { pages[idx].isSwimlane=true; }
-  if(tpl==='storymap') { pages[idx].isStoryMap=true; }
+  if(tpl==='gantt')     pages[idx].isGanttPage=true;
+  if(tpl==='swimlane')  { pages[idx].isSwimlane=true; }
+  if(tpl==='storymap')  { pages[idx].isStoryMap=true; }
+  if(tpl==='calendar')  { pages[idx].isCalendarPage=true; }
   renderPageTabs();
   switchPage(idx);
   if(tpl==='flowchart') loadDefaultDiagram();
   else if(tpl==='swimlane') { slInitState(idx); slRender(); }
   else if(tpl==='storymap') { smInitState(idx); smRender(); }
   else if(tpl==='venn') loadVennTemplate();
-  else if(tpl==='storymap') loadStoryMapTemplate();
   else if(tpl==='mindmap') loadMindMapTemplate();
   else if(tpl==='gantt') ganttRender();
+  else if(tpl==='calendar') calRender();
   notify('✅ '+baseName+' şablonu eklendi');
 }
 
@@ -4651,12 +6214,21 @@ function slRowCtx(e, id) {
   slCtxTarget = { type:'row', id };
   const ctx = document.getElementById('sl-ctx');
   ctx.style.cssText = `display:block;left:${e.clientX}px;top:${e.clientY}px;`;
-  document.getElementById('sl-ctx-items').innerHTML = `
-    <div class="sl2-ci" onclick="slRenameRow('${id}');slCloseCtx()">✏️ Yeniden Adlandır</div>
-    <div class="sl2-ci" onclick="slMoveRow('${id}',-1)">⬆ Yukarı Taşı</div>
-    <div class="sl2-ci" onclick="slMoveRow('${id}',1)">⬇ Aşağı Taşı</div>
-    <div class="sl2-sep"></div>
-    <div class="sl2-ci del" onclick="slDeleteRow('${id}');slCloseCtx()">🗑 Satırı Sil</div>`;
+  const items = document.getElementById('sl-ctx-items');
+  items.innerHTML = '';
+  [
+    { label:'✏️ Yeniden Adlandır', action: ()=>{ slCloseCtx(); slRenameRow(id); } },
+    { label:'⬆ Yukarı Taşı',       action: ()=>{ slMoveRow(id,-1); } },
+    { label:'⬇ Aşağı Taşı',        action: ()=>{ slMoveRow(id,1); } },
+    { label:'🗑 Satırı Sil', cls:'del', action: ()=>{ slDeleteRow(id); slCloseCtx(); } },
+  ].forEach(({label, action, cls}) => {
+    const d = document.createElement('div');
+    d.className = 'sl2-ci' + (cls ? ' '+cls : '');
+    d.textContent = label;
+    d.addEventListener('click', action);
+    items.appendChild(d);
+    if(cls==='del') { const sep=document.createElement('div'); sep.className='sl2-sep'; items.insertBefore(sep, d); }
+  });
   setTimeout(() => document.addEventListener('mousedown', slCtxOutside, { once:true }), 50);
 }
 
@@ -4665,12 +6237,21 @@ function slColCtx(e, id) {
   slCtxTarget = { type:'col', id };
   const ctx = document.getElementById('sl-ctx');
   ctx.style.cssText = `display:block;left:${e.clientX}px;top:${e.clientY}px;`;
-  document.getElementById('sl-ctx-items').innerHTML = `
-    <div class="sl2-ci" onclick="slRenameCol('${id}');slCloseCtx()">✏️ Yeniden Adlandır</div>
-    <div class="sl2-ci" onclick="slMoveCol('${id}',-1)">⬅ Sola Taşı</div>
-    <div class="sl2-ci" onclick="slMoveCol('${id}',1)">➡ Sağa Taşı</div>
-    <div class="sl2-sep"></div>
-    <div class="sl2-ci del" onclick="slDeleteCol('${id}');slCloseCtx()">🗑 Sütunu Sil</div>`;
+  const items = document.getElementById('sl-ctx-items');
+  items.innerHTML = '';
+  [
+    { label:'✏️ Yeniden Adlandır', action: ()=>{ slCloseCtx(); slRenameCol(id); } },
+    { label:'⬅ Sola Taşı',         action: ()=>{ slMoveCol(id,-1); } },
+    { label:'➡ Sağa Taşı',         action: ()=>{ slMoveCol(id,1); } },
+    { label:'🗑 Sütunu Sil', cls:'del', action: ()=>{ slDeleteCol(id); slCloseCtx(); } },
+  ].forEach(({label, action, cls}) => {
+    const d = document.createElement('div');
+    d.className = 'sl2-ci' + (cls ? ' '+cls : '');
+    d.textContent = label;
+    d.addEventListener('click', action);
+    items.appendChild(d);
+    if(cls==='del') { const sep=document.createElement('div'); sep.className='sl2-sep'; items.insertBefore(sep, d); }
+  });
   setTimeout(() => document.addEventListener('mousedown', slCtxOutside, { once:true }), 50);
 }
 
@@ -5148,7 +6729,7 @@ function smColorOutside(e) {
 }
 
 // ── Utils ──
-function smEsc(str) { return (str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;'); }
+function smEsc(str) { return (str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
 
 function smDarken(hex) {
   if (!hex || !hex.startsWith('#')) return hex;
@@ -5336,10 +6917,11 @@ function addNewPageWith(name, loaderFn) {
   <div class="npm-item" onclick="newPageWith('storymap')"><span class="npm-ico">📋</span> Story Map</div>
   <div class="npm-item" onclick="newPageWith('mindmap')"><span class="npm-ico">🧠</span> Mind Map</div>
   <div class="npm-item" onclick="newPageWith('gantt')"><span class="npm-ico">📅</span> Gantt Chart</div>
+  <div class="npm-item" onclick="newPageWith('calendar')"><span class="npm-ico">🗓</span> Takvim</div>
 </div>
 
 <!-- SL CONTEXT MENU -->
-<div id="sl-ctx" style="position:fixed;display:none;z-index:6000;">
+<div id="sl-ctx" style="position:fixed;display:none;z-index:6000;background:#fff;border:1px solid #ddd;border-radius:8px;padding:6px;box-shadow:0 4px 20px rgba(0,0,0,.15);min-width:170px;font-family:Inter;">
   <div id="sl-ctx-items"></div>
 </div>
 

@@ -1569,6 +1569,7 @@ img, table { max-width: 100%; }
   <div class="gpi" style="flex-shrink:0">
     <div class="ph">
       <div><div class="ptitle">📅 Gantt Chart</div><div class="psub" id="g-sub">Proje seçin</div></div>
+      <button class="btn btn-sm" onclick="ganttScrollToday()" style="background:#fff;border:1.5px solid var(--blue);color:var(--blue);font-weight:700">📍 Bugün</button>
       <button class="btn btn-xl btn-sm" onclick="exportXLS('gantt')">📥 Excel</button>
       <button class="btn btn-xl btn-sm" onclick="exportPDF('gantt')">🖨️ PDF</button>
     </div>
@@ -4536,6 +4537,17 @@ function _akGanttScrollToday(){
   gsw.scrollTo({left:Math.max(0,lineLeft-gsw.clientWidth/2),behavior:'smooth'});
 }
 
+function ganttScrollToday(){
+  var gsw=g('gsw');
+  var line=g('gantt-today-line');
+  if(!gsw||!line)return;
+  var lineLeft=parseInt(line.style.left)||0;
+  gsw.scrollTo({left:Math.max(0,lineLeft-gsw.clientWidth/2),behavior:'smooth'});
+  // gsw-hdr da sync et
+  var hdr=g('gsw-hdr');
+  if(hdr) hdr.scrollLeft=Math.max(0,lineLeft-gsw.clientWidth/2);
+}
+
 /* ── Board render ─────────────────────────────────────── */
 function _renderAkBoard() {
   var wrap = g('ak-board-view');
@@ -6974,11 +6986,11 @@ function renderGantt(){
   var range=getRange(sps);var rs=range.min;var re=range.max;
   var nd=Math.round((re-rs)/86400000)+1;
   g('g-sub').textContent=d2s(rs)+' — '+d2s(re)+'  ('+nd+' gün)';
+  var todayIso=todays();
   var days=[];for(var i=0;i<nd;i++){var dt=addD(rs,i);days.push({dt:dt,wk:dt.getDay()===0||dt.getDay()===6,tod:iso(dt)===todayIso});}
   var months=[];var cmk=null;
   days.forEach(function(day){var mk=day.dt.getFullYear()+'-'+day.dt.getMonth();if(mk!==cmk){cmk=mk;months.push({lbl:mn(day.dt),n:1});}else months[months.length-1].n++;});
   var DW=26,RH=40;
-  var todayIso=todays();
   var LC=[{l:'GÖREV',w:195},{l:'PROJE',w:85},{l:'SORUMLU',w:90},{l:'BAŞL.',w:76},{l:'BİTİŞ',w:76},{l:'DURUM',w:88}];
   var rowData=[];
   sps.forEach(function(pid){
@@ -7072,7 +7084,6 @@ function renderGantt(){
       var bx=si*DW, bw=(ei-si+1)*DW-2;
       if(bw<6) bw=6;
       var cell=tr.querySelector('.gantt-bar-cell');
-      if(i<3)
       if(!cell) return;
       var barH=rd.isSub?24:34;
       createGanttBarInCell(cell, rd, bx, bw, barH, RH, DW, days);
@@ -7088,9 +7099,10 @@ function renderGantt(){
   if(todayColIdx>=0){
     gsw.style.position='relative';
     var tl=document.createElement('div');
-    tl.style.cssText='position:absolute;top:48px;left:'+((todayColIdx*DW)+(DW/2))+'px;width:2px;bottom:0;background:rgba(198,40,40,.65);pointer-events:none;z-index:10;';
+    tl.id='gantt-today-line';
+    tl.style.cssText='position:absolute;top:0;left:'+((todayColIdx*DW)+(DW/2))+'px;width:2px;bottom:0;background:rgba(198,40,40,.65);pointer-events:none;z-index:10;';
     var tlb=document.createElement('div');
-    tlb.style.cssText='position:absolute;top:48px;left:'+((todayColIdx*DW)+(DW/2)-14)+'px;font-size:7px;font-weight:800;color:#C62828;background:#fff;padding:1px 3px;border-radius:3px;border:1px solid #C62828;white-space:nowrap;z-index:11;';
+    tlb.style.cssText='position:absolute;top:4px;left:'+((todayColIdx*DW)+(DW/2)-14)+'px;font-size:7px;font-weight:800;color:#C62828;background:#fff;padding:1px 3px;border-radius:3px;border:1px solid #C62828;white-space:nowrap;z-index:11;';
     tlb.textContent='BUGÜN';
     gsw.appendChild(tl);gsw.appendChild(tlb);
     setTimeout(function(){gsw.scrollLeft=Math.max(0,(todayColIdx*DW)-120);},80);
@@ -7229,15 +7241,14 @@ function _xToIso(x, DW, days){
 
 // Bar'ı doğrudan satırın kendi TD'sine yerleştir - pozisyon garantili
 function createGanttBarInCell(cell, rd, bx, bw, barH, RH, DW, days){
-  // TD position:relative Chrome'da çalışmıyor - içine div wrap koy
-  var wrap = cell.querySelector('.gbc-wrap');
-  if(!wrap){
-    wrap = document.createElement('div');
-    wrap.className = 'gbc-wrap';
-    wrap.style.cssText = 'position:relative;width:0;height:'+RH+'px;overflow:visible;pointer-events:none;';
-    cell.appendChild(wrap);
-  }
-  createGanttBar(wrap, rd, 0, bx, bw, RH, DW, days);
+  // TD/TR position:relative Chrome'da guvenilir calismiyor.
+  // Bar'i en yakin position:relative DIV container'a (gsw veya ak-gsw) ekle.
+  var gsw = cell.closest('#gsw') || cell.closest('#ak-gsw');
+  if(!gsw) return;
+  var tr = cell.closest('tr');
+  if(!tr) return;
+  var rowY = tr.offsetTop;
+  createGanttBar(gsw, rd, rowY, bx, bw, RH, DW, days);
 }
 
 function createGanttBar(wrap, rd, rowY, bx, bw, RH, DW, days){
